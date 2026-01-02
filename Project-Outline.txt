@@ -1,0 +1,20 @@
+Tools:
+1. C 2. Mongo DB 3. Python 4. React 5. NodeJS 6. Git
+
+Priority Order:
+1. Software Diagrams (All)              2. Git Commands Allocation And Shell Exec (All)
+3. Python Control (Charbel & Omar) + File Cleanup (Patrick & Bilal)
+4. NodeJS Backend + Mongo (All)         5. Website UI (All)
+6. Extras + Cherry Picking (All)
+
+Git Commands:
+1. Group's Work:
+ Merge - Branch
+2. Patrick's Work:
+ Status - Checkout - Describe
+3. Charbel's Work:
+ Init - Commit - Grep
+4. Omar's Work:
+ Push - Pull - Log
+5. Bilal's Work:
+ Clone - Add - Fetch
