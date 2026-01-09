@@ -2,17 +2,18 @@
   1. C 
   2. Mongo DB 
   3. Python 
-  4. React | php
+  4. ReactJs
   5. NodeJS 
   6. Git
 
 >> Order of Priorities:
-  1. Software Diagrams (All)
-  2. Git Commands Allocation And Shell Exec (All)
-  3. Python Control (Charbel & Omar) & File Cleanup (Patrick & Bilal)
-  4. NodeJS Backend + Mongo (All)         
-  5. Website UI (All)
-  6. Extras + Cherry Picking (All)
+  1. Software Diagrams (All members)
+  2. Git Commands Allocation And Shell Exec (All members)
+  3. Python Control Scripts (Charbel & Omar) 
+  4. Python File Cleanup Scripts (Patrick & Bilal)
+  5. NodeJS Backend + Mongo (All)         
+  6. Website UI (All)
+  7. Extras + Cherry Picking (All)
 
 >> Git Commands:
   1. Commands To Be Worked On By The Whole Group:
