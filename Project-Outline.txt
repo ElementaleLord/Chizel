@@ -35,3 +35,10 @@
      - Clone 
      - Add 
      - Fetch
+
+>> Work Hours
+   Monday   : min 6 Hours
+   Thursday :     2 Hours
+   Friday   :     2 Hours
+
+>> UML is in B1_UMl_Diagrams.vpp file
