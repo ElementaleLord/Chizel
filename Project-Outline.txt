@@ -41,4 +41,4 @@
    Thursday :     2 Hours
    Friday   :     2 Hours
 
->> UML is in B1_UMl_Diagrams.vpp file
+>> UML is in B1_UML_Diagrams.vpp file
