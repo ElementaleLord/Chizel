@@ -1,0 +1,5 @@
+Questions for:
+    -Supervisor:
+        1- is it better to use fifo like files to pass around runtime data or should we use memory buffers as function parameters instead?
+    -Ralph:
+        1- C/Cpp tools consultation.
