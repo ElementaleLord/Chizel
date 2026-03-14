@@ -38,7 +38,7 @@ bool init()
 
             if(data == NULL)
             {
-                if(mkdir(path,perm) < 0)
+                if(mkdir(path) < 0)
                 {
                     printf("failed in creating %s" , path);
                     exit(EXIT_FAILURE);
