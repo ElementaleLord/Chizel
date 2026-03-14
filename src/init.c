@@ -7,7 +7,14 @@
 #include <stdbool.h>
 #include <string.h>
 
-//! Error Handling required
+//seperate both mdkir commands because function overriding doesnt exist in C
+#ifdef _WIN32
+#include <direct.h>
+#define mkdir(dir) _mkdir(dir)
+#else
+#include <sys/stat.h>
+#include <sys/types.h>
+#endif
 
 bool init(){
     struct dirent *de;  // Pointer for directory entry
@@ -15,12 +22,14 @@ bool init(){
     DIR *dr = opendir(".");
     bool chzfnd = false;        // 1 = true, 0 = false
 
+    #ifdef _WIN32
+    #else
+    #endif
     if (dr == NULL){
         printf("Directory Open Error");
         exit(1);
     }
 
-    // Refer https://pubs.opengroup.org/onlinepubs/7990989775/xsh/readdir.html
     while ((de = readdir(dr)) != NULL){
         if(de->d_type == 4 && strcmp(de->d_name, ".chz") == 0){  // d_type: 4 = DIR
             chzfnd = true;
