@@ -2,3 +2,5 @@
 .vscode/
 *.exe
 .chz/
+*.vpp.lck
+*.vpp.bak*

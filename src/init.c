@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <stdbool.h>
 #include <string.h>
+#include "include/init_template.h"
 
 //seperate both mdkir commands because function overriding doesnt exist in C
 #ifdef _WIN32
@@ -14,14 +15,21 @@
 #include <sys/types.h>
 #endif
 
-bool init(){
-
+bool init()
+{
     const char* dir = ".chz";
     const short perm = 0700;
     const char *directories[] = {"refs", "hooks" , "info", "logs", "objects", "objects/info"};
-    const char *files[] = {"HEAD","index", "config", "description", "packed-refs"};
+    const char *files[] = {"HEAD","index", "config", "description.txt", "packed-refs"};
 
-    
+    const char *content[] = {
+        "", 
+        "", 
+        "c1\nc2",
+        "desc",
+        ""
+    };
+
     DIR* p_dir = opendir(dir);
     if(p_dir)
     {
@@ -55,13 +63,19 @@ bool init(){
 
         for(size_t i = 0; i < size; i++)
         {
+            FILE *fp;
             char path[256];
             snprintf(path, sizeof(path), ".chz/%s", files[i]);
-            if(fopen(path, "w") < 0) 
+            if((fp = fopen(path, "w")) < 0) 
             {
                 printf("fopen failed on: %s", path);
                 exit(EXIT_FAILURE);
             }
+            if(strcmp(content[i], ""))
+            {
+                fputs(content[i],fp);
+            }
+            fclose(fp);
         }
 
     #else
@@ -89,13 +103,19 @@ bool init(){
 
         for(size_t i = 0; i < size; i++)
         {
+            FILE *fp;
             char path[256];
             snprintf(path, sizeof(path), ".chz/%s", files[i]);
-            if(fopen(path, "w") < 0) 
+            if((fp = fopen(path, "w")) < 0) 
             {
                 printf("fopen failed on: %s", path);
                 exit(EXIT_FAILURE);
             }
+            if(strcmp(content[i], ""))
+            {
+                fputs(content[i],fp);
+            }
+            fclose(fp);
         }
 
     #endif
@@ -103,6 +123,7 @@ bool init(){
     return true;
 }
 
-int main(){
+int main()
+{
     init();
 }
