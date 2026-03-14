@@ -3,10 +3,12 @@
 
 #include <time.h>
 #include <string.h>
+#include <stdbool.h>
 
 struct Commit;
 struct Branch;
 struct Repository;
+struct Account;
 
 enum FileStatus
 {
@@ -79,11 +81,11 @@ typedef struct
     time_t repoDate;
     char* repoURL;
     long icon;
-    RepositoryLogEntry* repoLog;// array of log entries (i think we defined this to make git log easier to code? maybe)
+    //RepositoryLogEntry* repoLog;// array of log entries (i think we defined this to make git log easier to code? maybe)
     LightTag* ptrMap;// array of light tags
     HeavyTag* tagMap;// array of heavy tags
     Branch** branches;// array of branch pointers
-}Repository;
+}Repo;
 
 typedef struct
 {// General data type for a Branch
@@ -92,7 +94,7 @@ typedef struct
     DateFile* branchData;
     Repository* parentRepo;
     Commit* latestCommit;
-}Branch;
+}BranchChz;
 
 typedef struct
 {// General data type for a Commit
@@ -102,7 +104,7 @@ typedef struct
     Branch* commitBranch;
     Branch* mergeBranch;
     StatusFile* commitedChanges;
-}Commit;
+}CommitChz;
 
 typedef struct
 {//? Account Settings Data Type
@@ -111,7 +113,7 @@ typedef struct
     char* username;
     bool twoFactorAuth;
     AthenticationMethod method;
-}Account;
+}AccountChz;
 
 typedef struct
 {// used as one entry in a repositories history log
@@ -124,7 +126,7 @@ typedef struct
 {// defines the extra data needed by a forked repository
     char* originalURL;
     time_t forkDate;
-    long vNum
+    long vNum;
 }RepoFork;
 
 typedef struct
