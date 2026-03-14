@@ -21,15 +21,16 @@ bool init(){
     const char *directories[] = {"refs", "hooks" , "info", "logs", "objects", "objects/info"};
     const char *files[] = {"HEAD","index", "config", "description", "packed-refs"};
 
-    #ifdef _WIN32
+    
+    DIR* p_dir = opendir(dir);
+    if(p_dir)
+    {
+        printf(".chz folder already exists");
+        closedir(p_dir);
+        return false;
+    }
 
-        DIR* dir = opendir(dir);
-        if(dir)
-        {
-            printf(".chz folder already exists")
-            colsedir(dir);
-            return false;
-        }
+    #ifdef _WIN32
 
         if(mkdir(dir) == -1)
         {
@@ -64,19 +65,11 @@ bool init(){
         }
 
     #else
-        
-        DIR *dr = opendir(dir);
-        if(dr)
-        {
-            perror(".chz folder exits");
-            closedir(dr);
-            return false;
-        }
 
         if(mkdir(dir, 0755)== -1)
         {
             perror(".chz folder creation error");
-            closedir(dr);
+            closedir(p_dir);
             return false;
         }
         size_t size = sizeof(directories) / sizeof(directories[0]);
