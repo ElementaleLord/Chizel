@@ -5,10 +5,10 @@
 #include <string.h>
 #include <stdbool.h>
 
-struct Commit;
-struct Branch;
-struct Repository;
-struct Account;
+typedef struct CommitChz;
+typedef struct BranchChz;
+typedef struct RepositoryChz;
+typedef struct AccountChz;
 
 enum FileStatus
 {
@@ -61,16 +61,25 @@ typedef struct
 }PullRequestType;
 
 typedef struct
+{//? Account Settings Data Type
+    char* email;
+    long password;// should be a hashed ref
+    char* username;
+    bool twoFactorAuth;
+    AthenticationMethod method;
+}AccountChz;
+
+typedef struct
 {// defines a name and points to some commit
     char* label;
-    Commit* commitPtr;
+    CommitChz* commitPtr;
 }LightTag;
 
 typedef struct
 {// expansion on light tag that additionally track date and user which created this tag
     char* label;
-    Commit* commitPtr;
-    Account* creater;
+    CommitChz* commitPtr;
+    AccountChz* creater;
     time_t HTagDate;
     char* HTagMsg;
 }HeavyTag;
@@ -84,16 +93,16 @@ typedef struct
     //RepositoryLogEntry* repoLog;// array of log entries (i think we defined this to make git log easier to code? maybe)
     LightTag* ptrMap;// array of light tags
     HeavyTag* tagMap;// array of heavy tags
-    Branch** branches;// array of branch pointers
-}Repo;
+    BranchChz** branches;// array of branch pointers
+}RepositoryChz;
 
 typedef struct
 {// General data type for a Branch
     char* branchName;
     time_t branchDate;
     DateFile* branchData;
-    Repository* parentRepo;
-    Commit* latestCommit;
+    RepositoryChz* parentRepo;
+    CommitChz* latestCommit;
 }BranchChz;
 
 typedef struct
@@ -101,26 +110,16 @@ typedef struct
     char* commitName;
     char* commitMsg;
     time_t commitDate;
-    Branch* commitBranch;
-    Branch* mergeBranch;
+    BranchChz* commitBranch;
+    BranchChz* mergeBranch;
     StatusFile* commitedChanges;
 }CommitChz;
 
 typedef struct
-{//? Account Settings Data Type
-    char* email;
-    long password;// should be a hashed ref
-    char* username;
-    bool twoFactorAuth;
-    AthenticationMethod method;
-}AccountChz;
-
-typedef struct
 {// used as one entry in a repositories history log
     time_t logEntrydate;
-    Commit* RepLogData;
-}RepositoryLogEntry
-;
+    CommitChz* RepLogData;
+}RepositoryLogEntry;
 
 typedef struct
 {// defines the extra data needed by a forked repository

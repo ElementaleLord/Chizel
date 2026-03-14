@@ -1,8 +1,8 @@
 #include "dtype_template.h"
 
 int main(){
-    Commit c;
-    Branch b;
-    Repository r;
+    CommitChz c;
+    BranchChz b;
+    RepositoryChz r;
     return 0;
 }
