@@ -31,42 +31,29 @@ bool init()
 
     #ifdef _WIN32
 
-        if(mkdir(dir) == -1)
+        for(size_t i = 0; i < REPO_TEMPLATE_SIZE; i++)
         {
-          printf("mkdir %s, failed",dir);
-          exit(EXIT_FAILURE);
-        }
+            const char* data =  REPO_TEMPLATE[i].data;
+            const char* path = REPO_TEMPLATE[i].path;
 
-        size_t size = sizeof(directories) / sizeof(directories[0]);
-
-        for(size_t i = 0; i < size; i++)
-        {
-            char path[256];
-            snprintf(path, sizeof(path), ".chz/%s", directories[i]);
-            if(mkdir(path) < 0) 
+            if(data == NULL)
             {
-                printf("mkdir failed on: %s", path);
-                exit(EXIT_FAILURE);
-            }
-        }
-
-        size = sizeof(files) / sizeof(files[0]);
-
-        for(size_t i = 0; i < size; i++)
-        {
-            FILE *fp;
-            char path[256];
-            snprintf(path, sizeof(path), ".chz/%s", files[i]);
-            if((fp = fopen(path, "w")) < 0) 
+                if(mkdir(path,perm) < 0)
+                {
+                    printf("failed in creating %s" , path);
+                    exit(EXIT_FAILURE);
+                }
+            }else
             {
-                printf("fopen failed on: %s", path);
-                exit(EXIT_FAILURE);
+                FILE *fp = fopen(path,"w");
+                if(!fp)
+                {
+                    printf("failed in opening file %s", path);
+                    exit(EXIT_FAILURE);
+                }
+                fwrite(data, 1, strlen(data), fp);
+                fclose(fp);
             }
-            if(strcmp(content[i], ""))
-            {
-                fputs(content[i],fp);
-            }
-            fclose(fp);
         }
 
     #else
