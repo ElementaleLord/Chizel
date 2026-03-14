@@ -5,7 +5,37 @@
 #include <string.h>
 #include <stdbool.h>
 
+struct StatusFile;
+struct DateFile;
+struct PullRequestType;
+struct AccountChz;
+struct CommitChz;
+struct LightTag;
+struct HeavyTag;
+struct RepositoryChz;
 struct BranchChz;
+struct RepositoryLogEntry;
+struct RepoFork;
+struct PullRequest;
+
+typedef enum FileStatus FileStatus;
+typedef enum AuthenticationMethod AuthenticationMethod;
+typedef enum ActionType ActionType;
+typedef enum PullRequestCategory PullRequestCategory;
+typedef enum PullRequestStatus PullRequestStatus;
+
+typedef struct StatusFile StatusFile;
+typedef struct DateFile DateFile;
+typedef struct PullRequestType PullRequestType;
+typedef struct AccountChz AccountChz;
+typedef struct CommitChz CommitChz;
+typedef struct LightTag LightTag;
+typedef struct HeavyTag HeavyTag;
+typedef struct RepositoryChz RepositoryChz;
+typedef struct BranchChz BranchChz;
+typedef struct RepositoryLogEntry RepositoryLogEntry;
+typedef struct RepoFork RepoFork;
+typedef struct PullRequest PullRequest;
 
 enum FileStatus
 {
@@ -15,7 +45,7 @@ enum FileStatus
     ADDED
 };
 
-enum AthenticationMethod
+enum AuthenticationMethod
 {
     SECONDARY_EMAIL, 
     PHONE_NUMBER, 
@@ -43,34 +73,34 @@ enum PullRequestStatus
     NUL
 };
 
-typedef struct
+struct StatusFile
 {// a file with a status attached
     FileStatus status;
     char* FileName;
-}StatusFile;
+};
 
-typedef struct
+struct DateFile
 {// a file with a date attached
     time_t date;
     long* fileObj;
-}DateFile;
+};
 
-typedef struct
+struct PullRequestType
 {// used to track the category and status of a pull request
     PullRequestCategory pullReqCat;
     PullRequestStatus pullReqStatus;
-}PullRequestType;
+};
 
-typedef struct
+struct AccountChz
 {//? Account Settings Data Type
     char* email;
     long password;// should be a hashed ref
     char* username;
     bool twoFactorAuth;
-    AthenticationMethod method;
-}AccountChz;
+    AuthenticationMethod method;
+};
 
-typedef struct
+struct CommitChz
 {// General data type for a Commit
     char* commitName;
     char* commitMsg;
@@ -78,24 +108,24 @@ typedef struct
     BranchChz* commitBranch;
     BranchChz* mergeBranch;
     StatusFile* commitedChanges;
-}CommitChz;
+};
 
-typedef struct
+struct LightTag
 {// defines a name and points to some commit
     char* label;
     CommitChz* commitPtr;
-}LightTag;
+};
 
-typedef struct
+struct HeavyTag
 {// expansion on light tag that additionally track date and user which created this tag
     char* label;
     CommitChz* commitPtr;
     AccountChz* creater;
     time_t HTagDate;
     char* HTagMsg;
-}HeavyTag;
+};
 
-typedef struct
+struct RepositoryChz
 {// General data type for a Repository
     char* repoName;
     time_t repoDate;
@@ -105,7 +135,7 @@ typedef struct
     LightTag* ptrMap;// array of light tags
     HeavyTag* tagMap;// array of heavy tags
     BranchChz** branches;// array of branch pointers
-}RepositoryChz;
+};
 
 struct BranchChz
 {// General data type for a Branch
@@ -117,28 +147,27 @@ struct BranchChz
 };
 
 
-typedef struct
+struct RepositoryLogEntry
 {// used as one entry in a repositories history log
     time_t logEntrydate;
     CommitChz* RepLogData;
-}RepositoryLogEntry;
+};
 
-typedef struct
+struct RepoFork
 {// defines the extra data needed by a forked repository
     char* originalURL;
     time_t forkDate;
     long vNum;
-}RepoFork;
+};
 
-typedef struct
+struct PullRequest
 {// General data type for a  PullRequest
     char* pullRequestName;
     char* pullRequestMsg;
     time_t createDate;
     time_t submitDate;
     time_t resolveDate;
+    PullRequestType status;
+};
 
-}PullRequest;
-
-typedef struct BranchChz BranchChz;
 #endif
