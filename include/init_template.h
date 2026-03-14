@@ -1,32 +1,18 @@
 #ifndef INIT_TEMPLATE
 #define INIT_TEMPLATE
 
+#include <stddef.h>
+
 typedef struct
 {
+    const char* path;
     const char* data;
-    size_t count;
-    size_t capacity;
-}Data;
+}TemplateValue;
 
-typedef struct
-{
-    char* path;
-    Data data;
-}file;
+const TemplateValue REPO_TEMPLATE[] = {
 
-typedef struct
-{
-    file* files;
-    size_t count;
-    size_t capacity;
-} Files;
-
-typedef struct
-{
-    char* dirname;
-    int perms;
-    char** directories;
-    Files files;
-}Init_template;
+    {".chz", NULL },
+    {".chz/refs", NULL}
+};
 
 #endif
