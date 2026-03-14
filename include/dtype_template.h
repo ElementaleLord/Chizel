@@ -5,10 +5,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-typedef struct CommitChz;
-typedef struct BranchChz;
-typedef struct RepositoryChz;
-typedef struct AccountChz;
+struct BranchChz;
 
 enum FileStatus
 {
@@ -17,23 +14,27 @@ enum FileStatus
     REMOVED, 
     ADDED
 };
+
 enum AthenticationMethod
 {
     SECONDARY_EMAIL, 
     PHONE_NUMBER, 
     AUTHENTICATOR_APP
 };
+
 enum ActionType
 {
     CREATE, 
     DELETE, 
     VIEW
 };
+
 enum PullRequestCategory
 {
     OPEN, 
     CLOSED
 };
+
 enum PullRequestStatus
 {
     ACCEPTED, 
@@ -70,6 +71,16 @@ typedef struct
 }AccountChz;
 
 typedef struct
+{// General data type for a Commit
+    char* commitName;
+    char* commitMsg;
+    time_t commitDate;
+    BranchChz* commitBranch;
+    BranchChz* mergeBranch;
+    StatusFile* commitedChanges;
+}CommitChz;
+
+typedef struct
 {// defines a name and points to some commit
     char* label;
     CommitChz* commitPtr;
@@ -96,24 +107,15 @@ typedef struct
     BranchChz** branches;// array of branch pointers
 }RepositoryChz;
 
-typedef struct
+struct BranchChz
 {// General data type for a Branch
     char* branchName;
     time_t branchDate;
     DateFile* branchData;
     RepositoryChz* parentRepo;
     CommitChz* latestCommit;
-}BranchChz;
+};
 
-typedef struct
-{// General data type for a Commit
-    char* commitName;
-    char* commitMsg;
-    time_t commitDate;
-    BranchChz* commitBranch;
-    BranchChz* mergeBranch;
-    StatusFile* commitedChanges;
-}CommitChz;
 
 typedef struct
 {// used as one entry in a repositories history log
@@ -138,4 +140,5 @@ typedef struct
 
 }PullRequest;
 
+typedef struct BranchChz BranchChz;
 #endif
