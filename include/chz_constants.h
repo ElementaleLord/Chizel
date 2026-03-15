@@ -12,6 +12,7 @@
 //& NOTE-# <:> indicates important NOTES
 //*-<:>-indicates-changes-or-REALLY-IMPORTANT-SHIT------------------------------------
 /// indicates redacted but still needed comment
+
 /*
 also try to respect the "formatting" of each one
 if one above has <:> in it use the below keys to id who saying that 
@@ -22,6 +23,7 @@ F: is Faust
 //& NOTE-1 P: if more that one <:> then only count the first one to the comment
 //& NOTE-1 P: others just indicate comment maker taklking to or about someone else
 */
+
 //~ paths
 #define CHZ_PATH ".chz"
 #define BRANCHES_PATH ".chz/branches"
