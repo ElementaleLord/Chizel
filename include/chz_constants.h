@@ -1,7 +1,6 @@
 #ifndef CHZ_CONSTANTS_H
 #define CHZ_CONSTANTS_H
 
-#include "../.env"
 //~ indicates the explanation of a near (usually below) function
 //! <:> indicates some MAJOR ERROR or some MISSING portion that need be done
 //@ indicates important distinctions
@@ -13,6 +12,7 @@
 //& NOTE-# <:> indicates important NOTES
 //*-<:>-indicates-changes-or-REALLY-IMPORTANT-SHIT------------------------------------
 /// indicates redacted but still needed comment
+
 /*
 also try to respect the "formatting" of each one
 if one above has <:> in it use the below keys to id who saying that 
@@ -23,6 +23,7 @@ F: is Faust
 //& NOTE-1 P: if more that one <:> then only count the first one to the comment
 //& NOTE-1 P: others just indicate comment maker taklking to or about someone else
 */
+
 //~ paths
 #define CHZ_PATH ".chz"
 #define BRANCHES_PATH ".chz/branches"
@@ -38,9 +39,6 @@ F: is Faust
 #define CONFIG_PATH ".chz/config"
 #define DESC_PATH ".chz/description"
 #define UNPACK_REFS_PATH ".chz/unpacked-refs"
-
-//~ links
-#define LINK_TO_DB DB_LINK
 
 //~ offsets
 #define ARG_BASE -1
