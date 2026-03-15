@@ -1,7 +1,6 @@
 #ifndef CHZ_CONSTANTS_H
 #define CHZ_CONSTANTS_H
 
-#include "../.env"
 //~ indicates the explanation of a near (usually below) function
 //! <:> indicates some MAJOR ERROR or some MISSING portion that need be done
 //@ indicates important distinctions
@@ -38,9 +37,6 @@ F: is Faust
 #define CONFIG_PATH ".chz/config"
 #define DESC_PATH ".chz/description"
 #define UNPACK_REFS_PATH ".chz/unpacked-refs"
-
-//~ links
-#define LINK_TO_DB DB_LINK
 
 //~ offsets
 #define ARG_BASE -1
