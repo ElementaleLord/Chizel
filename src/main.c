@@ -1,4 +1,3 @@
-//Insert C source files in this directory/folder
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
