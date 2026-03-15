@@ -5,7 +5,6 @@
 #include <stdbool.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <unistd.h>
 
 // two dots to go up a dir
 #include "../include/init_template.h"
@@ -13,8 +12,10 @@
 
 #ifdef _WIN32
 #include <direct.h>
+#define rmdir(path) _rmdir(path)
 #define mkdir(dir) _mkdir(dir)
 #else
+#include <unistd.h>
 #include <sys/types.h>
 #endif
 
@@ -135,11 +136,14 @@ bool createNewBranch(char* branchName)
     //? P: possible to use the names to identify ?
     //^ O: i was thinking some more formal identific
     char path[1024];
+    DIR* existingDir;
     snprintf(path, sizeof(path), "%s/%s", BRANCHES_PATH, branchName);
 
-    if (opendir(path)>= 0)
+    existingDir = opendir(path);
+    if(existingDir != NULL)
     {
-        printf("BRANCH ERROR: Branch Already Exists.");
+        closedir(existingDir);
+        printf("BRANCH ERROR: Branch Already Exists.\n");
         return false;
     }
     else
@@ -182,6 +186,8 @@ void deleteBranch(const char* path)
     struct stat st;
     bool empty = true;
 
+    if(!branch) return;
+
     while((curDir = readdir(branch)) != NULL)
     {
         if(strcmp(curDir->d_name, ".") != 0 && strcmp(curDir->d_name, "..") != 0)
@@ -189,6 +195,8 @@ void deleteBranch(const char* path)
             empty = false;
         }
     }
+
+    closedir(branch);
 
     if(!empty)
     {
@@ -228,25 +236,24 @@ void forceDelete(const char* path)
         if(stat(fullpath, &st) == 0 && S_ISDIR(st.st_mode))
         {
             forceDelete(fullpath);
-            rmdir(fullpath);
         }else{ 
             remove(fullpath);
         }
     }
 
+    closedir(branch);
     rmdir(path);
 }
 
 bool branch(int argc, char* argv[])
 {
+    char path[1024];
     DIR* p_dir = opendir(CHZ_PATH);
     if(!p_dir)
     {
         printf("BRANCH ERROR: .chz Not Found, Plz Make Sure Your In A CHZ Repository Director Or Run: \"chz init\"");
         return false;
     }
-    char path[1024];
-    snprintf(path, sizeof(path), "%s/%s", BRANCHES_PATH, argv[ARG_BASE + 3]);
     switch(argc)
     {
         case (ARG_BASE + 2):        //@ chz branch
@@ -268,9 +275,15 @@ bool branch(int argc, char* argv[])
             {
                 listEverything(opendir(BRANCHES_PATH));
             }
+            else                                        //% chz branch <name> 
+            {
+                createBranch(argv[ARG_BASE + 2]);
+            }
             break;
 
         case (ARG_BASE + 4):
+            snprintf(path, sizeof(path), "%s/%s", BRANCHES_PATH, argv[ARG_BASE + 3]);
+
             if(strcmp(argv[ARG_BASE + 2], "-d") == 0)       //% chz branch -d <branch>
             {
                 deleteBranch(path);
@@ -283,19 +296,15 @@ bool branch(int argc, char* argv[])
                 {
                    scanf("%s", &confirmation);
                 }while(confirmation != 'y' && confirmation != 'N');
-                printf("Detected\n");
                 if(confirmation == 'y') forceDelete(path);
                 else printf("Force Deletion Aborted Successfully");
-            }
-            else                                        //% chz branch <name> 
-            {
-                createBranch(argv[ARG_BASE + 2]);
             }
             break;
 
         case (ARG_BASE + 5):        //% chz branch -m <oldName> <newName>
             if(strcmp(argv[ARG_BASE + 2], "-m") == 0)
             {
+                snprintf(path, sizeof(path), "%s/%s", BRANCHES_PATH, argv[ARG_BASE + 3]);
                 DIR* oldDir = opendir(path);
                 if(!oldDir){
                     printf("BRANCH RENAME: Branch %s not found", argv[ARG_BASE + 3]);
