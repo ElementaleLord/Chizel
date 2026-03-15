@@ -3,6 +3,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <stdbool.h>
+#include <sys/stat.h>
 #include <string.h>
 
 //# two dots to go up a dir
@@ -13,25 +14,8 @@
 #include <direct.h>
 #define mkdir(dir) _mkdir(dir)
 #else
-#include <sys/stat.h>
 #include <sys/types.h>
 #endif
-
-// //~ used to check the existance of a branch
-// bool branchExists(const char* name){
-//     char path[1024];
-//     DIR* p_dir;
-
-//     snprintf(path, sizeof(path), "%s/%s", BRANCHES_PATH, name);
-//     p_dir = opendir(path);
-
-//     if(!p_dir){
-//         return false;
-//     }
-//     closedir(p_dir);
-//     return true;
-// }
-//$ P: left the above to be reviewed by F:
 
 //~ used to check the existance of a directory
 bool dirExists(const char* path){
@@ -78,8 +62,7 @@ bool copyFile(const char* src, const char* dest){
 bool mergeRec(const char* srcPath, const char* destPath){
     DIR* p_srcDir = opendir(srcPath);
     struct dirent *srcIter;
-    struct stat st;//! P: {incomple type "struct stat" is not allowed} lint error on windows
-                   //^ P: weird stat.h is included idk why theres that error
+    struct stat st;
     char fileFromSrc[1024], fileFromDest[1024];
 
     if(!p_srcDir){
@@ -113,8 +96,7 @@ bool mergeRec(const char* srcPath, const char* destPath){
             }
         }
 
-        if(S_ISDIR(st.st_mode)){//! P: {incomple type "struct stat" is not allowed} lint error on windows
-                                //^ P: weird stat.h is included idk why theres that error
+        if(S_ISDIR(st.st_mode)){
             if(!mergeRec(fileFromSrc, fileFromDest)){
                 closedir(p_srcDir);
                 printf("MERGE ERROR: Failed To Recursively Merge %s and %s\n", fileFromSrc, fileFromDest);
