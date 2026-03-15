@@ -5,8 +5,9 @@
 #include <stdbool.h>
 #include <string.h>
 
-// two dots to go up a dir
+//# two dots to go up a dir
 #include "../include/init_template.h"
+#include "../include/chz_constants.h"
 
 #ifdef _WIN32
 #include <direct.h>
@@ -16,21 +17,23 @@
 #include <sys/types.h>
 #endif
 
-#define ARG_BASE -1
+// //~ used to check the existance of a branch
+// bool branchExists(const char* name){
+//     char path[1024];
+//     DIR* p_dir;
 
-bool branchExists(const char* name){
-    char path[1024];
-    DIR* p_dir;
+//     snprintf(path, sizeof(path), "%s/%s", BRANCHES_PATH, name);
+//     p_dir = opendir(path);
 
-    snprintf(path, sizeof(path), ".chz/branches/%s", name);
-    if(!(p_dir = opendir(path))){
-        return false;
-    }
+//     if(!p_dir){
+//         return false;
+//     }
+//     closedir(p_dir);
+//     return true;
+// }
+//$ P: left the above to be reviewed by F:
 
-    closedir(p_dir);
-    return true;
-}
-
+//~ used to check the existance of a directory
 bool dirExists(const char* path){
     DIR* p_dir = opendir(path);
 
@@ -42,6 +45,7 @@ bool dirExists(const char* path){
     return true;
 }
 
+//~ copies data from a src file to a target file
 bool copyFile(const char* src, const char* dest){
     FILE *fp_src, *fp_dest;
     char buffer[1024];
@@ -49,14 +53,14 @@ bool copyFile(const char* src, const char* dest){
 
     fp_src = fopen(src, "rb");
     if(!fp_src){
-        printf("Failed opening source file %s\n", src);
+        printf("MERGE ERROR: Failed To Open Source %s\n", src);
         return false;
     }
 
     fp_dest = fopen(dest, "wb");
     if(!fp_dest){
         fclose(fp_src);
-        printf("Failed opening destination file %s: %s\n", dest, strerror(errno));
+        printf("MERGE ERROR: Failed To Open Destination %s: %s\n", dest, strerror(errno));
         return false;
     }
 
@@ -69,94 +73,100 @@ bool copyFile(const char* src, const char* dest){
     return true;
 }
 
+//~ used to recurcively combine all files from the source to the destination
+//^ P: probably gonna be remade as thats not how merge works
 bool mergeRec(const char* srcPath, const char* destPath){
-    DIR* p_dir = opendir(srcPath);
-    struct dirent *de;
-    struct stat st;
-    char src[1024], dest[1024];
+    DIR* p_srcDir = opendir(srcPath);
+    struct dirent *srcIter;
+    struct stat st;//! P: {incomple type "struct stat" is not allowed} lint error on windows
+                   //^ P: weird stat.h is included idk why theres that error
+    char fileFromSrc[1024], fileFromDest[1024];
 
-    if(!p_dir){
-        printf("Directory openning error");
+    if(!p_srcDir){
+        printf("MERGE ERROR: Failed To Open Directory %s\n", srcPath);
         exit(EXIT_FAILURE);
     }
 
-    while((de = readdir(p_dir)) != NULL){
-        if(strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0){
+    while((srcIter = readdir(p_srcDir)) != NULL){
+        if(strcmp(srcIter->d_name, ".") == 0 || strcmp(srcIter->d_name, "..") == 0){
             continue;
         }
 
-        snprintf(src, sizeof(src), "%s/%s", srcPath, de->d_name);
-        snprintf(dest, sizeof(dest), "%s/%s", destPath, de->d_name);
+        snprintf(fileFromSrc, sizeof(fileFromSrc), "%s/%s", srcPath, srcIter->d_name);
+        snprintf(fileFromDest, sizeof(fileFromDest), "%s/%s", destPath, srcIter->d_name);
 
-        if(stat(src, &st) < 0){
-            closedir(p_dir);
-            printf("Failed reading path %s\n", src);
+        if(stat(fileFromSrc, &st) < 0){
+            closedir(p_srcDir);
+            printf("MERGE ERROR: Failed To Read From Path %s\n", fileFromSrc);
             return false;
         }
-
-        if(S_ISDIR(st.st_mode)){
-            if(!dirExists(dest)){
+        if(!dirExists(fileFromDest)){
 #ifdef _WIN32
-                if(mkdir(dest) < 0)
+            if(mkdir(fileFromDest) < 0)
 #else
-                if(mkdir(dest, 0700) < 0)
+            if(mkdir(fileFromDest, DEF_PERM) < 0)
 #endif
-                {
-                    closedir(p_dir);
-                    printf("Failed creating directory %s: %s\n", dest, strerror(errno));
-                    return false;
-                }
+            {
+                closedir(p_srcDir);
+                printf("MERGE ERROR: Failed To Create Directory %s: %s\n", fileFromDest, strerror(errno));
+                return false;
             }
+        }
 
-            if(!mergeRec(src, dest)){
-                closedir(p_dir);
+        if(S_ISDIR(st.st_mode)){//! P: {incomple type "struct stat" is not allowed} lint error on windows
+                                //^ P: weird stat.h is included idk why theres that error
+            if(!mergeRec(fileFromSrc, fileFromDest)){
+                closedir(p_srcDir);
+                printf("MERGE ERROR: Failed To Recursively Merge %s and %s\n", fileFromSrc, fileFromDest);
                 return false;
             }
         }else{
-            if(!copyFile(src, dest)){
-                closedir(p_dir);
+            if(!copyFile(fileFromSrc, fileFromDest)){
+                closedir(p_srcDir);
+                printf("MERGE ERROR: Failed To Copy Files from %s to %s\n", fileFromSrc, fileFromDest);
                 return false;
             }
         }
     }
 
-    closedir(p_dir);
+    closedir(p_srcDir);
     return true;
 }
 
-// starts the merge <some> checks
+//~ starts the merge <some> checks
 bool merge(const char* source, const char* target){
-    const char* dir = ".chz";   // global var soon
     char srcPath[1024], destPath[1024];
-    DIR* p_dir = opendir(dir);
+    DIR* p_dir = opendir(CHZ_PATH);
 
     if(!p_dir){
-        printf("Not in a .chz repo, run chz init first\n");
+        printf("MERGE ERROR: .chz Not Found, Plz Make Sure Your In A CHZ Repository Director Or Run: \"chz init\"\n");
         return false;
     }
-    if(!branchExists(source)){
-        printf("%s does not exist, unable to merge", source);
+    
+    snprintf(srcPath, sizeof(srcPath), "%s/%s", BRANCHES_PATH, source);
+    snprintf(destPath, sizeof(destPath), "%s/%s", BRANCHES_PATH, target);   
+    //? O: find a better system??
+    //^ P: just reuse functions why define new ones if your already gonna build the path anyway ?
+    if(!dirExists(srcPath)){
+        printf("MERGE ERROR: source %s Does Not Exist.", source);
         exit(EXIT_FAILURE);
     }
-    if(!branchExists(target)){
-        printf("%s does not exist, unable to merge", target);
+    if(!dirExists(destPath)){
+        printf("MERGE ERROR: target %s Does Not Exist.", target);
         exit(EXIT_FAILURE);
     }
-
-    snprintf(srcPath, sizeof(srcPath), ".chz/branches/%s", source);
-    snprintf(destPath, sizeof(destPath), ".chz/branches/%s", target);   //? find a better system??
 
     if(!(mergeRec(srcPath, destPath))){
-        printf("Merge error");
+        printf("MERGE ERROR: ");
         exit(EXIT_FAILURE);
     }else{
-        printf("Merge success\n");
+        printf("Merged %s to %s successfully\n", source, target);
         return true;
     }
 }
 
 int main(int argc, char* argv[]){
     if(argc > 2){
-        merge(argv[ARG_BASE + 2], argv[ARG_BASE + 3]);   // chz merge <a> <b>
+        merge(argv[ARG_BASE + 2], argv[ARG_BASE + 3]);//# chz merge <a> <b>
     }
 }
