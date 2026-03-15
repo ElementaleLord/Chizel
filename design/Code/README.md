@@ -1,7 +1,7 @@
 
-  # Untitled
+  # Chizel Design
 
-  This is a code bundle for Untitled. The original project is available at https://www.figma.com/design/CEfLtf2xBUrJa1Vih1pkom/Untitled.
+  This is a code bundle for Chizel Design. The original project is available at https://www.figma.com/design/CEfLtf2xBUrJa1Vih1pkom/Chizel-Design.
 
   ## Running the code
 
