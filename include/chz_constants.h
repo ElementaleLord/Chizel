@@ -40,9 +40,6 @@ F: is Faust
 #define DESC_PATH ".chz/description"
 #define UNPACK_REFS_PATH ".chz/unpacked-refs"
 
-//~ links
-#define LINK_TO_DB "mongodb+srv://chizeldb:qpGAJlAbOt6zgEu5@chizel.0dqvas4.mongodb.net/?appName=Chizel"
-
 //~ offsets
 #define ARG_BASE -1
 //# ARG_BASE used for argc & argv equalisation, 
