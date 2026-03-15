@@ -49,11 +49,11 @@ void printIndent(int depth){
 //$ O: Change to use the same system as listEverything, 
 //$ O: removes the need to have separate OS-wise
 void listBranches(DIR* branchDir){
-    #ifdef _WIN32
-        struct dirent *curDir;
-        struct stat st;
-        char path[1024];
+    struct dirent *curDir;
+    struct stat st;
+    char path[1024];
 
+    #ifdef _WIN32
         printf("Current Branches:\n");
         while((curDir = readdir(branchDir)) != NULL){
             if(strcmp(curDir->d_name, ".") != 0 && strcmp(curDir->d_name, "..") != 0){
@@ -64,11 +64,10 @@ void listBranches(DIR* branchDir){
             }
         }
     #else
-        struct dirent *de;
         printf("Current Branches:\n");
-        while((de = readdir(branchDir)) != NULL && de->d_type == 4){
-            if(strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0){
-                printf("- %s\n", de->d_name);
+        while((curDir = readdir(branchDir)) != NULL && curDir->d_type == 4){
+            if(strcmp(curDir->d_name, ".") != 0 && strcmp(curDir->d_name, "..") != 0){
+                printf("- %s\n", curDir->d_name);
             }
         }
     #endif
@@ -128,13 +127,14 @@ void listEverything(DIR* chzDir){
 
 //! O: PROPER SAME NAME ERROR HANDLING
 //? P: needs u mean ? elaborate further O:
+//~ used to create a new branch with edge case handling
 bool createNewBranch(char* branchName){
     //! O: LACKS BRANCH IDENTIFIERS
     //? P: possible to use the names to identify ?
     char path[1024];
     snprintf(path, sizeof(path), "%s/%s", BRANCHES_PATH, branchName);
 //*-P:-do-remove-these-lines-there-only-used-to-indicate-code-i-added-------------------
-    //~ tentative handling of BRANCH_EXISTS_ERROR
+    //# tentative handling of BRANCH_EXISTS_ERROR
     if (opendir(path)>= 0){
         printf("BRANCH ERROR: Branch Already Exists.");
         return false;
@@ -142,6 +142,8 @@ bool createNewBranch(char* branchName){
 //*-P:-do-remove-these-lines-there-only-used-to-indicate-code-i-added-------------------
     else{
         #ifdef _WIN32
+        //$ P: add initialization of branch
+        //$ P: not sure if possible to call commit to make an init commit for the new branch
             if(mkdir(path) < 0){
                 return false;
             }
