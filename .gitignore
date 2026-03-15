@@ -4,3 +4,4 @@
 .chz/
 *.vpp.lck
 *.vpp.bak*
+.env
