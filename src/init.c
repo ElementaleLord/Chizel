@@ -7,6 +7,7 @@
 
 // two dots to go up a dir
 #include "../include/init_template.h"
+#include "../include/chz_constants.h"
 
 #ifdef _WIN32
 #include <direct.h>
@@ -16,12 +17,11 @@
 #include <sys/types.h>
 #endif
 
+//~ used to create the blank template of .chz
+//$ P: requires additional helper or auxilary functions to do EX: main branch, init commit etc...
 bool init()
 {
-    const char* dir = ".chz";
-    const short perm = 0700;
-
-    DIR* p_dir = opendir(dir);
+    DIR* p_dir = opendir(CHZ_PATH);
     if(p_dir)
     {
         printf(".chz folder already exists");
@@ -33,26 +33,28 @@ bool init()
 
         for(size_t i = 0; i < REPO_TEMPLATE_SIZE; i++)
         {
-            const char* data =  REPO_TEMPLATE[i].data;
+            const char* data = REPO_TEMPLATE[i].data;
             const char* path = REPO_TEMPLATE[i].path;
 
             if(data == NULL)
             {
                 if(mkdir(path) < 0)
                 {
-                    printf("failed in creating %s" , path);
+                    printf("INIT ERROR: Failed To Create %s" , path);
+                    //? P: should be replaced with something that doesnt just shut down the program
                     exit(EXIT_FAILURE);
                 }
             }else
             {
-                FILE *fp = fopen(path,"w");
-                if(!fp)
+                FILE *pfile = fopen(path,"w");
+                if(!pfile)
                 {
-                    printf("failed in opening file %s", path);
+                    printf("INIT ERROR: Failed To Open %s", path);
+                    //? P: should be replaced with something that doesnt just shut down the program
                     exit(EXIT_FAILURE);
                 }
-                fwrite(data, 1, strlen(data), fp);
-                fclose(fp);
+                fwrite(data, 1, strlen(data), pfile);
+                fclose(pfile);
             }
         }
 
@@ -60,26 +62,28 @@ bool init()
 
         for(size_t i = 0; i < REPO_TEMPLATE_SIZE; i++)
         {
-            const char* data =  REPO_TEMPLATE[i].data;
+            const char* data = REPO_TEMPLATE[i].data;
             const char* path = REPO_TEMPLATE[i].path;
 
             if(data == NULL)
             {
-                if(mkdir(path,perm) < 0)
+                if(mkdir(path, DEF_PERM) < 0)
                 {
-                    printf("failed in creating %s" , path);
+                    printf("INIT ERROR: Failed To Create %s" , path);
+                    //? P: should be replaced with something that doesnt just shut down the program
                     exit(EXIT_FAILURE);
                 }
             }else
             {
-                FILE *fp = fopen(path,"w");
-                if(!fp)
+                FILE *pfile = fopen(path,"w");
+                if(!pfile)
                 {
-                    printf("failed in opening file %s", path);
+                    printf("INIT ERROR: Failed To Open %s", path);
+                    //? P: should be replaced with something that doesnt just shut down the program
                     exit(EXIT_FAILURE);
                 }
-                fwrite(data, 1, strlen(data), fp);
-                fclose(fp);
+                fwrite(data, 1, strlen(data), pfile);
+                fclose(pfile);
             }
         }
     #endif
