@@ -116,14 +116,8 @@ bool mergeRec(const char* srcPath, const char* destPath){
 }
 
 //~ starts the merge <some> checks
-bool merge(const char* source, const char* target){
+bool doMerge(DIR* p_dir, const char* source, const char* target){
     char srcPath[1024], destPath[1024];
-    DIR* p_dir = opendir(CHZ_PATH);
-
-    if(!p_dir){
-        printf("MERGE ERROR: .chz Not Found, Plz Make Sure Your In A CHZ Repository Director Or Run: \"chz init\"\n");
-        return false;
-    }
     
     snprintf(srcPath, sizeof(srcPath), "%s/%s", BRANCHES_PATH, source);
     snprintf(destPath, sizeof(destPath), "%s/%s", BRANCHES_PATH, target);   
@@ -147,8 +141,64 @@ bool merge(const char* source, const char* target){
     }
 }
 
-int main(int argc, char* argv[]){
-    if(argc > 2){
-        merge(argv[ARG_BASE + 2], argv[ARG_BASE + 3]);//# chz merge <a> <b>
+//~ gets the current branch to use as the target of the merge
+bool preMerge(DIR* p_dir, const char* source){
+    DIR* p_headF= open(HEAD_PATH, "r");
+    char path[1024], *token;
+    if (!p_headF){
+        printf("MERGE ERROR: Failed To Open %s\n", HEAD_PATH);
     }
+    read(p_headF, path, 1024);
+    strtok_r(path, " ", &path);
+    token= strtok_r(path, " ", &path);
+    //$ P: need clearer picture of hwo cur branch is saved
+}
+
+//~ handles cases based on arguments to call needed functions
+void merge(int argc, char* argv[]){
+    DIR* p_dir = opendir(CHZ_PATH);
+    if(!p_dir){
+        printf("MERGE ERROR: .chz Not Found, Plz Make Sure Your In A CHZ Repository Director Or Run: \"chz init\"");
+        return false;
+    }
+
+    switch(argc){
+        case (ARG_BASE+ 3):
+    //@ chz merge <extra arg>
+            if (strcmp(argv[ARG_BASE+ 3], "-h") == 0){
+                printf("Usage: chz merge <branch-name>, chz merger <compare-name> <base-name>");
+            }
+            else{
+                if (preMerge(p_dir, argv[ARG_BASE+ 3])){
+                    printf("Merge Sucessful\n");
+                }
+                else{
+                    printf("MERGE ERROR: Failed To Get Cur Branch.\n");
+                }
+            }
+            break;
+        case (ARG_BASE+ 4):
+    //@ chz merge <compare-name> <base-name>
+            if(doMerge(p_dir, argv[ARG_BASE+ 3], argv[ARG_BASE+ 4])){
+                    printf("Merge Sucessful\n");
+            }
+            else{
+                printf("MERGE ERROR: Failed To Recursively Merge %s and %s\n", argv[ARG_BASE+ 3], argv[ARG_BASE+ 4]);
+            }
+            break;
+        default:
+            printf("MERGE ERROR: Invalid command.\n");
+            break;
+    }
+    closedir(p_dir);
+}
+
+int main(int argc, char* argv[]){
+    printf("argc: %i\n", argc);
+    int i=0;
+    while(argv[i] != NULL){
+        printf("argv[%i]: %s\n",i, argv[i]);
+        i++;
+    }
+    merge(argc, argv);
 }
