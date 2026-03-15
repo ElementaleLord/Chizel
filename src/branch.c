@@ -206,7 +206,7 @@ void deleteBranch(const char* path)
     {
         if(rmdir(path) < 0)
         {
-            printf("BRANCH DELETE: Failure whilst deleting branch");
+            printf("BRANCH DELETE: Failure whilst deleting branch: %s\n", strerror(errno));
         }
         else
         {
@@ -242,7 +242,10 @@ void forceDelete(const char* path)
     }
 
     closedir(branch);
-    rmdir(path);
+    if(rmdir(path) < 0)
+    {
+        printf("BRANCH DELETE: Failure whilst deleting branch: %s\n", strerror(errno));
+    }
 }
 
 bool branch(int argc, char* argv[])
@@ -294,9 +297,9 @@ bool branch(int argc, char* argv[])
                 printf("Deleting the branch forcefully will erase all data contained inside, proceed? [y/N]: ");
                 do
                 {
-                   scanf("%s", &confirmation);
-                }while(confirmation != 'y' && confirmation != 'N');
-                if(confirmation == 'y') forceDelete(path);
+                   scanf(" %c", &confirmation);
+                }while(confirmation != 'y' && confirmation != 'Y' && confirmation != 'n' && confirmation != 'N');
+                if(confirmation == 'y' || confirmation == 'Y') forceDelete(path);
                 else printf("Force Deletion Aborted Successfully");
             }
             break;
