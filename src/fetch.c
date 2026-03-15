@@ -19,12 +19,41 @@
 #define ARG_BASE -1
 
 bool checkOrigin(DIR* p){
-    
-    #ifdef _WIN32
-        
-    #else
+    FILE *file = fopen("origin.txt","r");
+    if(file == NULL){
+        fprintf("Repository doesn't have an origin.");
+        return false;
+    }
+    return true;  
+}
 
-    #endif
+bool checkOrigin2(DIR* p,char* originCheck){
+    FILE *file = fopen("origin.txt","w");
+    if(file == NULL){
+        fprintf("ERROR CREATING ORIGIN FILE");
+        return false;
+    }
+    char origin[256];
+    fscanf(file, "%s", origin);
+    fclose(file);
+    if(strcmp(origin,originCheck) == 0){
+        return true;
+    }else{
+        fprintf("Repository already has the origin: ", origin);
+        fprintf("\nCannot overwrite default origin.")
+        return false;
+    }
+}
+
+void fetchFromChizel(char* link){}
+
+void fetchFunction(char* link){
+    char* p = strstr(link,"CHIZEL LINK");
+    if(p == link){
+        fetchFromChizzel(link);
+    }else{
+        fprintf("Invalid link, make sure repository is from Github or Chizel.");
+    }
 }
 
 void fetch(int argc, char* argv[]){
@@ -39,13 +68,22 @@ void fetch(int argc, char* argv[]){
     switch(argc){
         case(ARG_BASE + 2):    // chz fetch
             if(checkOrigin(p_dir)){
-                fecthFunction();
+                FILE *file = fopen("origin.txt","r");
+                if(file == NULL){
+                    fprintf("ERROR OPENING ORIGIN FILE");
+                }
+                char origin[256];
+                fscanf(file, "%s", origin);
+                fecthFunction(origin);
+                fclose(file);
             }else{
                 printf("This repository doesn't have an origin, please insert an origin via remote repository HTTPS");
                 break;
             }
         case(ARG_BASE + 3):    // chz fetch <xxx>
-            if(checkOrigin2()){}
+            if(checkOrigin2(p_dir, argv[2])){
+                fetchFunction(argv[2]);
+            }
     }
 }
 
