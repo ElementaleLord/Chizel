@@ -37,6 +37,16 @@ void makeBrancheFolder(){
     #endif
 }
 
+void printIndent(int depth){
+    for(int i = 0; i < depth; i++){
+        printf(" ");
+    }
+    for(int i = 0; i < depth; i++){
+        printf("-");
+    }
+}
+
+//$ TO-DO: Change to use the same system as listEverything, removes the need to have separate OS-wise
 void listBranches(DIR* p){
     #ifdef _WIN32
         p = opendir(".chz/branches");
@@ -76,60 +86,45 @@ void listDirsRecursive(const char* path, int depth){
     }
 
     while((dc = readdir(content)) != NULL){
-        if(strcmp(dc->d_name, ".") != 0 && strcmp(dc->d_name, "..") != 0){
-            snprintf(fullpath, sizeof(fullpath), "%s/%s", path, dc->d_name);
+        if(strcmp(dc->d_name, ".") == 0 || strcmp(dc->d_name, "..") == 0){
+            continue;
+        }
 
-            if(stat(fullpath, &st) == 0 && S_ISDIR(st.st_mode)){
-                for(int i=0; i < depth; i++){
-                    printf("-");
-                }
+        snprintf(fullpath, sizeof(fullpath), "%s/%s", path, dc->d_name);
 
-                printf("  -- Directory: %s\n", dc->d_name);
-                listDirsRecursive(fullpath, depth+1);
-            }
+        if(stat(fullpath, &st) == 0 && S_ISDIR(st.st_mode)){
+            printIndent(depth);
+            printf(" Directory: %s\n", dc->d_name);
+            listDirsRecursive(fullpath, depth + 1);
+        }else{
+            printIndent(depth);
+            printf(" %s\n", dc->d_name);
         }
     }
     closedir(content);
 }
 
 void listEverything(DIR* p){
-    #ifdef _WIN32
-        p = opendir(".chz/branches");
-        struct dirent *de;
-        struct stat st;
-        char path[1024]; 
-        printf("Current Branches:\n");
-        while((de = readdir(p)) != NULL){
-            if(strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0){
-                snprintf(path, sizeof(path), ".chz/branches/%s", de->d_name);
-                if(stat(path, &st) == 0 && S_ISDIR(st.st_mode)){
-                    printf("- %s\n", de->d_name);
-                }
-            }
+    p = opendir(".chz/branches");
+    char path[512];
+    struct dirent *de;
+    struct stat st;
+    printf("Current Files, Branches & Directories:\n");
+    while((de = readdir(p)) != NULL){
+        if(strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0){
+            continue;
         }
-    #else
-        p = opendir(".chz/branches");
-        char path[512];
-        struct dirent *de, *dc;
-        printf("Current Files, Branches & Directories:\n");
-        while((de = readdir(p)) != NULL && de->d_type == 4){
-            if(strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0){
-                printf("- Branch: %s\n", de->d_name);
 
-                snprintf(path, sizeof(path), ".chz/branches/%s", de->d_name);
-
-                DIR* content = opendir(path);
-                while((dc = readdir(content)) != NULL && strcmp(dc->d_name, ".") != 0 && strcmp(dc->d_name, "..") != 0){
-                    printf("  -- Directory: %s\n", dc->d_name);
-                    listDirsRecursive(".chz/branches", 1);
-                }
-            }
+        snprintf(path, sizeof(path), ".chz/branches/%s", de->d_name);
+        if(stat(path, &st) == 0 && S_ISDIR(st.st_mode)){
+            printf("- Branch: %s\n", de->d_name);
+            listDirsRecursive(path, 2);
         }
-    #endif
+    }
 }
 
 //! PROPER SAME NAME ERROR HANDLING
-bool createNewBranch(char* name){       // LACKS BRANCH IDENTIFIERS
+bool createNewBranch(char* name){       //! LACKS BRANCH IDENTIFIERS
     char path[1024];
     snprintf(path, sizeof(path), ".chz/branches/%s", name);
     #ifdef _WIN32
@@ -144,8 +139,8 @@ bool createNewBranch(char* name){       // LACKS BRANCH IDENTIFIERS
     return true;
 }
 
+//? Change switch case to check argv[ARG_BASE + 2] instead of argc?????
 bool branch(int argc, char* argv[]){
-
     const char* dir = ".chz";
     const short perm = 0700;
 
