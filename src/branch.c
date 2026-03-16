@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <cjson/cJSON.h>
 
 //# two dots to go up a dir
 #include "../include/init_template.h"
@@ -19,11 +20,9 @@
 #include <sys/types.h>
 #endif
 
-#define ARG_BASE -1
-
 //~ helper used to print a string representation of the current error number
 void whatIsTheError(){
-    printf("Error String: %s", strerror(errno));
+    printf("Error String: %s.\n", strerror(errno));
 }
 
 //~ helper function self explanatory
@@ -163,10 +162,45 @@ bool createNewBranch(char* branchName)
             {
                 return false;
             }
+            else{
+                //# create json object
+                cJSON* json= cJSON_CreateObject();
+                char confPath[1024];
+
+                //# add json key value pairs
+                cJSON_AddStringToObject(json, "name", branchName);
+                cJSON_AddStringToObject(json, "path", path);
+
+                //# convert json object to json string
+                char* jsonStr= cJSON_Print(json);
+
+                //# get proper path to config
+                snprintf(confPath, sizeof(confPath), "%s/%s", path, "config.json");
+                printf("%s\n",confPath);
+
+                //# open file in write and error handle
+                FILE* p_config= fopen(confPath, "w");
+                if (p_config == 0){
+                    printf("BRANCH ERROR: Failed To Create Config For Branch %s.\n", path);
+                    whatIsTheError();
+                    return false;
+                }
+                
+                //# write to file
+                fputs(jsonStr, p_config);
+
+                //# self expanatory but might need to be done in order?
+                fclose(p_config);
+                cJSON_free(jsonStr);
+                cJSON_Delete(json);
+            }
         #else
             if(mkdir(path, 0700) < 0)
             {
                 return false;
+            }
+            else{
+
             }
         #endif
         return true;
@@ -192,6 +226,7 @@ void deleteBranch(const char* path)
 {
     struct dirent *curDir;
     struct stat st;
+    char confPath[1024];
     bool empty = true;
     DIR* branch = opendir(path);
 
@@ -199,7 +234,7 @@ void deleteBranch(const char* path)
 
     while((curDir = readdir(branch)) != NULL)
     {
-        if(strcmp(curDir->d_name, ".") != 0 && strcmp(curDir->d_name, "..") != 0)
+        if(strcmp(curDir->d_name, ".") != 0 && strcmp(curDir->d_name, "..") != 0 && strcmp(curDir->d_name, "config.json") != 0)
         {
             empty = false;
         }
@@ -213,6 +248,14 @@ void deleteBranch(const char* path)
         printf("BRANCH REPORT: chz branch -D to forcefully delete branch.\n");
     }else
     {
+        snprintf(confPath, sizeof(confPath), "%s/%s", path, "config.json");
+        
+        if (remove(confPath) != 0){
+            printf("BRANCH ERROR: Failed To Delete Config Of Branch %s.\n", path);
+            whatIsTheError();
+            return;
+        }
+
         if(rmdir(path) < 0)
         {
             printf("BRANCH ERROR: Failed To Delete Branch %s.\n", path);
