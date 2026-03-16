@@ -44,6 +44,29 @@ void makeBranchesFolder()
         }
     #endif
 }
+//~ used to check if branches directory exists if not create it
+void checkChz(DIR* p_dir){
+    p_dir = opendir(CHZ_PATH);
+    
+    if(!p_dir)
+    {
+        printf("BRANCH ERROR: .chz Not Found, Plz Make Sure Your In A CHZ Repository Director Or Run: \"chz init\"");
+        whatIsTheError();
+        exit(EXIT_FAILURE);
+    }
+}
+
+//~ used to check if branches directory exists if not create it
+DIR* checkBranches(DIR* p_dir){
+    p_dir = opendir(BRANCHES_PATH);
+    
+    if(!p_dir)
+    {
+        makeBranchesFolder();
+        p_dir = opendir(BRANCHES_PATH);
+    }
+    return p_dir;
+}
 
 //~ to add visual distinction between what directories hold what files
 void printIndent(int depth)
@@ -53,11 +76,12 @@ void printIndent(int depth)
 }
 
 //~ used to list all branch names
-void listBranches(DIR* branchDir)
-{
+void listBranches()
+{   
     struct dirent *curDir;
     struct stat st;
     char path[1024];
+    DIR* branchDir= checkBranches(branchDir);
 
     printf("Current Branches:\n");
     while((curDir = readdir(branchDir)) != NULL)
@@ -85,7 +109,7 @@ void listDirsRecursive(const char* path, int depth)
     {
         printf("BRANCH ERROR: Failed To Open Directory %s.\n", path);
         whatIsTheError();
-        exit(EXIT_FAILURE);//? P: potentially replace with return instead
+        return;
     }
 
     while((recDir = readdir(content)) != NULL)
@@ -139,7 +163,7 @@ void listEverything(DIR* chzDir)
 bool createNewBranch(char* branchName)
 {
     //! O: LACKS BRANCH IDENTIFIERS
-    //^ P: will be resolved by a config json for each branch file
+    //^ P: could be resolved by a config json for each branch file
     char path[1024];
     DIR* existingDir;
     
@@ -155,9 +179,6 @@ bool createNewBranch(char* branchName)
     else
     {
         #ifdef _WIN32
-        //$ P: add initialization of branch
-        //$ P: use json to create a template config and add to branch dir
-        //$ P: not sure if possible to call commit to make an init commit for the new branch
             if(mkdir(path) < 0)
             {
                 return false;
@@ -176,7 +197,6 @@ bool createNewBranch(char* branchName)
 
                 //# get proper path to config
                 snprintf(confPath, sizeof(confPath), "%s/%s", path, "config.json");
-                printf("%s\n",confPath);
 
                 //# open file in write and error handle
                 FILE* p_config= fopen(confPath, "w");
@@ -209,12 +229,15 @@ bool createNewBranch(char* branchName)
 
 void createBranch(char* branchName)
 {
-    bool success = createNewBranch(branchName);
+    bool success;
+    DIR* p_dir= checkBranches(p_dir);
+
+    success = createNewBranch(branchName);
     if(!success)
     {
         printf("BRANCH ERROR: Failed To Create Branch %s.\n", branchName);
         whatIsTheError();
-        exit(EXIT_FAILURE);//? P: potentially replace with return instead
+        return;
     }else
     {
         printf("BRANCH REPORT: Successfully Created New Branch %s.\n", branchName);
@@ -331,7 +354,7 @@ void preRename(char* path, char* oldName, char* newName){
     {
         printf("BRANCH ERROR: Branch %s Not Found.\n", oldName);
         whatIsTheError();
-        exit(EXIT_FAILURE);//? P: potentially replace with return instead
+        return;
     }
                   
     snprintf(newPath, sizeof(newPath), "%s/%s", BRANCHES_PATH, newName);
@@ -350,47 +373,41 @@ void preRename(char* path, char* oldName, char* newName){
     }
 }
 
-//~ helper used to handle preliminary steps before calling listBranches()
-void preListBranches(){
-    DIR* p_dir2 = opendir(BRANCHES_PATH);
-    
-    if(!p_dir2)
-    {
-        makeBranchesFolder();
-        p_dir2 = opendir(BRANCHES_PATH);
-    }
-
-    listBranches(p_dir2);
-    closedir(p_dir2);
+void branchHelp(){
+    printf("BRANCH REPORT: usage:\n chz branch | chz branch -a | chz branch -h | ");
+    printf("chz branch <branch-name> | chz branch -d <branch-name> | chz branch -D <branch-name> | ");
+    printf("chz branch -m <old-branch-name> <new-branch-name>");
 }
 
 //~ main runner function used to determine case and call appropriate function
 bool branch(int argc, char* argv[])
 {
     char path[1024];
-    DIR* p_dir = opendir(CHZ_PATH);
-    
-    if(!p_dir)
-    {
-        printf("BRANCH ERROR: .chz Not Found, Plz Make Sure Your In A CHZ Repository Director Or Run: \"chz init\"");
-        return false;
-    }
+    DIR* p_dir;
     
     switch(argc)
     {
         //@ chz branch
         case (ARG_BASE + 2):
-            preListBranches();
+            //% chz branch
+            checkChz(p_dir);
+            listBranches();
             break;
 
         //@ chz branch <arg>
         case (ARG_BASE + 3):
             if(strcmp(argv[ARG_BASE + 2], "-a") == 0)
             {//% chz branch -a
+                checkChz(p_dir);
                 listEverything(opendir(BRANCHES_PATH));
+            }
+            else if(strcmp(argv[ARG_BASE + 2], "-h") == 0)
+            {//% chz branch -h
+                branchHelp();
             }
             else
             {//% chz branch <name>
+                checkChz(p_dir);
                 createBranch(argv[ARG_BASE + 2]);
             }
             break;
@@ -399,11 +416,13 @@ bool branch(int argc, char* argv[])
         case (ARG_BASE + 4):
             if(strcmp(argv[ARG_BASE + 2], "-d") == 0)
             {//% chz branch -d <branch>
+                checkChz(p_dir);
                 snprintf(path, sizeof(path), "%s/%s", BRANCHES_PATH, argv[ARG_BASE + 3]);
                 deleteBranch(path);
             }
             else if(strcmp(argv[ARG_BASE + 2], "-D") == 0)
             {//% chz branch -D <branch>
+                checkChz(p_dir);
                 snprintf(path, sizeof(path), "%s/%s", BRANCHES_PATH, argv[ARG_BASE + 3]);
                 preForceDelete(path);
             }
@@ -413,6 +432,7 @@ bool branch(int argc, char* argv[])
         case (ARG_BASE + 5):
             if(strcmp(argv[ARG_BASE + 2], "-m") == 0)
             {//% chz branch -m <oldName> <newName>
+                checkChz(p_dir);
                 snprintf(path, sizeof(path), "%s/%s", BRANCHES_PATH, argv[ARG_BASE + 3]);
                 preRename(path, argv[ARG_BASE + 3], argv[ARG_BASE + 4]);
             }
