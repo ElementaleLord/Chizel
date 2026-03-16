@@ -5,16 +5,33 @@ import fs from "fs";
 
 const router = Router();
 const cwd = path.resolve("/tmp/test_repo");
+
+const buildDir = path.resolve("../../build");
+
+const getCommands = () => {
+
+    const commands: Record<string, string> = {};
+    if(fs.existsSync(buildDir))
+    {
+        const files = fs.readdirSync(buildDir);
+        files.forEach( file => {
+            const fullpath = path.join(buildDir, file);
+            if(fs.lstatSync(fullpath).isFile())
+            {
+                commands[file] = fullpath;
+            }
+        });
+    }
+    return commands;
+}
+
 console.log("Does CWD exist?", fs.existsSync(cwd));
 if(!fs.existsSync(cwd)) fs.mkdirSync(cwd, { recursive: true });
 
-const init = path.resolve(__dirname, "../../build/init");
-console.log("Binary path:", init);
 
 router.get("/c_engine", (req, res) => {
 
     const absolutInit = path.resolve(__dirname, "../../build/init");
-    const process = spawn(init,[],{cwd});
 
     let output = "";
 
