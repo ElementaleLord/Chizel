@@ -114,7 +114,7 @@ void preCreateChz(){
 
 //~ used to print help message
 void initHelp(){
-    printf("INIT REPORT:\nusage: git init | git init -h\n");
+    printf("INIT REPORT:\nusage: chz init | chz init -h\n");
 }
 
 //~ main init func used to filter throught cases and call appropriate functions
