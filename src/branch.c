@@ -5,8 +5,9 @@
 #include <stdbool.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <cjson/cJSON.h>
 
-// two dots to go up a dir
+//# two dots to go up a dir
 #include "../include/init_template.h"
 #include "../include/chz_constants.h"
 
@@ -19,9 +20,10 @@
 #include <sys/types.h>
 #endif
 
-#define ARG_BASE -1
-
-//$ Find a better replacement/error
+//~ helper used to print a string representation of the current error number
+void whatIsTheError(){
+    printf("Error String: %s.\n", strerror(errno));
+}
 
 //~ helper function self explanatory
 void makeBranchesFolder()
@@ -29,16 +31,41 @@ void makeBranchesFolder()
     #ifdef _WIN32
         if(mkdir(BRANCHES_PATH) < 0)
         {
-            printf("Failed with creating branch");
+            printf("BRANCH ERROR: Failed To Create Branches Directory.\n");
+            whatIsTheError();
             exit(EXIT_FAILURE);
         }
     #else
         if(mkdir(BRANCHES_PATH, DEF_PERM) < 0)
         {
-            printf("Failed with creating branch");
+            printf("BRANCH ERROR: Failed To Create Branches Directory.\n");
+            whatIsTheError();
             exit(EXIT_FAILURE);
         }
     #endif
+}
+//~ used to check if branches directory exists if not create it
+void checkChz(DIR* p_dir){
+    p_dir = opendir(CHZ_PATH);
+    
+    if(!p_dir)
+    {
+        printf("BRANCH ERROR: .chz Not Found, Plz Make Sure Your In A CHZ Repository Director Or Run: \"chz init\"");
+        whatIsTheError();
+        exit(EXIT_FAILURE);
+    }
+}
+
+//~ used to check if branches directory exists if not create it
+DIR* checkBranches(DIR* p_dir){
+    p_dir = opendir(BRANCHES_PATH);
+    
+    if(!p_dir)
+    {
+        makeBranchesFolder();
+        p_dir = opendir(BRANCHES_PATH);
+    }
+    return p_dir;
 }
 
 //~ to add visual distinction between what directories hold what files
@@ -48,11 +75,13 @@ void printIndent(int depth)
     for(int i = 0; i < depth; i++) printf("-");
 }
 
-void listBranches(DIR* branchDir)
-{
+//~ used to list all branch names
+void listBranches()
+{   
     struct dirent *curDir;
     struct stat st;
     char path[1024];
+    DIR* branchDir= checkBranches(branchDir);
 
     printf("Current Branches:\n");
     while((curDir = readdir(branchDir)) != NULL)
@@ -78,8 +107,9 @@ void listDirsRecursive(const char* path, int depth)
     
     if(!content)
     {
-        printf("Error displaying content");
-        exit(EXIT_FAILURE);
+        printf("BRANCH ERROR: Failed To Open Directory %s.\n", path);
+        whatIsTheError();
+        return;
     }
 
     while((recDir = readdir(content)) != NULL)
@@ -133,24 +163,22 @@ void listEverything(DIR* chzDir)
 bool createNewBranch(char* branchName)
 {
     //! O: LACKS BRANCH IDENTIFIERS
-    //? P: possible to use the names to identify ?
-    //^ O: i was thinking some more formal identific
+    //^ P: could be resolved by a config json for each branch file
     char path[1024];
     DIR* existingDir;
+    
     snprintf(path, sizeof(path), "%s/%s", BRANCHES_PATH, branchName);
 
     existingDir = opendir(path);
     if(existingDir != NULL)
     {
         closedir(existingDir);
-        printf("BRANCH ERROR: Branch Already Exists.\n");
+        printf("BRANCH REPORT: Branch Already Exists.\n");
         return false;
     }
     else
     {
         #ifdef _WIN32
-        //$ P: add initialization of branch
-        //$ P: not sure if possible to call commit to make an init commit for the new branch
             if(mkdir(path) < 0)
             {
                 return false;
@@ -161,36 +189,70 @@ bool createNewBranch(char* branchName)
                 return false;
             }
         #endif
+        //# create json object
+        cJSON* json= cJSON_CreateObject();
+        char confPath[2048];
+
+        //# add json key value pairs
+        cJSON_AddStringToObject(json, "name", branchName);
+        cJSON_AddStringToObject(json, "path", path);
+
+        //# convert json object to json string
+        char* jsonStr= cJSON_Print(json);
+
+        //# get proper path to config
+        snprintf(confPath, sizeof(confPath), "%s/config.json", path);
+
+        //# open file in write and error handle
+        FILE* p_config= fopen(confPath, "w");
+        if (p_config == 0){
+            printf("BRANCH ERROR: Failed To Create Config For Branch %s.\n", path);
+            whatIsTheError();
+            return false;
+        }
+                
+        //# write to file
+        fputs(jsonStr, p_config);
+
+        //# self expanatory but might need to be done in order?
+        fclose(p_config);
+        cJSON_free(jsonStr);
+        cJSON_Delete(json);
         return true;
     }
 }
 
 void createBranch(char* branchName)
 {
-    bool success = createNewBranch(branchName);
+    bool success;
+    DIR* p_dir= checkBranches(p_dir);
 
+    success = createNewBranch(branchName);
     if(!success)
     {
-        printf("BRANCH ERROR: Failed To Create Branch %s", branchName);
-        exit(EXIT_FAILURE);
+        printf("BRANCH ERROR: Failed To Create Branch %s.\n", branchName);
+        whatIsTheError();
+        return;
     }else
     {
-        printf("Successfully Created New Branch %s", branchName);
+        printf("BRANCH REPORT: Successfully Created New Branch %s.\n", branchName);
     }
 }
 
+//~ used to soft-delete any empty branch
 void deleteBranch(const char* path)
 {
-    DIR* branch = opendir(path);
     struct dirent *curDir;
     struct stat st;
+    char confPath[1024];
     bool empty = true;
+    DIR* branch = opendir(path);
 
     if(!branch) return;
 
     while((curDir = readdir(branch)) != NULL)
     {
-        if(strcmp(curDir->d_name, ".") != 0 && strcmp(curDir->d_name, "..") != 0)
+        if(strcmp(curDir->d_name, ".") != 0 && strcmp(curDir->d_name, "..") != 0 && strcmp(curDir->d_name, "config.json") != 0)
         {
             empty = false;
         }
@@ -200,31 +262,40 @@ void deleteBranch(const char* path)
 
     if(!empty)
     {
-        printf("BRANCH DELETE: Branch non-empty, operation aborted.\n");
-        printf("BRANCH DELETE: chz branch -D to forcefully delete branch");
+        printf("BRANCH REPORT: Branch non-empty, operation aborted.\n");
+        printf("BRANCH REPORT: chz branch -D to forcefully delete branch.\n");
     }else
     {
+        snprintf(confPath, sizeof(confPath), "%s/%s", path, "config.json");
+        
+        if (remove(confPath) != 0){
+            printf("BRANCH ERROR: Failed To Delete Config Of Branch %s.\n", path);
+            whatIsTheError();
+            return;
+        }
+
         if(rmdir(path) < 0)
         {
-            printf("BRANCH DELETE: Failure whilst deleting branch: %s\n", strerror(errno));
+            printf("BRANCH ERROR: Failed To Delete Branch %s.\n", path);
+            whatIsTheError();
         }
         else
         {
-            printf("BRANCH DELETE: Deletion successful");
+            printf("BRANCH REPORT: Deletion successful.\n");
         }
     }
-    
 }
 
+//~ used to hard delete a branch
 void forceDelete(const char* path)
 {
-    DIR* branch = opendir(path);
-    if(!branch) return;
-
     struct dirent *dir;
     struct stat st;
     char fullpath[512];
-
+    DIR* branch = opendir(path);
+ 
+    if(!branch) return;
+ 
     while((dir = readdir(branch)) != NULL)
     {
         if(strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0) 
@@ -233,6 +304,7 @@ void forceDelete(const char* path)
         }
         
         snprintf(fullpath, sizeof(fullpath), "%s/%s", path, dir->d_name);
+
         if(stat(fullpath, &st) == 0 && S_ISDIR(st.st_mode))
         {
             forceDelete(fullpath);
@@ -244,93 +316,122 @@ void forceDelete(const char* path)
     closedir(branch);
     if(rmdir(path) < 0)
     {
-        printf("BRANCH DELETE: Failure whilst deleting branch: %s\n", strerror(errno));
+        printf("BRANCH ERROR: Failed To Delete Branch %s.\n", path);
+        whatIsTheError();
+    }
+    else{
+        printf("BRANCH REPORT: Sucessful Force Delete of Branch %s.\n", path);
     }
 }
 
+//~ helper used to handle preliminary steps before calling forceDelete()
+void preForceDelete(char* path){
+    char confirmation;            
+
+    printf("BRANCH REPORT: Force Deleting A Branch Erases All Data Contained Inside, ");
+    
+    do
+    {
+        printf("Proceed? [Y/N]: ");
+        scanf(" %c", &confirmation);
+    }while(confirmation != 'y' && confirmation != 'Y' && confirmation != 'n' && confirmation != 'N');
+
+    if(confirmation == 'y' || confirmation == 'Y') forceDelete(path);
+    else printf("BRANCH REPORT: Force Delete Aborted Successfully");
+}
+
+//~ helper used to handle preliminary steps before renaming a branch
+void preRename(char* path, char* oldName, char* newName){
+    char newPath[1024];
+    DIR *oldDir = opendir(path), *newDir;
+                
+    if(!oldDir)
+    {
+        printf("BRANCH ERROR: Branch %s Not Found.\n", oldName);
+        whatIsTheError();
+        return;
+    }
+                  
+    snprintf(newPath, sizeof(newPath), "%s/%s", BRANCHES_PATH, newName);
+    newDir = opendir(newPath);
+
+    if(newDir){
+        printf("BRANCH REPORT: Branch %s already exists.\n", newName);
+        return;
+    }
+                
+    if(rename(path, newPath) == 0) printf("BRANCH REPORT: Branch Renamed Successfully.\n");
+    else
+    {
+        printf("BRANCH ERROR: Failed To Rename Branch %s to %s.\n", path, newPath);
+        whatIsTheError();
+    }
+}
+
+void branchHelp(){
+    printf("BRANCH REPORT: usage:\n chz branch | chz branch -a | chz branch -h | ");
+    printf("chz branch <branch-name> | chz branch -d <branch-name> | chz branch -D <branch-name> | ");
+    printf("chz branch -m <old-branch-name> <new-branch-name>");
+}
+
+//~ main runner function used to determine case and call appropriate function
 bool branch(int argc, char* argv[])
 {
     char path[1024];
-    DIR* p_dir = opendir(CHZ_PATH);
-    if(!p_dir)
-    {
-        printf("BRANCH ERROR: .chz Not Found, Plz Make Sure Your In A CHZ Repository Director Or Run: \"chz init\"");
-        return false;
-    }
+    DIR* p_dir;
+    
     switch(argc)
     {
-        case (ARG_BASE + 2):        //@ chz branch
-            DIR* p_dir2 = opendir(BRANCHES_PATH);
-
-            if(!p_dir2)
-            {
-                makeBranchesFolder();
-                p_dir2 = opendir(BRANCHES_PATH);
-            }
-
-            listBranches(p_dir2);
-
-            closedir(p_dir2);
+        //@ chz branch
+        case (ARG_BASE + 2):
+            //% chz branch
+            checkChz(p_dir);
+            listBranches();
             break;
 
+        //@ chz branch <arg>
         case (ARG_BASE + 3):
-            if(strcmp(argv[ARG_BASE + 2], "-a") == 0)       //% chz branch -a
-            {
+            if(strcmp(argv[ARG_BASE + 2], "-a") == 0)
+            {//% chz branch -a
+                checkChz(p_dir);
                 listEverything(opendir(BRANCHES_PATH));
             }
-            else                                        //% chz branch <name> 
-            {
+            else if(strcmp(argv[ARG_BASE + 2], "-h") == 0)
+            {//% chz branch -h
+                branchHelp();
+            }
+            else
+            {//% chz branch <name>
+                checkChz(p_dir);
                 createBranch(argv[ARG_BASE + 2]);
             }
             break;
 
+        //@ chz branch <arg> <arg>
         case (ARG_BASE + 4):
-            snprintf(path, sizeof(path), "%s/%s", BRANCHES_PATH, argv[ARG_BASE + 3]);
-
-            if(strcmp(argv[ARG_BASE + 2], "-d") == 0)       //% chz branch -d <branch>
-            {
+            if(strcmp(argv[ARG_BASE + 2], "-d") == 0)
+            {//% chz branch -d <branch>
+                checkChz(p_dir);
+                snprintf(path, sizeof(path), "%s/%s", BRANCHES_PATH, argv[ARG_BASE + 3]);
                 deleteBranch(path);
             }
-            else if(strcmp(argv[ARG_BASE + 2], "-D") == 0)       //% chz branch -D <branch>
-            {
-                char confirmation;
-                printf("Deleting the branch forcefully will erase all data contained inside, proceed? [y/N]: ");
-                do
-                {
-                   scanf(" %c", &confirmation);
-                }while(confirmation != 'y' && confirmation != 'Y' && confirmation != 'n' && confirmation != 'N');
-                if(confirmation == 'y' || confirmation == 'Y') forceDelete(path);
-                else printf("Force Deletion Aborted Successfully");
-            }
-            break;
-
-        case (ARG_BASE + 5):        //% chz branch -m <oldName> <newName>
-            if(strcmp(argv[ARG_BASE + 2], "-m") == 0)
-            {
+            else if(strcmp(argv[ARG_BASE + 2], "-D") == 0)
+            {//% chz branch -D <branch>
+                checkChz(p_dir);
                 snprintf(path, sizeof(path), "%s/%s", BRANCHES_PATH, argv[ARG_BASE + 3]);
-                DIR* oldDir = opendir(path);
-                if(!oldDir){
-                    printf("BRANCH RENAME: Branch %s not found", argv[ARG_BASE + 3]);
-                    exit(EXIT_FAILURE);
-                }
-                char newName[1024];
-                snprintf(newName, sizeof(newName), "%s/%s", BRANCHES_PATH, argv[ARG_BASE + 4]);
-
-                DIR* newDir = opendir(newName);
-                if(newDir){
-                    printf("BRANCH RENAME: Branch %s already exists", argv[ARG_BASE + 4]);
-                    exit(EXIT_FAILURE);
-                }
-                if(rename(path, newName) == 0) printf("Branch renamed successfully");
-                else
-                {
-                    perror("BRANCH RENAME: Error renaming directory");
-                    printf("Error code: %d", errno);
-                }
+                preForceDelete(path);
             }
-            
             break;
 
+        //@ chz branch <arg> <arg> <arg>
+        case (ARG_BASE + 5):
+            if(strcmp(argv[ARG_BASE + 2], "-m") == 0)
+            {//% chz branch -m <oldName> <newName>
+                checkChz(p_dir);
+                snprintf(path, sizeof(path), "%s/%s", BRANCHES_PATH, argv[ARG_BASE + 3]);
+                preRename(path, argv[ARG_BASE + 3], argv[ARG_BASE + 4]);
+            }
+            break;
         default:
             break;
     }
