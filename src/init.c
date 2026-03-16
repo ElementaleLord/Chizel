@@ -22,6 +22,20 @@ void whatIsTheError(){
     printf("Error String: %s.\n", strerror(errno));
 }
 
+//~ helper used to check if .chz exists
+bool checkChz(){
+    DIR* p_dir = opendir(CHZ_PATH);
+    
+    if(p_dir)
+    {
+        printf("INIT REPORT: .chz Directory Already Exists.\n");
+        whatIsTheError();
+        closedir(p_dir);
+        return false;
+    }
+    
+    return true;
+}
 //~ used to create .chz directory from a saved template
 bool createChz(){
     #ifdef _WIN32
@@ -86,14 +100,6 @@ bool createChz(){
 
 //~ helper used to do preliminary checks before calling createChz()
 void preCreateChz(){
-    DIR* p_dir = opendir(CHZ_PATH);
-    if(p_dir)
-    {
-        printf("INIT REPORT: .chz Directory Already Exists.\n");
-        whatIsTheError();
-        closedir(p_dir);
-        return;
-    }
     if (createChz())
     {
         printf("INIT REPORT: Sucessfully Created .chz.\n");
@@ -104,6 +110,7 @@ void preCreateChz(){
         whatIsTheError();
     }
 }
+
 
 //~ used to print help message
 void initHelp(){
@@ -117,7 +124,7 @@ void init(int argc, char* argv[])
         //@ chx init
         case ARG_BASE + 2:
             //% chz init
-            preCreateChz();
+            if (checkChz()) preCreateChz();
             break;
         //@ chz init <arg>
         case ARG_BASE + 3:
