@@ -1,13 +1,10 @@
 import express from "express";
 import cors from "cors";
-import cEngine from "./c-engine";
-
 const app = express();
 const PORT = 3000;
 
 app.use(cors());
 app.use(express);
-app.use("/api", cEngine);
 
 app.get("api/hello", (req, res) => {
     res.json({ message: "Backend says your ssn is 751 26 9855" });
