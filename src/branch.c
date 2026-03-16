@@ -183,37 +183,6 @@ bool createNewBranch(char* branchName)
             {
                 return false;
             }
-            /*else{
-                //# create json object
-                cJSON* json= cJSON_CreateObject();
-                char confPath[2048];
-
-                //# add json key value pairs
-                cJSON_AddStringToObject(json, "name", branchName);
-                cJSON_AddStringToObject(json, "path", path);
-
-                //# convert json object to json string
-                char* jsonStr= cJSON_Print(json);
-
-                //# get proper path to config
-                snprintf(confPath, sizeof(confPath), "%s/config.json", path);
-
-                //# open file in write and error handle
-                FILE* p_config= fopen(confPath, "w");
-                if (p_config == 0){
-                    printf("BRANCH ERROR: Failed To Create Config For Branch %s.\n", path);
-                    whatIsTheError();
-                    return false;
-                }
-                
-                //# write to file
-                fputs(jsonStr, p_config);
-
-                //# self expanatory but might need to be done in order?
-                fclose(p_config);
-                cJSON_free(jsonStr);
-                cJSON_Delete(json);
-            }*/
         #else
             if(mkdir(path, 0700) < 0)
             {
