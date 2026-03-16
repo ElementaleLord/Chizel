@@ -258,6 +258,9 @@ void forceDelete(const char* path)
         printf("BRANCH ERROR: Failed To Delete Branch %s.\n", path);
         whatIsTheError();
     }
+    else{
+        printf("BRANCH REPORT: Sucessful Force Delete of Branch %s.\n", path);
+    }
 }
 
 //~ helper used to handle preliminary steps before calling forceDelete()
