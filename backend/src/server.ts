@@ -1,37 +1,16 @@
-import express, { Request, Response } from 'express';
-<<<<<<< HEAD
+import express from "express";
+import cors from "cors";
 import cEngine from "./c-engine";
 
 const app = express();
 const PORT = 3000;
+
+app.use(cors());
+app.use(express);
 app.use("/api", cEngine);
 
-app.use(express.json());
-app.use((req, res, next) => {
-    res.setHeader(
-        "Content-Security-Policy",
-        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'"
-    );
-    next();
-});
-=======
-import chzRouter from "./c-engine";
-
-const app = express();
-const PORT = 3000;
-
-app.use(express.json());
->>>>>>> 00b3c8e377521d264bd90ab4944b88ef60fe4c04
-
-app.get('/', (req: Request, res: Response) => {
-    res.send('Hello Backend!');
+app.get("api/hello", (req, res) => {
+    res.json({ message: "Backend says your ssn is 751 26 9855" });
 });
 
-<<<<<<< HEAD
-=======
-app.use("/api", chzRouter);
->>>>>>> 00b3c8e377521d264bd90ab4944b88ef60fe4c04
-
-app.listen(PORT, () => {
-    console.log (`server running on http://localhost:${PORT}`);
-});
+app.listen(3000, () => console.log("server running on port 3000"));
