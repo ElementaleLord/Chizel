@@ -296,7 +296,7 @@ void preRename(char* path, char* oldName, char* newName){
         return;
     }
                 
-    if(rename(path, newPath) == 0) printf("Branch renamed successfully");
+    if(rename(path, newPath) == 0) printf("BRANCH REPORT: Branch Renamed Successfully.\n");
     else
     {
         printf("BRANCH ERROR: Failed To Rename Branch %s to %s.\n", path, newPath);
