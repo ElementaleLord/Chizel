@@ -17,6 +17,21 @@
 #include <sys/types.h>
 #endif
 
+//~ used to display the string representation of the error number
+void whatIsTheError(){
+    printf("Error String: %s.\n", strerror(errno));
+}
+
+//~ used to check the existence of the .chz directory
+DIR* checkChz(){
+    DIR* p_dir = opendir(CHZ_PATH);
+    if(!p_dir){
+        printf("MERGE ERROR: .chz Not Found, Plz Make Sure Your In A CHZ Repository Director Or Run: \"chz init\"");
+
+        exit(EXIT_FAILURE);
+    }
+}
+
 //~ used to check the existance of a directory
 bool dirExists(const char* path){
     DIR* p_dir = opendir(path);
@@ -157,49 +172,48 @@ bool preMerge(DIR* p_dir, const char* source){
 
 //~ handles cases based on arguments to call needed functions
 void merge(int argc, char* argv[]){
-    DIR* p_dir = opendir(CHZ_PATH);
-    if(!p_dir){
-        printf("MERGE ERROR: .chz Not Found, Plz Make Sure Your In A CHZ Repository Director Or Run: \"chz init\"");
-        return false;
-    }
+    DIR* p_dir;
 
     switch(argc){
-        case (ARG_BASE+ 3):    //@ chz merge <extra arg>
-            if (strcmp(argv[ARG_BASE+ 3], "-h") == 0){
-                printf("Usage: chz merge <branch-name>, chz merge <compare-name> <base-name>");
+        //@ chz merge <arg>
+        case (ARG_BASE+ 3):
+            if (strcmp(argv[ARG_BASE+ 3], "-h") == 0)
+            {//% chz merge -h
+                printf("Usage: chz merge <branch-name>, chz merge <compare-name> <base-name>\n");
             }
-            else{
-                if (preMerge(p_dir, argv[ARG_BASE+ 3])){
+            else
+            {//% chz merge <branch-name>
+                p_dir = checkChz();
+                if (preMerge(p_dir, argv[ARG_BASE+ 3]))
+                {
                     printf("Merge Sucessful\n");
                 }
-                else{
+                else
+                {
                     printf("MERGE ERROR: Failed To Get Cur Branch.\n");
                 }
             }
             break;
 
-        case (ARG_BASE+ 4):    //@ chz merge <compare-name> <base-name>
-            if(doMerge(p_dir, argv[ARG_BASE+ 3], argv[ARG_BASE+ 4])){
+        //@ chz merge <arg> <arg>
+        case (ARG_BASE+ 4):
+            p_dir = checkChz();
+            if(doMerge(p_dir, argv[ARG_BASE+ 3], argv[ARG_BASE+ 4]))
+            {//% chz merge <compare-name> <base-name>
                 printf("Merge Sucessful\n");
             }
             else{
-                printf("MERGE ERROR: Failed To0 Merge %s and %s\n", argv[ARG_BASE+ 3], argv[ARG_BASE+ 4]);
+                printf("MERGE ERROR: Failed To Merge %s and %s.\n", argv[ARG_BASE+ 3], argv[ARG_BASE+ 4]);
             }
             break;
 
         default:
-            printf("MERGE ERROR: Invalid command.\n");
+            printf("MERGE ERROR: Invalid Command.\n");
             break;
     }
     closedir(p_dir);
 }
 
 int main(int argc, char* argv[]){
-    printf("argc: %i\n", argc);
-    int i=0;
-    while(argv[i] != NULL){
-        printf("argv[%i]: %s\n",i, argv[i]);
-        i++;
-    }
     merge(argc, argv);
 }
