@@ -17,18 +17,27 @@
 #include <sys/types.h>
 #endif
 
-//~ used to create the blank template of .chz
-//$ P: requires additional helper or auxilary functions to do EX: main branch, init commit etc...
-bool init()
-{
+//~ helper used to print a string representation of the current error number
+void whatIsTheError(){
+    printf("Error String: %s.\n", strerror(errno));
+}
+
+//~ helper used to check if .chz exists
+bool checkChz(){
     DIR* p_dir = opendir(CHZ_PATH);
+    
     if(p_dir)
     {
-        printf(".chz folder already exists");
+        printf("INIT REPORT: .chz Directory Already Exists.\n");
+        whatIsTheError();
         closedir(p_dir);
         return false;
     }
-
+    
+    return true;
+}
+//~ used to create .chz directory from a saved template
+bool createChz(){
     #ifdef _WIN32
 
         for(size_t i = 0; i < REPO_TEMPLATE_SIZE; i++)
@@ -40,18 +49,18 @@ bool init()
             {
                 if(mkdir(path) < 0)
                 {
-                    printf("INIT ERROR: Failed To Create %s" , path);
-                    //? P: should be replaced with something that doesnt just shut down the program
-                    exit(EXIT_FAILURE);
+                    printf("INIT ERROR: Failed To Create %s.\n" , path);
+                    whatIsTheError();
+                    return false;
                 }
             }else
             {
                 FILE *pfile = fopen(path,"w");
                 if(!pfile)
                 {
-                    printf("INIT ERROR: Failed To Open %s", path);
-                    //? P: should be replaced with something that doesnt just shut down the program
-                    exit(EXIT_FAILURE);
+                    printf("INIT ERROR: Failed To Open %s.\n", path);
+                    whatIsTheError();
+                    return false;
                 }
                 fwrite(data, 1, strlen(data), pfile);
                 fclose(pfile);
@@ -69,29 +78,67 @@ bool init()
             {
                 if(mkdir(path, DEF_PERM) < 0)
                 {
-                    printf("INIT ERROR: Failed To Create %s" , path);
-                    //? P: should be replaced with something that doesnt just shut down the program
-                    exit(EXIT_FAILURE);
+                    printf("INIT ERROR: Failed To Create %s.\n" , path);
+                    whatIsTheError();
+                    return false;
                 }
             }else
             {
                 FILE *pfile = fopen(path,"w");
                 if(!pfile)
                 {
-                    printf("INIT ERROR: Failed To Open %s", path);
-                    //? P: should be replaced with something that doesnt just shut down the program
-                    exit(EXIT_FAILURE);
+                    printf("INIT ERROR: Failed To Open %s.\n", path);
+                    whatIsTheError();
+                    return false;
                 }
                 fwrite(data, 1, strlen(data), pfile);
                 fclose(pfile);
             }
         }
     #endif
-
-    return true;
 }
 
-int main()
+//~ helper used to do preliminary checks before calling createChz()
+void preCreateChz(){
+    if (createChz())
+    {
+        printf("INIT REPORT: Sucessfully Created .chz.\n");
+    }
+    else
+    {
+        printf("INIT ERROR: Failed To Create .chz.\n");
+        whatIsTheError();
+    }
+}
+
+
+//~ used to print help message
+void initHelp(){
+    printf("INIT REPORT:\nusage: chz init | chz init -h\n");
+}
+
+//~ main init func used to filter throught cases and call appropriate functions
+void init(int argc, char* argv[])
+{//$ P: requires additional helper or auxilary functions to do EX: main branch, init commit etc...
+    switch(argc){
+        //@ chx init
+        case ARG_BASE + 2:
+            //% chz init
+            if (checkChz()) preCreateChz();
+            break;
+        //@ chz init <arg>
+        case ARG_BASE + 3:
+            if(strcmp(argv[ARG_BASE + 2], "-h") == 0)
+            {//% chz init -h
+                initHelp();
+            }
+            break;
+        default:
+            break;
+    }
+}
+
+int main(int argc, char* argv[])
 {
-    init();
+    init(argc, argv);
 }
