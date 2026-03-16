@@ -1,10 +1,15 @@
 import express from "express";
-import cors from "cors";
+const cors = require("cors");
+import cEngine from "./c_engine";
+
 const app = express();
 const PORT = 3000;
 
 app.use(cors());
 app.use(express.json());
+app.use("/api", cEngine);
+
+console.log("C engine router mounted correctly");
 
 app.get("/", (req, res) => {
     res.send("Hello World!");

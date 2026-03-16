@@ -29,23 +29,32 @@ const getCommands = () => {
 console.log("Does CWD exist?", fs.existsSync(cwd));
 if(!fs.existsSync(cwd)) fs.mkdirSync(cwd, { recursive: true });
 
+router.post("/c_engine", (req, res) => {
 
-router.get("/c_engine", (req, res) => {
+    const commandName = req.body.message;
+    const commands = getCommands();
+    const binaryPath = commands[commandName];
 
-    const absolutInit = path.resolve(__dirname, "../../build/init");
+    if(!binaryPath){
+        return res.status(404).json({ error: "Command not recognized" });
+    }
+
+    if(!fs.existsSync(binaryPath)){
+        return res.status(500).json({ error: "Binary file missing from build folder" });
+    }
 
     let output = "";
+    const child = spawn(binaryPath);
 
-    process.stdout.on("data", (data) => {
+    child.stdout.on("data", (data) => {
         output += data.toString();
     });
 
-
-    process.stderr.on("data", (data) => {
+    child.stderr.on("data", (data) => {
         console.error(data.toString());
     });
 
-    process.on("close", () => {
+    child.on("close", () => {
         res.json({
             result: output
         });
