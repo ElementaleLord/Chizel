@@ -24,7 +24,7 @@ bool init()
     DIR* p_dir = opendir(CHZ_PATH);
     if(p_dir)
     {
-        printf(".chz folder already exists");
+        printf("INIT REPORT: .chz Directory Already Exists");
         closedir(p_dir);
         return false;
     }
