@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <stdbool.h>
 #include <sys/stat.h>
+#include <time.h>
 #include <string.h>
 
 //# two dots to go up a dir
@@ -16,6 +17,18 @@
 #else
 #include <sys/types.h>
 #endif
+
+typedef struct{
+    char *src;
+    char *dest;
+    char *newer;
+}ConflictPair;
+
+typedef struct{
+    ConflictPair *pair;
+    size_t size;
+    size_t capacity;
+}ConflictVector;
 
 //~ used to display the string representation of the error number
 void whatIsTheError(){
@@ -32,6 +45,8 @@ DIR* checkChz(){
     }
 }
 
+//$ O: We really should move universally useful stuff into a header already.. Its more efficient to do this instead
+//$ checking every single time
 //~ used to check the existance of a directory
 bool dirExists(const char* path){
     DIR* p_dir = opendir(path);
@@ -71,12 +86,6 @@ bool copyFile(const char* src, const char* dest){
     fclose(fp_dest);
     return true;
 }
-
-//^ P: mergeRec() probably gonna be remade as thats not how merge works
-//^ O: i made what "merge" sounded like, dont actually know what it does, but this could be useful
-//*-------------------------------------------------------------------------------------------
-//^ P: needs a few check before but depending on how F: stores the commits it could be
-//*-------------------------------------------------------------------------------------------
 
 //~ used to recurcively combine all files from the source to the destination
 bool mergeRec(const char* srcPath, const char* destPath){
@@ -144,6 +153,7 @@ bool doMerge(DIR* p_dir, const char* source, const char* target){
     //? P: will need to refactor both preDoMerge() and curMerge() if so
     //? P: i think its better to pass path bc i get the full path from HEAD in curMerge()
     //? P: if we do that we just move the snprintf() calls from here to those other functions and change the param names ig
+    //^ O: if u deem it better, wait for confirmation from F
 //*-------------------------------------------------------------------------------------------
 
     snprintf(srcPath, sizeof(srcPath), "%s/%s", BRANCHES_PATH, source);
@@ -170,38 +180,230 @@ bool doMerge(DIR* p_dir, const char* source, const char* target){
     }
 }
 
-//~ used to identify if there is merge conflicts between the two branchs
+
+//~ perma copies the string onto another (via heap memory)
+char *cloneString(const char *s)
+{
+    size_t len = strlen(s) + 1;
+    char *copy = malloc(len);
+    if(copy != NULL)
+    {
+        memcpy(copy, s, len);
+    }
+    return copy;
+}
+
+//~ vector size check, pair existence check and conflict storing
+bool pushConflict(ConflictVector *v, const char *src, const char* dest)
+{
+    if(v->size == v->capacity)
+    {
+        size_t newCap = (v->capacity == 0) ? 8 : v->capacity*2;
+        ConflictPair *data = realloc(v->pair, newCap * sizeof(ConflictPair));
+        if(data == NULL) return false;
+        v->pair = data;
+        v->capacity = newCap;
+    }
+
+    v->pair[v->size].src = cloneString(src);
+    v->pair[v->size].dest = cloneString(dest);
+    v->pair[v->size].newer = NULL;
+
+    if(v->pair[v->size].src == NULL || v->pair[v->size].dest == NULL){
+        free(v->pair[v->size].src);
+        free(v->pair[v->size].dest);
+        free(v->pair[v->size].newer);
+        return false;
+    }
+
+    v->size++;
+    return true;
+}
+
+//~ clears the conflict vector
+void clearConflictVector(ConflictVector *vec){
+    size_t i;
+
+    for(i=0; i< vec->size; i++){
+        free(vec->pair[i].src);
+        free(vec->pair[i].dest);
+        free(vec->pair[i].newer);
+    }
+    
+    free(vec->pair);
+    vec->pair = NULL;
+    vec->size = 0;
+}
+
+//~ searches destination path for the same name
+bool searchSameName(const char* dest, const char fileName, const char *src, ConflictVector *v){
+    DIR* dir = opendir(dest);
+    struct dirent *entry;
+    struct stat st;
+    char fullPath[1024];
+
+    if(dir == NULL){
+        printf("MERGE ERROR: Failure whilst openning %s directory\n", src);
+        return false;
+    }
+
+    while((entry = readdir(dir)) != NULL){
+        if(strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0){
+            snprintf(fullPath, sizeof(fullPath), "%s/%s", src, entry->d_name);
+
+            if(stat(fullPath, &st) != 0){
+                closedir(dir);
+                printf("MERGE ERROR: Failure whilst reading path %s\n", fullPath);
+                return false;
+            }
+
+            if(S_ISDIR(st.st_mode)){
+                if(!searchSameName(fullPath, fileName, src, v)){
+                    closedir(dir);
+                    return false;
+                }
+            }else{
+                if(strcmp(entry->d_name, fileName) == 0){
+                    if(!pushConflict(v, src, fullPath)){
+                        closedir(dir);
+                        printf("MERGE ERROR: Failed to store conflict paths\n");
+                        return false;
+                    }
+                }
+            }
+        }
+    }
+
+    closedir(dir);
+    return true;
+}
+
+//~ stores conflicts in a "vector<pair<char*, char*, char*>>" (ik its not technically a pair)
+bool collectFileConflicts(const char *src, const char *dest, ConflictVector *conflicts){
+    DIR* dir = opendir(src);
+    struct dirent *entry;
+    struct stat st;
+    char fullPath[1024];
+
+    if(dir == NULL){
+        printf("MERGE ERROR: Failure whilst openning %s directory\n", src);
+        return false;
+    }
+
+    while((entry = readdir(dir)) != NULL){
+        if(strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0){
+            snprintf(fullPath, sizeof(fullPath), "%s/%s", src, entry->d_name);
+
+            if(stat(fullPath, &st) != 0){
+                closedir(dir);
+                printf("MERGE ERROR: Failure whilst reading path %s\n", fullPath);
+                return false;
+            }
+
+            if(S_ISDIR(st.st_mode)){
+                if(!collectFileConflicts(fullPath, dest, conflicts)){
+                    closedir(dir);
+                    return false;
+                }
+            }else{
+                if(!searchSameName(dest, entry->d_name, fullPath, conflicts)){
+                    closedir(dir);
+                    return false;
+                }
+            }
+        }
+    }
+
+    closedir(dir);
+    return true;
+}
+
+//~ checks both directories for conflicts of files
+bool checkFileConflicts(const char* pathSrc, const char* pathDest){
+    ConflictVector conflicts;
+    struct stat stSrc, stDest;
+    size_t i;
+
+    if(!collectFileConflicts(pathSrc, pathDest, &conflicts)){
+        freeConflictVector(&conflicts);
+        return false;
+    }
+
+    for(i = 0; i < conflicts.size; i++){
+        if(stat(conflicts.pair[i].src, &stSrc) != 0 || stat(conflicts.pair[i].dest, &stDest) != 0)
+        {
+            printf("MERGE ERROR: Failed To Stat Conflict Paths\n");
+            freeConflictVector(&conflicts);
+            return false;
+        }
+
+        if(stSrc.st_mtime > stDest.st_mtime) conflicts.pair[i].newer = cloneString(conflicts.pair[i].src);
+
+        else if(stDest.st_mtime > stSrc.st_mtime) conflicts.pair[i].newer = cloneString(conflicts.pair[i].dest);
+
+        else conflicts.pair[i].newer = NULL;
+
+        printf("Conflict:\n");
+        printf("-  %s\n", conflicts.pair[i].src);
+        printf("-  %s\n", conflicts.pair[i].dest);
+
+        if(conflicts.pair[i].newer != NULL)
+        {
+            printf("  Newer: %s\n", conflicts.pair[i].newer);
+        }else
+        {
+            printf("  Both have the same modification time\n");
+        }
+    }
+
+    freeConflictVector(&conflicts);
+    return true;
+}
 /*
-* preDoMerge() and curMerge() should handle the case of if the branches given dont exist
+* curMerge() should handle the case of if the branches given dont exist
 * and i think if the above is done then doMerge() should just get the full paths instead of just the names
+*/
+//~ used to identify if there is merge conflicts between the two branchs
+bool checkMergeConflicts(const char* src, const char* dest)
+{
+    //omar's idea
+    if(strcmp(src, dest) == 0)
+    {
+        printf("MERGE ERROR: Cannot Merge A Branch With Itself, what are u trying to do?\n");
+        return false;
+    }
 
-first base case is that the target and source are the same branch so exit early while printing msg for why
+    char pathSrc[1024], pathDest[1024];
+    snprintf(pathSrc, sizeof(pathSrc), "%s/%s", BRANCHES_PATH, src);
+    if(!dirExists(pathSrc))
+    {
+        printf("MERGE ERROR: Branch %s Does Not Exist\n", src);
+        return false;
+    }
 
-second base case is that the common ancestor commit between target and source is itself source 
-    //$ the below is probably gonna be a function of its own that this func calls
-    in which case first call commit to create a merge commit on source 
-        which will store the fact that there is two prev commits which allows us to differentiate merge commit from normal ones
-        then overwrite the head of target to be the same as the head of source
-        because in this case source is technically just a newer version of target
-	    but head of target cant be the same as head of source so maybe make two commits with reversed params
-	    like mergeCommit(src, tar); mergeCommit(tar, src);
-    //$ the above is probably gonna be a function of its own that this func calls
+    snprintf(pathDest, sizeof(pathDest), "%s/%s", BRANCHES_PATH, dest);
+    if(!dirExists(pathDest))
+    {
+        printf("MERGE ERROR: Branch %s Does Not Exist\n", dest);
+        return false;
+    }
 
-loop call
-    we check each file in both source and target branches (recursively probably) then determine (somehow)
-    if they have been changed (maybe compare to last commit version ?) if so and the same file is changed in both 
-    log that file name for later
-loop exit;
-
-check if any file was logged as conflicted
-    if so then display "MERGE ERROR: Failed To Merge Due To File Conflicts" 
-        and then list all the files that have been logged as conflicted then exit() 
-    else then we call doMerge to begin merging source to target (probably through that same merge commit mentioned before)
-
+    //second base case is that the common ancestor commit between target and source is itself source 
+    //    //$ the below is probably gonna be a function of its own that this func calls
+    //    in which case first call commit to create a merge commit on source 
+    //        which will store the fact that there is two prev commits which allows us to differentiate merge commit from normal ones
+    //        then overwrite the head of target to be the same as the head of source
+    //        because in this case source is technically just a newer version of target
+    //        but head of target cant be the same as head of source so maybe make two commits with reversed params
+    //        like mergeCommit(src, tar); mergeCommit(tar, src);
+    //    //$ the above is probably gonna be a function of its own that this func calls
+}
+/*
 ^ P: hmm tho like mentioned above if there is a mergeCommit() and we store the commit IN the branch Dir itself
 ^ P: that would mean we now either have two commits practically holding the same data or one branch head is referencing
 ^ P: a commit outside its own branch Dir >:/
 ? P: or this implies that doMerge() needs to be changed far more than just a param switch\
+? O: are u speaking english?
 
 & P: function work follow and my idea of what each one does
 - preDoMerge() and curMerge() 
@@ -242,11 +444,6 @@ void curMerge(DIR* p_dir, const char* source){
     strtok_r(path, " ", &path);
     token= strtok_r(path, " ", &path);
     //$ P: need clearer picture of how cur branch is saved
-    //? O: what is this supposed to do?
-//*-------------------------------------------------------------------------------------------
-    //^ P: tokenize the string in HEAD then try to get the path to the current head
-    //^ P: commit of the current branch while also getting the name of that branch
-//*-------------------------------------------------------------------------------------------
 }
 
 //~ used to display help message replated to merge
