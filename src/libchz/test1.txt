@@ -1,5 +1,0 @@
-fout 
-tla3
-nzal 
-ta5
-ti5
