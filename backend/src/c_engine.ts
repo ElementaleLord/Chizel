@@ -7,7 +7,7 @@ import fs from "fs";
 const router = Router();
 const cwd = path.resolve("/tmp/test_repo");
 
-const buildDir = path.resolve("../../build");
+const buildDir = path.resolve(__dirname, "../binaries");
 
 const getCommands = () => {
 
@@ -23,6 +23,7 @@ const getCommands = () => {
             }
         });
     }
+
     return commands;
 }
 
@@ -44,7 +45,7 @@ router.post("/c_engine", (req, res) => {
     }
 
     let output = "";
-    const child = spawn(binaryPath);
+    const child = spawn(binaryPath, [], { cwd: cwd});   
 
     child.stdout.on("data", (data) => {
         output += data.toString();
