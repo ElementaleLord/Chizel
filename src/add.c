@@ -17,9 +17,34 @@
 #endif
 
 #define ARG_BASE -1
+#define STAGING_AREA_PATH ".chz/index"
+
+bool checkStagingArea(){
+    FILE* staging_area = fopen(STAGING_AREA_PATH, "r");
+    if(staging_area == NULL){
+        printf("ERROR opening staging area to check.\n");
+        return false;
+    }
+    char line[1024];
+    struct stat st;
+    bool all_exist = true;
+
+    while(fgets(line, sizeof(line), staging_area) != NULL){
+        line[strcspn(line, "\n")] = '\0';
+        if(line[0] == '\0'){
+            continue;
+        }
+        if(stat(line,&st) != 0){
+            printf("Missing File: %s\n", line);
+            all_exist = false;
+        }
+    }
+    fclose(staging_area);
+    return all_exist;
+}
 
 FILE* getStagingArea(){
-    FILE* staging_area = fopen(".staging_area.txt", "r");
+    FILE* staging_area = fopen(STAGING_AREA_PATH, "r");
     if(staging_area == NULL){
         printf("No files in staging area!\n");
         return NULL;
@@ -28,7 +53,9 @@ FILE* getStagingArea(){
 }
 
 bool clearStagingArea(){
-    if(remove(".staging_are.txt")){
+    FILE* staging_area = fopen(STAGING_AREA_PATH, "w");
+    if(staging_area != NULL){
+        fclose(staging_area);
         printf("Cleared staging area.\n");
         return true;
     }else{
@@ -48,10 +75,11 @@ bool checkDup(FILE* staging_area, char* file){
     return false;
 }
 
-bool addFunction(char* file){
-    FILE* staging_area = fopen(".staging_area.txt", "a+");
+bool addFunction(char* file, const char* path){
+    (void) path;
+    FILE* staging_area = fopen(STAGING_AREA_PATH, "a+");
     if(staging_area == NULL){
-        printf("ERROR opening staging_area.txt\n");
+        printf("ERROR opening staging area\n");
         return false;
     }
     if(checkDup(staging_area, file)){
@@ -65,58 +93,70 @@ bool addFunction(char* file){
     return true;
 }
 
-bool addAllFunction(){
-    FILE* staging_area = fopen(".staging_area.txt", "a+");
+bool addAllFunction(const char* path, int depth){
+    FILE* staging_area = fopen(STAGING_AREA_PATH, "a+");
     if(staging_area == NULL){
-        printf("ERROR opening staging_area.txt\n");
+        printf("ERROR opening staging area\n");
         return false;
     }
+    DIR* content = opendir(path);
+    struct dirent *recDir;
+    struct stat st;
+    char fullpath[1024];
+    char root_path[1024];
+    size_t root_len;
 
-    struct dirent *de;
-    DIR *dr = opendir("."); // open current dir
-    if(dr == NULL){
-        printf("ERROR opening current directory.\n");
-        return false;
+    getcwd(root_path, sizeof(root_path));
+    root_len = strlen(root_path);
+    
+    if(!content)
+    {
+        printf("Error displaying content");
+        exit(EXIT_FAILURE);
     }
 
-    while((de = readdir(dr)) != NULL){
-        if(strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0 && strcmp(de->d_name, ".staging_area.txt") != 0){
-            if(!checkDup(staging_area, de->d_name)){
-                fseek(staging_area, 0, SEEK_END);
-                fprintf(staging_area, "%s\n", de->d_name);
-            }
-        }else{
+    while((recDir = readdir(content)) != NULL)
+    {
+        if(strcmp(recDir->d_name, ".") == 0 || strcmp(recDir->d_name, "..") == 0)
+        {
             continue;
         }
+
+        snprintf(fullpath, sizeof(fullpath), "%s\\%s", path, recDir->d_name);
+
+        if(stat(fullpath, &st) == 0 && S_ISDIR(st.st_mode))
+        {
+            if(strcmp(recDir->d_name, ".chz") == 0){
+                continue;
+            }
+            addAllFunction(fullpath, depth + 1);
+        }else{
+            const char* relative_path = fullpath;
+            if(strncmp(fullpath, root_path, root_len) == 0 &&
+                (fullpath[root_len] == '\\' || fullpath[root_len] == '/')){
+                relative_path = fullpath + root_len + 1;
+            }
+            if(!checkDup(staging_area, (char*) relative_path)){
+                fseek(staging_area, 0, SEEK_END);
+                fprintf(staging_area, "%s\n", relative_path);
+            }
+        }
     }
+    closedir(content);
     fclose(staging_area);
-    closedir(dr);
     return true;    
 }
 
 bool checkForFile(char *file){        
-    DIR *dir = opendir(".");
-    struct dirent *branchDir;
-    if(dir != NULL){
-        while((branchDir = readdir(dir)) != NULL){
-            if(strcmp(branchDir->d_name, ".") == 0 || strcmp(branchDir->d_name, "..") == 0)
-            {
-                continue;
-            }
-            if(strcmp(branchDir->d_name, file) == 0){
-                return true;    // found file
-            }
-        }
-    }else{
-        perror("getcwd error\n");
-    }   // file not found or doesnt exist
-    closedir(dir);
+    struct stat st;
+    return stat(file, &st) == 0 && !S_ISDIR(st.st_mode);
 }
 
 void add(int argc, char* argv[]){
     const char* dir = ".chz";
     const short perm = 0700;
-
+    char path[512];
+    getcwd(path,512);               // getCurrentWorkingDirectory and put it inside path
     DIR* p_dir = opendir(dir);
     if(!p_dir){
         printf("ERROR, this isn't a .chz repository.\n");
@@ -127,16 +167,33 @@ void add(int argc, char* argv[]){
             break;
         case(ARG_BASE + 3):    // chz add <xxx>
             if(strcmp(argv[ARG_BASE + 2], ".") == 0){
-                if(addAllFunction()){
+                if(addAllFunction(path, 0)){
                     printf("Successfully added all files to staging area.\n");
                     break;
                 }else{
-                    printf("ERROR adding all files to staging area.\n");
+                    break;
+                }
+            }
+            if(strcmp(argv[ARG_BASE + 2], "clear") == 0){
+                if(clearStagingArea()){
+                    printf("Successfully checked staging area.\n");
+                    break;
+                }else{
+                    printf("ERROR checking staging area.\n");
+                    break;
+                }
+            }
+            if(strcmp(argv[ARG_BASE + 2], "check") == 0){
+                if(checkStagingArea()){
+                    printf("Successfully checked staging area.\n");
+                    break;
+                }else{
+                    printf("ERROR checking staging area.\n");
                     break;
                 }
             }
             if(checkForFile(argv[ARG_BASE + 2])){
-                if(addFunction(argv[ARG_BASE + 2])){
+                if(addFunction(argv[ARG_BASE + 2], path)){
                     printf("Successfully added file to staging area.\n");
                     break;
                 }else{
@@ -151,10 +208,8 @@ void add(int argc, char* argv[]){
 }
 
 int main(int argc, char* argv[]){
-    printf("argc: %i\n", argc);
     int i=0;
     while(argv[i] != NULL){
-        printf("argv[%i]: %s\n",i, argv[i]);
         i++;
     }
     add(argc, argv);
