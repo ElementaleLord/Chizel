@@ -1,0 +1,151 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <dirent.h>
+#include <stdbool.h>
+#include <errno.h>
+
+#include "../include/chz_constants.h"
+
+typedef struct
+{
+    char** content;
+    size_t capacity;
+    size_t size;
+}Lines;
+
+#define dynamic_append(d_arr, val)\
+    do{\
+        if(d_arr.size >= d_arr.capacity)\
+        {\
+            if(d_arr.size == 0) d_arr.capacity = 256;\
+            else d_arr.capacity *= 2;\
+            void *temp = realloc(d_arr.content, d_arr.capacity * sizeof(*d_arr.content));\
+            if(!temp)\
+            {\
+                perror("realloc failed");\
+                exit(1);\
+            }\
+            d_arr.content = temp;\
+        }\
+        d_arr.content[d_arr.size++] = val;\
+    }while(0)
+
+char **lcs_backtrack(Lines new_file, Lines old_file, int lcs_table[old_file.size+1][new_file.size+1], int len)
+{
+    size_t i = old_file.size;
+    size_t j = new_file.size;
+    int k = len - 1;
+    char **lcs_content = malloc(len * sizeof(char *));
+
+    while(i > 0 && j > 0)
+    {
+        if(strcmp(old_file.content[i-1], new_file.content[j-1]) == 0)
+        {
+            printf(" %s", old_file.content[i-1]);
+            i--;
+            j--;
+        }
+        else if(lcs_table[i-1][j] >= lcs_table[i][j-1]) 
+        {
+            printf("- %s", old_file.content[i-1]);
+            i--;
+        }
+        else 
+        {
+            printf("+ %s", new_file.content[j-1]);
+            j--;
+        }
+        
+        while(i > 0) { printf("- %s",old_file.content[i - 1]); i--;} 
+        while(j > 0) { printf("+ %s",old_file.content[j - 1]); j--;} 
+    }
+
+    return lcs_content;
+}
+
+int check_chz()
+{
+    DIR* pdir = opendir(CHZ_PATH);
+    if(pdir)
+    {
+        closedir(pdir);
+        return 1;
+    }
+    //file doesnt exist
+    if(errno == ENOENT) return 0;
+    //permission error or other issues
+    return -1;
+}
+
+int check_staging_area()
+{
+    FILE *f_ptr = fopen(INDEX_PATH, "r");
+    if(!f_ptr)
+    {
+        perror("couldnt access index");
+        return 0;
+    }
+
+    fclose(f_ptr);
+    return 1;
+}
+
+int compare_paths(const void* a, const void* b)
+{
+    const char* path_a = *(const char**) a;
+    const char* path_b = *(const char**) b;
+
+    return strcmp(path_a, path_b);
+}
+
+Lines read_staging_area()
+{
+    Lines index_content = {0};
+    FILE *f_ptr = fopen(INDEX_PATH, "r");
+    char line[256];
+    while(fgets(line,sizeof(line), f_ptr))
+    {
+        dynamic_append(index_content, strdup(line));
+    }
+    return index_content;
+}
+
+int main(int argc, char* argv[])
+{
+    int status = check_chz();
+    if(status == 0)
+    {
+        fprintf(stderr, "Error: .chz workspace not initialized.\n"
+               "initialize, .chz with chz init before running any chz operations\n");
+        return 1;
+    }
+    else if(status < 0)
+    {
+        perror("failed to access .chz workspace");
+        return 1;
+    }
+
+    status = check_staging_area();
+    if(status == 0)
+    {
+        perror("staging area missing");
+        return 1;
+    }
+    else if(status < 0)
+    {
+        perror("failed to access staging area in the workspace");
+        return 1;
+    }
+
+    Lines index = read_staging_area();
+    qsort(index.content, index.size, sizeof(index.content[0]), compare_paths);
+
+    for(int i = 0; i < index.size; i++)
+    {
+        printf("%s", index.content[i]);
+    }
+
+    return 0;
+}
