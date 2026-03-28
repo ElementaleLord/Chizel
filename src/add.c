@@ -160,6 +160,7 @@ void add(int argc, char* argv[]){
     DIR* p_dir = opendir(dir);
     if(!p_dir){
         printf("ERROR, this isn't a .chz repository.\n");
+        return;
     }
     switch(argc){
         case(ARG_BASE + 2):    // chz add
