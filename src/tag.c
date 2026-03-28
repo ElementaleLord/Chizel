@@ -77,6 +77,7 @@ void doLightTag(char* tagName)
         }
     }
 }
+
 //~ function used as interface to call needed functions
 void doHeavyTag(char* tagName, char* tagDescription)
 {
@@ -89,18 +90,19 @@ void doHeavyTag(char* tagName, char* tagDescription)
     }
 }
 
-
 //~ helper used to display help menu
-void tagHelp(){
+void tagHelp()
+{
     printf("TAG REPORT:\nUsage: chz status, chz status -h.\n");
 }
 
 //~ helper used to display an error msg
-void annotatedTagError(){
+void annotatedTagError()
+{
     printf("TAG ERROR: Missing Annotated Tag Description.\n");
 }
 
-void checkout(int argc, char* argv[])
+void tag(int argc, char* argv[])
 {
     char path[1024];
     DIR* p_dir;
@@ -142,7 +144,7 @@ void checkout(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-    checkout(argc, argv);
+    tag(argc, argv);
 
     return 0;
 }
