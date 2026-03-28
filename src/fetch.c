@@ -21,8 +21,7 @@
 #define ARG_BASE -1
 #define ORIGIN_FILE ".chz/origin.txt"
 
-bool fetchFromDB(char* link){
-    printf("Entered fetchFromDB\n");
+mongoc_cursor_t* fetchFromDB(char* link){
     mongoc_cursor_t *cur;
     mongoc_client_t *client;
     mongoc_collection_t *collection;
@@ -35,7 +34,7 @@ bool fetchFromDB(char* link){
     if (client == NULL) {
         fprintf(stderr, "Error: failed to create MongoDB client\n");
         mongoc_cleanup();
-        return false;
+        return NULL;
     }
     
     // Test Connection
@@ -43,9 +42,7 @@ bool fetchFromDB(char* link){
         fprintf(stderr, "Error: %s\n", error.message);
         mongoc_client_destroy(client);
         mongoc_cleanup();
-        return false;
-    } else {
-        printf("Successfully connected to MongoDB!\n");
+        return NULL;
     }
 
     collection = mongoc_client_get_collection(client, "test", "repositories");   // get table
@@ -54,13 +51,13 @@ bool fetchFromDB(char* link){
 
     cur = mongoc_collection_find_with_opts(collection, query, opts, NULL);   // db.repositories.find({url: link}).limit(1)
     
+    /*
     if(mongoc_cursor_next(cur, &doc)){              // iterate through results
         char *json = bson_as_json(doc, NULL);       // turn BSON into JSON
         printf("%s\n", json);
         bson_free(json);                            // cleaning lingering data
     }
-
-
+    */
     
     // cleanup
     mongoc_collection_destroy(collection);          
@@ -68,11 +65,10 @@ bool fetchFromDB(char* link){
     bson_destroy(opts);
     mongoc_client_destroy(client);
     mongoc_cleanup();
-    return true;
+    return cur;
 }
 
 bool checkOrigin(DIR* p){
-    printf("Entered checkOrigin\n");
     FILE *file = fopen(ORIGIN_FILE,"r");
     if(file == NULL){
         printf("Repository doesn't have an origin.\n");
@@ -83,11 +79,8 @@ bool checkOrigin(DIR* p){
 }
 
 bool checkOrigin2(DIR* p,char* originCheck){
-    printf("Entered checkOrigin2\n");
     FILE *file;
     char origin[256];
-
-    printf("originCheck: %s\n", originCheck);
 
     if (originCheck == NULL || originCheck[0] == '\0') {
         printf("Invalid origin.\n");
@@ -97,10 +90,10 @@ bool checkOrigin2(DIR* p,char* originCheck){
     file = fopen(ORIGIN_FILE, "r+");
     if (file == NULL) {
         file = fopen(ORIGIN_FILE, "w+");
-    }
-    if (file == NULL) {
-        printf("ERROR OPENING ORIGIN FILE\n");
-        return false;
+        if (file == NULL) {
+            printf("ERROR OPENING ORIGIN FILE\n");
+            return false;
+        }
     }
 
     if (fgets(origin, sizeof(origin), file) == NULL) {
@@ -133,7 +126,6 @@ bool checkOrigin2(DIR* p,char* originCheck){
 }
 
 void fetchFunction(char* link){
-    printf("Entered fetchFunction\n");
     if (link == NULL || link[0] == '\0') {
         printf("Invalid link, origin is empty.\n");
         return;
@@ -143,7 +135,7 @@ void fetchFunction(char* link){
     bool status;
     if(p == link){
         status = fetchFromDB(link);
-        if(status){
+        if(status != NULL){
             printf("Successfully fetched from remote repository.\n");
         }else{
             printf("ERROR while fetching from remote repository.\n");
@@ -154,7 +146,6 @@ void fetchFunction(char* link){
 }
 
 void fetch(int argc, char* argv[]){
-    printf("Entered fetch\n");
     const char* dir = ".chz";
     const short perm = 0700;
 
