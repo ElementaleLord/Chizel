@@ -5,6 +5,13 @@
 #include <dirent.h>
 #include <stdbool.h>
 #include <errno.h>
+//DEPENDENCIES
+#include <zlib.h>
+#include <openssl/sha.h> 
+//DEPENDENCIES: INSTALL OPENSSL/ ZLIB
+// -lcrypto to compile
+//used for SHA1, while not recommended its fast and doesn't use much memory
+//future changes might include moving to SHA2 and reworking blob objects
 
 #include "../include/chz_constants.h"
 
@@ -14,6 +21,13 @@ typedef struct
     size_t capacity;
     size_t size;
 }Lines;
+
+typedef struct
+{
+    char* name; 
+    unsigned int mode;
+    unsigned char hash[20];
+}blob_object;
 
 #define dynamic_append(d_arr, val)\
     do{\
@@ -61,7 +75,6 @@ char **lcs_backtrack(Lines new_file, Lines old_file, int lcs_table[old_file.size
         while(i > 0) { printf("- %s",old_file.content[i - 1]); i--;} 
         while(j > 0) { printf("+ %s",old_file.content[j - 1]); j--;} 
     }
-
     return lcs_content;
 }
 
@@ -110,6 +123,66 @@ Lines read_staging_area()
         dynamic_append(index_content, strdup(line));
     }
     return index_content;
+}
+
+int hash_file(const char* path,unsigned char* hash_out)
+{
+    FILE *f_ptr = fopen(path, "rb"); //rb as edge case for some windows systems
+    if(!f_ptr)
+    {
+        perror("failed to access path file");
+        return -1;
+    }
+
+    SHA_CTX sha_context;
+    SHA1_Init(&sha_context); //Deprecated due to plans to phase out SHA1 in 2030, works for current 
+                             //use case
+    char buffer[4096];
+    size_t nbRead;
+
+    while((nbRead = fread(buffer,1, sizeof(buffer), f_ptr)))
+    {
+        SHA1_Update(&sha_context, buffer, nbRead);
+    }
+
+    SHA1_Final(hash_out, &sha_context);
+    fclose(f_ptr);
+    return 1;
+}
+
+//Zlib over regular compression functions in C due to it being lossless and fast
+int compression(const char *out_path, const unsigned int *data, size_t len)
+{
+    FILE* f_ptr = fopen(out_path, "w");
+    if(!f_ptr)
+    {
+        perror("compression fail: fopen failure");
+        return -1;
+    }
+
+    z_stream fin;
+    fin.zalloc = Z_NULL;
+    fin.zfree = Z_NULL;
+    fin.opaque = Z_NULL;
+
+    if(deflateInit(&fin, Z_BEST_COMPRESSION) != Z_OK) return -1;
+
+    fin.next_in = (Bytef *)data;
+    fin.avail_in = len;
+    
+    unsigned char out[4096];
+    do
+    {
+        fin.next_out = out;
+        fin.avail_out = sizeof(out);
+        deflate(&fin, Z_FINISH);
+        size_t nbRead = sizeof(out) - fin.avail_out;
+        fwrite(out, 1, nbRead, f_ptr);
+    }while(fin.avail_out == 0);
+
+    deflateEnd(&fin);
+    fclose(f_ptr);
+    return 1;
 }
 
 int main(int argc, char* argv[])
