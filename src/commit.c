@@ -5,6 +5,7 @@
 #include <dirent.h>
 #include <stdbool.h>
 #include <errno.h>
+#include <time.h>
 //DEPENDENCIES
 #include <zlib.h>
 #include <openssl/sha.h> 
@@ -153,9 +154,10 @@ int hash_file(const char* path,unsigned char* hash_out)
 //Zlib over regular compression functions in C due to it being lossless and fast
 int compression(const char *out_path, const unsigned int *data, size_t len)
 {
-    FILE* f_ptr = fopen(out_path, "w");
+    FILE* f_ptr = fopen(out_path, "wb");
     if(!f_ptr)
     {
+        printf("something");
         perror("compression fail: fopen failure");
         return -1;
     }
@@ -183,6 +185,12 @@ int compression(const char *out_path, const unsigned int *data, size_t len)
     deflateEnd(&fin);
     fclose(f_ptr);
     return 1;
+}
+
+void get_time(struct tm* time_ptr)
+{
+    time_t t = time(NULL);
+    time_ptr = localtime(&t); 
 }
 
 int main(int argc, char* argv[])
@@ -214,11 +222,6 @@ int main(int argc, char* argv[])
 
     Lines index = read_staging_area();
     qsort(index.content, index.size, sizeof(index.content[0]), compare_paths);
-
-    for(int i = 0; i < index.size; i++)
-    {
-        printf("%s", index.content[i]);
-    }
 
     return 0;
 }
