@@ -7,29 +7,29 @@
 #define mkdir(dir) _mkdir(dir)
 #endif
 
-//~ helper used to create a branch to checkout to
+//~ helper used to create a branch with given branchName
 void callBranch(char* branchName)
-{
-    //# calls branch.c with given branch name
+{//# calls branch.c with given branch name
+
 }
 
 //~ helper returning true if any file is modified since latest commit to current branch
 bool checkForChanges()
-{
-    //# check if theres modified files in current branch
+{//# check if theres modified files in current branch
     return false;
 }
 
-//~ helper returning the path to the head commit of given branch
-char* getGivenBranchHeadCommit(char* branchName)
-{
-    //# validates the branch exists and return the path to the branches head commit
-    return "";
+void loadData(char* path_to_commit)
+{//# delete current repo files (excluding .chz) then uncompresses commits data and writes it to the repo
+
 }
 
-void loadData(char* path_to_commit)
-{
-    //# delete current repo files (excluding .chz) then uncompresses commits data and writes it to the repo
+//~ helper that finds the path to the head commit of a given branch then calls loadData()
+void findBranchHeadCommit(char* branchName)
+{//# validates the branch exists and return the path to the branches head commit
+    char* headCommit;
+
+    loadData(headCommit);
 }
 
 
@@ -40,8 +40,7 @@ void preCheckout(char* branchName)
     {
         if (!checkForChanges())
         {
-            char* headCommit= getGivenBranchHeadCommit(branchName);
-            loadData(headCommit);
+            findBranchHeadCommit(branchName);
         }
         else
         {
