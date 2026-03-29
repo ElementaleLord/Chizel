@@ -1,44 +1,12 @@
-#include <stdlib.h>
-#include <stdio.h>
+//! B: PATRICK WHY THE FUCK DID YOU MAKE A STATUS BRANCH IF YOU DIDNT EVEN FINISH CHECKOUT ?! (idk if status is before checkout)
+#include "../include/chizel.h"
 #include <dirent.h>
-#include <errno.h>
-#include <stdbool.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <cjson/cJSON.h>
-
-//# two dots to go up a dir
-#include "../include/init_template.h"
-#include "../include/chz_constants.h"
 
 #ifdef _WIN32
 #include <direct.h>
 #define rmdir(path) _rmdir(path)
 #define mkdir(dir) _mkdir(dir)
-#else
-#include <unistd.h>
-#include <sys/types.h>
 #endif
-
-//~ helper used to print a string representation of the current error number
-void whatIsTheError(){
-    printf("Error String: %s.\n", strerror(errno));
-}
-
-//~ helper used to check if .chz exists
-bool checkChz(){
-    DIR* p_dir = opendir(CHZ_PATH);
-    
-    if(!p_dir)
-    {
-        printf("STATUS ERROR: .chz Directory Does Not Exists.\n");
-        whatIsTheError();
-        return false;
-    }
-    
-    closedir(p_dir);
-    return true;
-}
 
 char* getCurrentBranchCommit(){
 //# searches for and retrieves the current branches head commit path (could just retrieve a file ptr instead)
@@ -73,7 +41,7 @@ void doStatus(){
 
 //~ helper used to display help menu
 void statusHelp(){
-    printf("STATUS REPORT: Usage: chz status, chz status -h.\n");
+    printf(STATUS_REPORT_MSG_START"Usage: chz status, chz status -h"MSG_END);
 }
 
 void status(int argc, char* argv[])

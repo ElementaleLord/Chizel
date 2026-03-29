@@ -1,21 +1,11 @@
-#include <stdlib.h>
-#include <stdio.h>
+#include "../include/chizel.c"
 #include <dirent.h>
 #include <errno.h>
-#include <stdbool.h>
 #include <sys/stat.h>
-#include <time.h>
-#include <string.h>
-
-//# two dots to go up a dir
-#include "../include/init_template.h"
-#include "../include/chz_constants.h"
 
 #ifdef _WIN32
 #include <direct.h>
 #define mkdir(dir) _mkdir(dir)
-#else
-#include <sys/types.h>
 #endif
 
 typedef struct{
@@ -30,23 +20,7 @@ typedef struct{
     size_t capacity;
 }ConflictVector;
 
-//~ used to display the string representation of the error number
-void whatIsTheError(){
-    printf("Error String: %s.\n", strerror(errno));
-}
-
-//~ used to check the existence of the .chz directory
-DIR* checkChz(){
-    DIR* p_dir = opendir(CHZ_PATH);
-    if(!p_dir){
-        printf("MERGE ERROR: .chz Not Found, Plz Make Sure Your In A CHZ Repository Director Or Run: \"chz init\"");
-
-        exit(EXIT_FAILURE);
-    }
-}
-
-//$ O: We really should move universally useful stuff into a header already.. Its more efficient to do this instead
-//$ checking every single time
+//*------------------------------------------------------------------------------
 //~ used to check the existance of a directory
 bool dirExists(const char* path){
     DIR* p_dir = opendir(path);
@@ -58,6 +32,7 @@ bool dirExists(const char* path){
     closedir(p_dir);
     return true;
 }
+//*------------------------------------------------------------------------------
 
 //~ copies data from a src file to a target file
 bool copyFile(const char* src, const char* dest){
@@ -67,14 +42,16 @@ bool copyFile(const char* src, const char* dest){
 
     fp_src = fopen(src, "rb");
     if(!fp_src){
-        printf("MERGE ERROR: Failed To Open Source %s\n", src);
+        printf(MERGE_ERROR_MSG_START"Failed To Open Source"MSG_END);
+        whatIsTheError();
         return false;
     }
 
     fp_dest = fopen(dest, "wb");
     if(!fp_dest){
         fclose(fp_src);
-        printf("MERGE ERROR: Failed To Open Destination %s: %s\n", dest, strerror(errno));
+        printf(MERGE_ERROR_MSG_START"Failed To Open Destination %s: %s"MSG_END, dest, strerror(errno));
+        whatIsTheError();
         return false;
     }
 
@@ -95,7 +72,8 @@ bool mergeRec(const char* srcPath, const char* destPath){
     char fileFromSrc[1024], fileFromDest[1024];
 
     if(!p_srcDir){
-        printf("MERGE ERROR: Failed To Open Directory %s\n", srcPath);
+        printf(MERGE_ERROR_MSG_START"Failed To Open Directory %s"MSG_END, srcPath);
+        whatIsTheError();
         exit(EXIT_FAILURE);
     }
 
@@ -109,7 +87,8 @@ bool mergeRec(const char* srcPath, const char* destPath){
 
         if(stat(fileFromSrc, &st) < 0){
             closedir(p_srcDir);
-            printf("MERGE ERROR: Failed To Read From Path %s\n", fileFromSrc);
+            printf(MERGE_ERROR_MSG_START"Failed To Read From Path %s"MSG_END, fileFromSrc);
+            whatIsTheError();
             return false;
         }
         if(!dirExists(fileFromDest)){
@@ -120,7 +99,8 @@ bool mergeRec(const char* srcPath, const char* destPath){
         #endif
             {
                 closedir(p_srcDir);
-                printf("MERGE ERROR: Failed To Create Directory %s: %s\n", fileFromDest, strerror(errno));
+                printf(MERGE_ERROR_MSG_START"Failed To Create Directory %s: %s"MSG_END, fileFromDest, strerror(errno));
+                whatIsTheError();
                 return false;
             }
         }
@@ -128,13 +108,15 @@ bool mergeRec(const char* srcPath, const char* destPath){
         if(S_ISDIR(st.st_mode)){
             if(!mergeRec(fileFromSrc, fileFromDest)){
                 closedir(p_srcDir);
-                printf("MERGE ERROR: Failed To Recursively Merge %s and %s\n", fileFromSrc, fileFromDest);
+                printf(MERGE_ERROR_MSG_START"Failed To Recursively Merge %s and %s"MSG_END, fileFromSrc, fileFromDest);
+                whatIsTheError();
                 return false;
             }
         }else{
             if(!copyFile(fileFromSrc, fileFromDest)){
                 closedir(p_srcDir);
-                printf("MERGE ERROR: Failed To Copy Files from %s to %s\n", fileFromSrc, fileFromDest);
+                printf(MERGE_ERROR_MSG_START"Failed To Copy Files from %s to %s"MSG_END, fileFromSrc, fileFromDest);
+                whatIsTheError();
                 return false;
             }
         }
@@ -160,22 +142,22 @@ bool doMerge(DIR* p_dir, const char* source, const char* target){
     snprintf(destPath, sizeof(destPath), "%s/%s", BRANCHES_PATH, target);
 
     if(!dirExists(srcPath)){
-        printf("MERGE ERROR: source %s Does Not Exist.\n", source);
+        printf(MERGE_ERROR_MSG_START"source %s Does Not Exist."MSG_END, source);
         whatIsTheError();
         exit(EXIT_FAILURE);
     }
     if(!dirExists(destPath)){
-        printf("MERGE ERROR: target %s Does Not Exist.\n", target);
+        printf(MERGE_ERROR_MSG_START"target %s Does Not Exist."MSG_END, target);
         whatIsTheError();
         exit(EXIT_FAILURE);
     }
 
     if(!(mergeRec(srcPath, destPath))){
-        printf("MERGE ERROR: Failed To Merge %s to %s.\n", source, target);
+        printf(MERGE_ERROR_MSG_START"Failed To Merge %s to %s."MSG_END, source, target);
         whatIsTheError();
         exit(EXIT_FAILURE);
     }else{
-        printf("MERGE REPORT: Merged %s to %s successfully.\n", source, target);
+        printf(MERGE_REPORT_MSG_START"Merged %s to %s successfully."MSG_END, source, target);
         return true;
     }
 }
@@ -243,7 +225,8 @@ bool searchSameName(const char* dest, const char fileName, const char *src, Conf
     char fullPath[1024];
 
     if(dir == NULL){
-        printf("MERGE ERROR: Failure whilst openning %s directory\n", src);
+        printf(MERGE_ERROR_MSG_START"Failure whilst openning %s directory"MSG_END, src);
+        whatIsTheError();
         return false;
     }
 
@@ -253,7 +236,8 @@ bool searchSameName(const char* dest, const char fileName, const char *src, Conf
 
             if(stat(fullPath, &st) != 0){
                 closedir(dir);
-                printf("MERGE ERROR: Failure whilst reading path %s\n", fullPath);
+                printf(MERGE_ERROR_MSG_START"Failure whilst reading path %s"MSG_END, fullPath);
+                whatIsTheError();
                 return false;
             }
 
@@ -266,7 +250,8 @@ bool searchSameName(const char* dest, const char fileName, const char *src, Conf
                 if(strcmp(entry->d_name, fileName) == 0){
                     if(!pushConflict(v, src, fullPath)){
                         closedir(dir);
-                        printf("MERGE ERROR: Failed to store conflict paths\n");
+                        printf(MERGE_ERROR_MSG_START"Failed to store conflict paths"MSG_END);
+                        whatIsTheError();
                         return false;
                     }
                 }
@@ -286,7 +271,8 @@ bool collectFileConflicts(const char *src, const char *dest, ConflictVector *con
     char fullPath[1024];
 
     if(dir == NULL){
-        printf("MERGE ERROR: Failure whilst openning %s directory\n", src);
+        printf(MERGE_ERROR_MSG_START"Failure whilst openning %s directory"MSG_END, src);
+        whatIsTheError();
         return false;
     }
 
@@ -296,7 +282,8 @@ bool collectFileConflicts(const char *src, const char *dest, ConflictVector *con
 
             if(stat(fullPath, &st) != 0){
                 closedir(dir);
-                printf("MERGE ERROR: Failure whilst reading path %s\n", fullPath);
+                printf(MERGE_ERROR_MSG_START"Failure whilst reading path %s"MSG_END, fullPath);
+                whatIsTheError();
                 return false;
             }
 
@@ -332,7 +319,8 @@ bool checkFileConflicts(const char* pathSrc, const char* pathDest){
     for(i = 0; i < conflicts.size; i++){
         if(stat(conflicts.pair[i].src, &stSrc) != 0 || stat(conflicts.pair[i].dest, &stDest) != 0)
         {
-            printf("MERGE ERROR: Failed To Stat Conflict Paths\n");
+            printf(MERGE_ERROR_MSG_START"Failed To Stat Conflict Paths"MSG_END);
+            whatIsTheError();
             freeConflictVector(&conflicts);
             return false;
         }
@@ -369,7 +357,8 @@ bool checkMergeConflicts(const char* src, const char* dest)
     //omar's idea
     if(strcmp(src, dest) == 0)
     {
-        printf("MERGE ERROR: Cannot Merge A Branch With Itself, what are u trying to do?\n");
+        printf(MERGE_ERROR_MSG_START"Cannot Merge A Branch With Itself, what are u trying to do?"MSG_END);
+        whatIsTheError();
         return false;
     }
 
@@ -377,14 +366,16 @@ bool checkMergeConflicts(const char* src, const char* dest)
     snprintf(pathSrc, sizeof(pathSrc), "%s/%s", BRANCHES_PATH, src);
     if(!dirExists(pathSrc))
     {
-        printf("MERGE ERROR: Branch %s Does Not Exist\n", src);
+        printf(MERGE_ERROR_MSG_START"Branch %s Does Not Exist"MSG_END, src);
+        whatIsTheError();
         return false;
     }
 
     snprintf(pathDest, sizeof(pathDest), "%s/%s", BRANCHES_PATH, dest);
     if(!dirExists(pathDest))
     {
-        printf("MERGE ERROR: Branch %s Does Not Exist\n", dest);
+        printf(MERGE_ERROR_MSG_START"Branch %s Does Not Exist"MSG_END, dest);
+        whatIsTheError();
         return false;
     }
 
@@ -424,10 +415,11 @@ void preDoMerge(DIR* p_dir, const char* source, const char* target){
 
     if(doMerge(p_dir, source, target))
     {
-        printf("Merge Sucessful\n");
+        printf(MERGE_REPORT_MSG_START"Merge Sucessful"MSG_END);
     }
     else{
-        printf("MERGE ERROR: Failed To Merge %s and %s.\n", source, target);
+        printf(MERGE_ERROR_MSG_START"Failed To Merge %s and %s"MSG_END, source, target);
+        whatIsTheError();
     }
 }
 
@@ -437,7 +429,8 @@ void curMerge(DIR* p_dir, const char* source){
     DIR* p_headF= open(HEAD_PATH, "r");
 
     if (!p_headF){
-        printf("MERGE ERROR: Failed To Open %s\n", HEAD_PATH);
+        printf(MERGE_ERROR_MSG_START"Failed To Open %s"MSG_END, HEAD_PATH);
+        whatIsTheError();
     }
 
     read(p_headF, path, 1024);
@@ -448,7 +441,7 @@ void curMerge(DIR* p_dir, const char* source){
 
 //~ used to display help message replated to merge
 void mergeHelp(){
-    printf("Usage: chz merge <branch-name>, chz merge <compare-name> <base-name>\n");
+    printf(MERGE_REPORT_MSG_START"\nUsage: chz merge <branch-name>, chz merge <compare-name> <base-name>"MSG_END);
 }
 
 //~ handles cases based on arguments to call needed functions
@@ -480,7 +473,7 @@ void merge(int argc, char* argv[]){
             break;
 
         default:
-            printf("MERGE ERROR: Invalid Command.\n");
+            printf(CHZ_ERROR_MSG_START"Invalid Command"MSG_END);
             break;
     }
     closedir(p_dir);

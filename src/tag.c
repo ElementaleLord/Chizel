@@ -1,46 +1,13 @@
-#include <stdlib.h>
-#include <stdio.h>
+//! B: PATRICK WHY THE FUCK DID YOU MAKE A TAG BRANCH IF YOU DIDNT EVEN FINISH STATUS AND CHECKOUT ?!
+#include "../include/chizel.h"
 #include <dirent.h>
-#include <errno.h>
-#include <stdbool.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <cjson/cJSON.h>
-
-//# two dots to go up a dir
-#include "../include/init_template.h"
-#include "../include/chz_constants.h"
 
 #ifdef _WIN32
 #include <direct.h>
 #define rmdir(path) _rmdir(path)
 #define mkdir(dir) _mkdir(dir)
-#else
-#include <unistd.h>
-#include <sys/types.h>
 #endif
 
-//~ helper used to print a string representation of the current error number
-void whatIsTheError()
-{
-    printf("Error String: %s.\n", strerror(errno));
-}
-
-//~ helper used to check if .chz exists
-bool checkChz()
-{
-    DIR* p_dir = opendir(CHZ_PATH);
-    
-    if(!p_dir)
-    {
-        printf("STATUS ERROR: .chz Directory Does Not Exists.\n");
-        whatIsTheError();
-        return false;
-    }
-    
-    closedir(p_dir);
-    return true;
-}
 
 //~ helper used to retrieve the path to the current branch's latest commit
 char* getCurrentBranchHeadCommit()
@@ -93,13 +60,13 @@ void doHeavyTag(char* tagName, char* tagDescription)
 //~ helper used to display help menu
 void tagHelp()
 {
-    printf("TAG REPORT:\nUsage: chz status, chz status -h.\n");
+    printf(TAG_REPORT_MSG_START"Usage: chz status, chz status -h."MSG_END);
 }
 
 //~ helper used to display an error msg
 void annotatedTagError()
 {
-    printf("TAG ERROR: Missing Annotated Tag Description.\n");
+    printf(TAG_ERROR_MSG_START"Missing Annotated Tag Description"MSG_END);
 }
 
 void tag(int argc, char* argv[])

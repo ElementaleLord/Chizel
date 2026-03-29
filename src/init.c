@@ -1,41 +1,26 @@
-#include <stdlib.h>
-#include <stdio.h>
 #include <dirent.h>
-#include <errno.h>
-#include <stdbool.h>
-#include <string.h>
-
-// two dots to go up a dir
-#include "../include/init_template.h"
-#include "../include/chz_constants.h"
+#include "../include/chizel.c"
 
 #ifdef _WIN32
 #include <direct.h>
 #define mkdir(dir) _mkdir(dir)
-#else
-#include <sys/stat.h>
-#include <sys/types.h>
 #endif
 
-//~ helper used to print a string representation of the current error number
-void whatIsTheError(){
-    printf("Error String: %s.\n", strerror(errno));
-}
-
-//~ helper used to check if .chz exists
-bool checkChz(){
+bool checkForChz()
+{
     DIR* p_dir = opendir(CHZ_PATH);
     
     if(p_dir)
     {
-        printf("INIT REPORT: .chz Directory Already Exists.\n");
+        printf(INIT_ERROR_MSG_START".chz Directory Exists"MSG_END);
         whatIsTheError();
-        closedir(p_dir);
         return false;
     }
     
+    closedir(p_dir);
     return true;
 }
+
 //~ used to create .chz directory from a saved template
 bool createChz(){
     #ifdef _WIN32
@@ -49,7 +34,7 @@ bool createChz(){
             {
                 if(mkdir(path) < 0)
                 {
-                    printf("INIT ERROR: Failed To Create %s.\n" , path);
+                    printf(INIT_ERROR_MSG_START"Failed To Create %s"MSG_END , path);
                     whatIsTheError();
                     return false;
                 }
@@ -58,7 +43,7 @@ bool createChz(){
                 FILE *pfile = fopen(path,"w");
                 if(!pfile)
                 {
-                    printf("INIT ERROR: Failed To Open %s.\n", path);
+                    printf(INIT_ERROR_MSG_START"Failed To Open %s"MSG_END, path);
                     whatIsTheError();
                     return false;
                 }
@@ -78,7 +63,7 @@ bool createChz(){
             {
                 if(mkdir(path, DEF_PERM) < 0)
                 {
-                    printf("INIT ERROR: Failed To Create %s.\n" , path);
+                    printf(INIT_ERROR_MSG_START"Failed To Create %s"MSG_END, path);
                     whatIsTheError();
                     return false;
                 }
@@ -87,7 +72,7 @@ bool createChz(){
                 FILE *pfile = fopen(path,"w");
                 if(!pfile)
                 {
-                    printf("INIT ERROR: Failed To Open %s.\n", path);
+                    printf(INIT_ERROR_MSG_START"Failed To Open %s"MSG_END, path);
                     whatIsTheError();
                     return false;
                 }
@@ -102,11 +87,11 @@ bool createChz(){
 void preCreateChz(){
     if (createChz())
     {
-        printf("INIT REPORT: Sucessfully Created .chz.\n");
+        printf(INIT_REPORT_MSG_START"Sucessfully Created .chz"MSG_END);
     }
     else
     {
-        printf("INIT ERROR: Failed To Create .chz.\n");
+        printf(INIT_ERROR_MSG_START"Failed To Create .chz"MSG_END);
         whatIsTheError();
     }
 }
@@ -114,7 +99,7 @@ void preCreateChz(){
 
 //~ used to print help message
 void initHelp(){
-    printf("INIT REPORT:\nusage: chz init | chz init -h\n");
+    printf(INIT_REPORT_MSG_START"\nUsage: chz init | chz init -h"MSG_END);
 }
 
 //~ main init func used to filter throught cases and call appropriate functions
@@ -124,7 +109,7 @@ void init(int argc, char* argv[])
         //@ chx init
         case ARG_BASE + 2:
             //% chz init
-            if (checkChz()) preCreateChz();
+            if (checkForChz()) preCreateChz();
             break;
         //@ chz init <arg>
         case ARG_BASE + 3:
@@ -134,11 +119,7 @@ void init(int argc, char* argv[])
             }
             break;
         default:
+            printf(CHZ_ERROR_MSG_START"Invalid Command"MSG_END);
             break;
     }
-}
-
-int main(int argc, char* argv[])
-{
-    init(argc, argv);
 }

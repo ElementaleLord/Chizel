@@ -1,0 +1,7 @@
+printf(MERGE_ERROR_MSG_START"errorMSG"MSG_END);
+printf(MERGE_REPORT_MSG_START"reportMSG"MSG_END);
+
+checkout
+branch
+add
+describe

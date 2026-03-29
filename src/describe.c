@@ -1,60 +1,27 @@
-#include <stdlib.h>
-#include <stdio.h>
+#include "../include/chizel.h"
 #include <dirent.h>
-#include <errno.h>
-#include <stdbool.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <cjson/cJSON.h>
-
-//# two dots to go up a dir
-#include "../include/init_template.h"
-#include "../include/chz_constants.h"
 
 #ifdef _WIN32
 #include <direct.h>
 #define rmdir(path) _rmdir(path)
 #define mkdir(dir) _mkdir(dir)
-#else
-#include <unistd.h>
-#include <sys/types.h>
 #endif
 
-//~ helper used to print a string representation of the current error number
-void whatIsTheError()
-{
-    printf("Error String: %s.\n", strerror(errno));
-}
-
-//~ helper used to check if .chz exists
-bool checkChz()
-{
-    DIR* p_dir = opendir(CHZ_PATH);
-    
-    if(!p_dir)
-    {
-        printf("STATUS ERROR: .chz Directory Does Not Exists.\n");
-        whatIsTheError();
-        return false;
-    }
-    
-    closedir(p_dir);
-    return true;
-}
-
 //~ helper used to check if tag exists
-bool checkTag(char* tagName){
+bool checkTag(char* tagName)
+{
     //# checks if a tag named tagName exists if so return true otherwise false
 }
 
 //~ helper used to do exactly as its called
-void getNumberToAndIdOfLastCommitFromTag(char* tagName, int* num, char* latestCommitId){
+void getNumberToAndIdOfLastCommitFromGivenTag(char* tagName, int* num, char* latestCommitId)
+{
     //# gets the number of commits between given tagName and the lastestCommit on that line
     //# also gets the latestCommit Id/hash value as a string
 }
 
 //~ function used as interface to call needed functions
-void doDescribe(char* tagName)
+void preDescribe(char* tagName)
 {
     if (checkChz())
     {
@@ -62,20 +29,21 @@ void doDescribe(char* tagName)
         {
             int num;
             char* latestCommitId;
-            getNumberToAndIdOfLastCommitFromTag(tagName, &num, latestCommitId);
+            getNumberToAndIdOfLastCommitFromGivenTag(tagName, &num, latestCommitId);
             printf("%s.%d.%s",tagName, num, latestCommitId);
         }
-        else
-        {
-            printf("DESCRIBE ERROR: Tag %s Does Not Exits.\n", tagName);
-        }
-
+        else  printf(DESCRIBE_ERROR_MSG_START"Tag %s Does Not Exits"MSG_END, tagName);
     }
+}
+void preCurrentDescribe()
+{
+    //# calls preDescribe but with the current branch as the "tag"
 }
 
 //~ helper used to display help menu
-void describeHelp(){
-    printf("DESCRIBE REPORT:\nUsage: chz describe, chz describe <tag-name>.\n");
+void describeHelp()
+{
+    printf(DESCRIBE_REPORT_MSG_START"\nUsage: chz describe, chz describe <tag-name>"MSG_END);
 }
 
 void describe(int argc, char* argv[])
@@ -83,9 +51,11 @@ void describe(int argc, char* argv[])
     char path[1024];
     DIR* p_dir;
     
-    switch(argc){
+    switch(argc)
+    {
         //@ chz describe
         case ARG_BASE + 2:
+            preCurrentDescribe();
             break;
         //@ chz describe <arg>
         case ARG_BASE + 3:
@@ -95,10 +65,11 @@ void describe(int argc, char* argv[])
             }
             else
             {//% chz describe <tag-name>
-                doCheckout(argv[ARG_BASE + 3]);
+                preDescribe(argv[ARG_BASE + 3]);
             }
             break;
         default:
+            printf(CHZ_ERROR_MSG_START"Invalid Command"MSG_END);
             break;
     }
     close(p_dir);

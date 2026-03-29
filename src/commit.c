@@ -1,11 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
+#include "../include/chizel.c"
 #include <dirent.h>
-#include <stdbool.h>
 #include <errno.h>
-#include <time.h>
+
 //DEPENDENCIES
 #include <zlib.h>
 #include <openssl/sha.h> 
@@ -14,22 +10,16 @@
 //used for SHA1, while not recommended its fast and doesn't use much memory
 //future changes might include moving to SHA2 and reworking blob objects
 
-#include "../include/chz_constants.h"
-
-typedef struct
-{
-    char** content;
-    size_t capacity;
-    size_t size;
-}Lines;
-
+//*------------------------------------------------------------------------------
 typedef struct
 {
     char* name; 
     unsigned int mode;
     unsigned char hash[20];
 }blob_object;
+//*------------------------------------------------------------------------------
 
+//$------------------------------------------------------------------------------
 #define dynamic_append(d_arr, val)\
     do{\
         if(d_arr.size >= d_arr.capacity)\
@@ -46,7 +36,9 @@ typedef struct
         }\
         d_arr.content[d_arr.size++] = val;\
     }while(0)
+//$------------------------------------------------------------------------------
 
+//!------------------------------------------------------------------------------
 char **lcs_backtrack(Lines new_file, Lines old_file, int lcs_table[old_file.size+1][new_file.size+1], int len)
 {
     size_t i = old_file.size;
@@ -105,6 +97,7 @@ int check_staging_area()
     fclose(f_ptr);
     return 1;
 }
+//!------------------------------------------------------------------------------
 
 int compare_paths(const void* a, const void* b)
 {
@@ -114,6 +107,7 @@ int compare_paths(const void* a, const void* b)
     return strcmp(path_a, path_b);
 }
 
+//$------------------------------------------------------------------------------
 Lines read_staging_area()
 {
     Lines index_content = {0};
@@ -125,10 +119,11 @@ Lines read_staging_area()
     }
     return index_content;
 }
+//$------------------------------------------------------------------------------
 
 int hash_file(const char* path,unsigned char* hash_out)
 {
-    FILE *f_ptr = fopen(path, "rb"); //rb as edge case for some windows systems
+    FILE *f_ptr = fopen(path, "rb"); //# rb as edge case for some windows systems
     if(!f_ptr)
     {
         perror("failed to access path file");
@@ -136,8 +131,8 @@ int hash_file(const char* path,unsigned char* hash_out)
     }
 
     SHA_CTX sha_context;
-    SHA1_Init(&sha_context); //Deprecated due to plans to phase out SHA1 in 2030, works for current 
-                             //use case
+    SHA1_Init(&sha_context); //# Deprecated due to plans to phase out SHA1 in 2030, works for current 
+                             //# use case
     char buffer[4096];
     size_t nbRead;
 
@@ -151,7 +146,7 @@ int hash_file(const char* path,unsigned char* hash_out)
     return 1;
 }
 
-//Zlib over regular compression functions in C due to it being lossless and fast
+//~ Zlib over regular compression functions in C due to it being lossless and fast
 int compression(const char *out_path, const unsigned int *data, size_t len)
 {
     FILE* f_ptr = fopen(out_path, "wb");
@@ -193,35 +188,68 @@ void get_time(struct tm* time_ptr)
     time_ptr = localtime(&t); 
 }
 
-int main(int argc, char* argv[])
+bool preCommit()
 {
     int status = check_chz();
     if(status == 0)
     {
-        fprintf(stderr, "Error: .chz workspace not initialized.\n"
-               "initialize, .chz with chz init before running any chz operations\n");
-        return 1;
+        printf(COMMIT_ERROR_MSG_START".chz workspace not initialized"MSG_END);
+        whatIsTheError();
+        printf(COMMIT_REPORT_MSG_START"initialize, .chz with chz init before running any chz operations"MSG_END);
+        return false;
     }
     else if(status < 0)
     {
-        perror("failed to access .chz workspace");
-        return 1;
+        printf(COMMIT_ERROR_MSG_START"failed to access .chz workspace"MSG_END);
+        whatIsTheError();
+        return false;
     }
 
     status = check_staging_area();
     if(status == 0)
     {
-        perror("staging area missing");
-        return 1;
+        printf(COMMIT_ERROR_MSG_START"errorMSG"MSG_END);
+        return false;
     }
     else if(status < 0)
     {
-        perror("failed to access staging area in the workspace");
-        return 1;
+        printf(COMMIT_ERROR_MSG_START"failed to access staging area in the workspace"MSG_END);
+        whatIsTheError();
+        return false;
     }
 
     Lines index = read_staging_area();
     qsort(index.content, index.size, sizeof(index.content[0]), compare_paths);
+    return true;
+}
 
+void commitHelp(){
+    printf(COMMIT_REPORT_MSG_START"\nUsage: chz commit -h | chz commit -m \"msg\""MSG_END);
+}
+
+void commit(int argc, char* argv[]){
+    switch(argc)
+    {
+        //@ chz commit <arg>
+        case ARG_BASE + 3:
+            if(strcmp(argv[ARG_BASE + 3], "-h") == 0)
+            {//% chz commit -h
+                commitHelp();
+            }
+        //@ chz commit <arg> <arg>
+        case ARG_BASE + 4:
+            if(strcmp(argv[ARG_BASE + 3], "-m") == 0)
+            {//% chz commit -m "message"
+                preCommit();
+            }
+        default:
+            printf(CHZ_ERROR_MSG_START"Invalid Command"MSG_END);
+            break;
+    }
+}
+
+int main(int argc, char* argv[])
+{
+    commit(argc, argv);
     return 0;
 }
