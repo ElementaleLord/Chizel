@@ -10,16 +10,13 @@
 //used for SHA1, while not recommended its fast and doesn't use much memory
 //future changes might include moving to SHA2 and reworking blob objects
 
-//*------------------------------------------------------------------------------
 typedef struct
 {
     char* name; 
     unsigned int mode;
     unsigned char hash[20];
 }blob_object;
-//*------------------------------------------------------------------------------
 
-//$------------------------------------------------------------------------------
 #define dynamic_append(d_arr, val)\
     do{\
         if(d_arr.size >= d_arr.capacity)\
@@ -36,40 +33,6 @@ typedef struct
         }\
         d_arr.content[d_arr.size++] = val;\
     }while(0)
-//$------------------------------------------------------------------------------
-
-//!------------------------------------------------------------------------------
-char **lcs_backtrack(Lines new_file, Lines old_file, int lcs_table[old_file.size+1][new_file.size+1], int len)
-{
-    size_t i = old_file.size;
-    size_t j = new_file.size;
-    int k = len - 1;
-    char **lcs_content = malloc(len * sizeof(char *));
-
-    while(i > 0 && j > 0)
-    {
-        if(strcmp(old_file.content[i-1], new_file.content[j-1]) == 0)
-        {
-            printf(" %s", old_file.content[i-1]);
-            i--;
-            j--;
-        }
-        else if(lcs_table[i-1][j] >= lcs_table[i][j-1]) 
-        {
-            printf("- %s", old_file.content[i-1]);
-            i--;
-        }
-        else 
-        {
-            printf("+ %s", new_file.content[j-1]);
-            j--;
-        }
-        
-        while(i > 0) { printf("- %s",old_file.content[i - 1]); i--;} 
-        while(j > 0) { printf("+ %s",old_file.content[j - 1]); j--;} 
-    }
-    return lcs_content;
-}
 
 int check_chz()
 {
@@ -97,7 +60,6 @@ int check_staging_area()
     fclose(f_ptr);
     return 1;
 }
-//!------------------------------------------------------------------------------
 
 int compare_paths(const void* a, const void* b)
 {
@@ -107,7 +69,6 @@ int compare_paths(const void* a, const void* b)
     return strcmp(path_a, path_b);
 }
 
-//$------------------------------------------------------------------------------
 Lines read_staging_area()
 {
     Lines index_content = {0};
@@ -119,7 +80,6 @@ Lines read_staging_area()
     }
     return index_content;
 }
-//$------------------------------------------------------------------------------
 
 int hash_file(const char* path,unsigned char* hash_out)
 {
@@ -132,7 +92,7 @@ int hash_file(const char* path,unsigned char* hash_out)
 
     SHA_CTX sha_context;
     SHA1_Init(&sha_context); //# Deprecated due to plans to phase out SHA1 in 2030, works for current 
-                             //# use case
+
     char buffer[4096];
     size_t nbRead;
 
@@ -182,10 +142,46 @@ int compression(const char *out_path, const unsigned int *data, size_t len)
     return 1;
 }
 
-void get_time(struct tm* time_ptr)
+struct tm* get_time()
 {
     time_t t = time(NULL);
-    time_ptr = localtime(&t); 
+    return localtime(&t);
+}
+
+char* read_file_content(char* path, size_t* file_size)
+{
+    return 0;
+}
+
+unsigned char* build_tree(Lines index, size_t* tree_len)
+{
+    size_t capacity = 4096;
+    unsigned char* tree_buffer = malloc(capacity);
+    if(!tree_buffer)
+    {
+        perror("Failed To Allocate Tree");
+        exit(1);
+    }
+
+    size_t offset = 0;
+    for(size_t i = 0; i < index.size; i++)
+    {
+        char* path = index.content[i];
+        path[strcspn(path, "\r\n")] = 0;
+        if(strlen(path) == 0) continue;
+
+        size_t  file_size = 0;
+        char* file_content = read_file_content(path, &file_size);
+        if(!file_content)
+        {
+            perror("potentially empty file"); //better error message im running on fumes
+            continue;
+        }
+
+        char bin_hash[20];
+        write_chz_object("blob", (const char*) file_content, file_size, bin_hash);
+        free(file_content);
+    }
 }
 
 bool preCommit()
@@ -223,7 +219,8 @@ bool preCommit()
     return true;
 }
 
-void commitHelp(){
+void commitHelp()
+{
     printf(COMMIT_REPORT_MSG_START"\nUsage: chz commit -h | chz commit -m \"msg\""MSG_END);
 }
 
