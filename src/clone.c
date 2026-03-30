@@ -1,6 +1,6 @@
 #include "../include/chizel.c"
 #include "init.c"
-#include "fetch.c"
+#include "pull.c"
 
 //~ main runner function used to determine case and call appropriate function
 void clone(int argc, char* argv[])
@@ -23,15 +23,15 @@ void clone(int argc, char* argv[])
             }else{
                 //# do init.c
                 preCreateChz();
-                //# do fetch.c
-                if(fetchFunction(argv[ARG_BASE + 2]) != NULL)   //# FOUND
+                //# do pull.c
+                /* if(fetchFunction(argv[ARG_BASE + 2]) != NULL)   //# FOUND
                 {
                     printf(CLONE_REPORT_MSG_START"Successfully Cloned Remote Repository"MSG_END);
                     break;
                 }else{
                     printf(CLONE_ERROR_MSG_START"Unable To Locate Remote Repository, Make Sure It Exists Or Is A Chizel Repository"MSG_END);
                     break;
-                }
+                }   */
             }
         default:
             printf(CHZ_ERROR_MSG_START"Invalid Command"MSG_END);
