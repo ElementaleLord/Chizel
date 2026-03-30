@@ -148,6 +148,10 @@ struct tm* get_time()
     return localtime(&t);
 }
 
+void write_chz_object(char* mode, const char* content, size_t len, char* bin_hash)
+{
+}
+
 char* read_file_content(char* path, size_t* file_size)
 {
     return 0;
@@ -181,7 +185,25 @@ unsigned char* build_tree(Lines index, size_t* tree_len)
         char bin_hash[20];
         write_chz_object("blob", (const char*) file_content, file_size, bin_hash);
         free(file_content);
+
+        const char* mode = "100644";
+        size_t input_len = strlen(mode) + strlen(path) + 1 + 20;
+
+        if(offset + input_len > capacity) 
+        {
+            capacity *= 2;
+            tree_buffer = realloc(tree_buffer, capacity);
+        }
+
+        int text_len = sprintf((char*) (tree_buffer + offset), "%s %s", mode, path);
+        offset += text_len + 1;
+
+        memcpy(tree_buffer + offset, bin_hash, 20);
+        offset += 20;
     }
+
+    *tree_len = offset;
+    return tree_buffer;
 }
 
 bool preCommit()
