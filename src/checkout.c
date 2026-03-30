@@ -160,11 +160,10 @@ bool checkForChanges()
         //# compare the fullpath with .chzignore here somehow
         stat(fullpath, &st);
 
-        if (commitTime < st.st_mtime){
+        if (difftime(st.st_mtime, commitTime) > 0){
             return true;
         }
     }
-
     return false;
 }
 
@@ -189,7 +188,7 @@ void alterHEAD(char* branchName)
         //! P: make sure to add to header a prototype for whatIsTheError()
         return;
     }
-    sprintf(path, REFS_HEADS_PATH"/%s",branchName);
+    sprintf(path, "refs/heads/%s",branchName);
 
     if (!fputs(path, head_ptr))
     {
@@ -198,25 +197,16 @@ void alterHEAD(char* branchName)
         return;
     }
     fclose(head_ptr);
-}
-
-//~ helper that finds the path to the head commit of a given branch then calls loadData()
-void findBranchHeadCommit(char* branchName)
-{//? P: is this func even needed ? idk its 1 am imma go sleep
-    char* headCommit;
-
-    alterHEAD(branchName);
     loadData();
 }
-
 
 //~ function used as interface to call needed functions
 void preCheckout(char* branchName)
 {
-    if (checkChz()) 
+    if (checkChz())
         if (checkBranch(branchName))
             if (!checkCurBranch(branchName))
-                if (!checkForChanges()) findBranchHeadCommit(branchName);
+                if (!checkForChanges()) alterHEAD(branchName);
                 else
                 {
                     printf(CHECKOUT_ERROR_MSG_START"There Is Uncommitted Changes"MSG_END);
