@@ -101,7 +101,7 @@ F: is Faust
     bool checkStagingArea();
     FILE* getStagingArea();
     bool clearStagingArea();
-
+    void whatIsTheError();
 
 
     //& DType Template

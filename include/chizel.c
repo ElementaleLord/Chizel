@@ -10,7 +10,7 @@
 //~ helper used to print a string representation of the current error number
 void whatIsTheError()
 {
-    printf("Error String: %s.\n", strerror(errno));
+    //printf("Error String: %s.\n", strerror(errno));
 }
 
 //~ helper used to check if .chz exists
