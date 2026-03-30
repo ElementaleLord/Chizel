@@ -1,4 +1,3 @@
-//! B: PATRICK WHY THE FUCK DID YOU MAKE A TAG BRANCH IF YOU DIDNT EVEN FINISH STATUS AND CHECKOUT ?!
 #include "../include/chizel.h"
 #include <dirent.h>
 
@@ -8,23 +7,22 @@
 #define mkdir(dir) _mkdir(dir)
 #endif
 
-
 //~ helper used to retrieve the path to the current branch's latest commit
-char* getCurrentBranchHeadCommit()
+void getCurrentBranchHeadCommitId(char* commitId)
 {
     //#returns path to the current branches head commit
 }
 
 //~ helper that creates and writes a tag to refs/tag
-void makeTag(char* tagName, char* commitPath)
+void makeTag(char* tagName, char* commitId)
 {
-    //# tag is a file in ref/tag named tagName and holding the hash pointed to by commitPath
+    //# tag is a file in ref/tag named tagName and holding the given hash
 }
 
 //~ helper that creates and writes an annotated tag to refs/tag
-void makeAnnotatedTag(char*  tagName, char* commitPath, char* tagDescription)
+void makeAnnotatedTag(char*  tagName, char* commitId, char* tagDescription)
 {
-    //# tag is a file in ref/tag named tagName and holding the hash pointed to by commitPath\
+    //# tag is a file in ref/tag named tagName and holding the given hash
     //# also holds the tag description, the name of user, email of user, current date
 }
 
@@ -37,24 +35,24 @@ bool checkTag(char* tagName){
 void doLightTag(char* tagName)
 {
     if (checkChz())
-    {
-        if (checkTag(tagName)){
-            char* commitPath= getCurrentBranchHeadCommit();
-            makeTag(tagName, commitPath);
+        if (checkTag(tagName))
+        {
+            char commitId[1024]; 
+            getCurrentBranchHeadCommitId(commitId);
+            makeTag(tagName, commitId);
         }
-    }
 }
 
 //~ function used as interface to call needed functions
 void doHeavyTag(char* tagName, char* tagDescription)
 {
     if (checkChz())
-    {
-        if (checkTag(tagName)){
-            char* commitPath= getCurrentBranchHeadCommit();
-            makeAnnotatedTag(tagName, commitPath, tagDescription);
+        if (checkTag(tagName))
+        {
+            char commitId[1024]; 
+            getCurrentBranchHeadCommitId(commitId);
+            makeAnnotatedTag(tagName, commitId, tagDescription);
         }
-    }
 }
 
 //~ helper used to display help menu
