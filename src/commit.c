@@ -17,6 +17,7 @@ typedef struct
     unsigned char hash[20];
 }blob_object;
 
+
 #define dynamic_append(d_arr, val)\
     do{\
         if(d_arr.size >= d_arr.capacity)\
@@ -148,12 +149,74 @@ struct tm* get_time()
     return localtime(&t);
 }
 
-void write_chz_object(char* mode, const char* content, size_t len, char* bin_hash)
+void hash_to_string(unsigned char* hash, char* dst)
 {
+    for(int i = 0; i < 20; i++)
+    {
+        sprintf(dst + (i * 2), "%02x", hash[i]);
+    }
+    dst[40] = '\0';
+}
+void write_chz_object(const char* type, const char* content, size_t len, char* bin_hash)
+{
+    char header[64];
+    int header_len = sprintf(header, "%s %zu", type, len) + 1;
+    size_t full_len = header_len + len;
+    unsigned char* full_content = malloc(full_len);
+    
+    memcpy(full_content, header, header_len);
+    memcpy(full_content + header_len, content, len);
+
+    SHA1(full_content, full_len, bin_hash);
+
+    char hex_hash[41];
+    hash_to_string(bin_hash, hex_hash);
+
+    char dir_path[256];
+    sprintf(dir_path, "%s/objects/%.2s", CHZ_PATH, hex_hash);
+    mkdir(dir_path, 0777); 
+
+    char obj_path[256];
+    sprintf(obj_path, "%s/%s", dir_path, hex_hash + 2);
+
+    compression(obj_path, (unsigned int*)full_content, full_len);
+
+    free(full_content);
 }
 
 char* read_file_content(char* path, size_t* file_size)
 {
+    FILE* f_ptr = fopen("path", "rb");
+    if(!f_ptr)
+    {
+        perror("Failed in opening the file");
+        return NULL;
+    }
+
+    fseek(f_ptr, 0,SEEK_END);
+    *file_size = ftell(f_ptr);
+    rewind(f_ptr);
+
+    char* buffer = malloc(*file_size + 1);
+    if(!buffer)
+    {
+        perror("failed in allocating the memory for the buffer");
+        fclose(f_ptr);
+        return NULL;
+    }
+    
+    size_t nbRead = fread(buffer, 1, *file_size, f_ptr);
+    if(nbRead != *file_size)
+    {
+        perror("Failed in reading the full file");
+        free(buffer);
+        fclose(f_ptr);
+        return NULL;
+    }
+
+    buffer[*file_size] = '\0';
+    fclose(f_ptr);
+
     return 0;
 }
 
@@ -171,7 +234,7 @@ unsigned char* build_tree(Lines index, size_t* tree_len)
     for(size_t i = 0; i < index.size; i++)
     {
         char* path = index.content[i];
-        path[strcspn(path, "\r\n")] = 0;
+        path[strcspn(path, "\r\n")] = '\0';
         if(strlen(path) == 0) continue;
 
         size_t  file_size = 0;
