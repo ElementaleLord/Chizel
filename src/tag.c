@@ -12,7 +12,7 @@
 //~ helper used to retrieve the path to the current branch's latest commit
 void getCurrentBranchHeadCommitId(char* commitId)
 {
-    char headPath[1024], branchPath[1024];
+    char headPath[1024], branchPath[2048];
     FILE* head_ptr = fopen(HEAD_PATH, "r");
     if (!head_ptr)
     {
@@ -193,9 +193,6 @@ void tag(int argc, char* argv[])
     DIR* p_dir;
     
     switch(argc){
-        //@ chz tag
-        case ARG_BASE + 2:
-            break;
         //@ chz tag <arg>
         case ARG_BASE + 3:
             if(strcmp(argv[ARG_BASE + 2], "-h") == 0)
