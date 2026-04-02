@@ -46,6 +46,7 @@ F: is Faust
     #define DESC_PATH ".chz/description"
     #define STAGING_AREA_PATH ".chz/index"
     #define ORIGIN_FILE  ".chz/origin"
+    #define IGNORE_FILE "../.gitignore"
 
     //~ Offsets
     #define ARG_BASE -1
@@ -102,6 +103,8 @@ F: is Faust
     void whatIsTheError();
     int uploadToDB(const char *name, const char *content);
     char *restoreFromDB(const char *name);
+    bool checkIgnore(char* file, const char* relative_path);
+    const char* makeRelativePath(const char* fullpath, const char* root_path);
 
 
     //& DType Template
