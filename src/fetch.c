@@ -1,4 +1,4 @@
-#include "../include/chizel.c"
+#include "../include/chizel.h"
 #include <dirent.h>
 #include <bson/bson.h>
 #include <mongoc/mongoc.h>
@@ -8,40 +8,74 @@
 #define mkdir(dir) _mkdir(dir)
 #endif
 
+// These statics keep the Mongo objects alive for as long as the returned
+// cursor is in use. Destroying them before returning invalidates the cursor.
+static mongoc_client_t *g_fetch_client = NULL;
+static mongoc_collection_t *g_fetch_collection = NULL;
+static bson_t *g_fetch_query = NULL;
+static bson_t *g_fetch_opts = NULL;
+
+// Release any previous fetch state before starting a new query.
+static void cleanupFetchResources(void)
+{
+    if (g_fetch_collection)
+    {
+        mongoc_collection_destroy(g_fetch_collection);
+        g_fetch_collection = NULL;
+    }
+
+    if (g_fetch_query)
+    {
+        bson_destroy(g_fetch_query);
+        g_fetch_query = NULL;
+    }
+
+    if (g_fetch_opts)
+    {
+        bson_destroy(g_fetch_opts);
+        g_fetch_opts = NULL;
+    }
+
+    if (g_fetch_client)
+    {
+        mongoc_client_destroy(g_fetch_client);
+        g_fetch_client = NULL;
+    }
+
+    mongoc_cleanup();
+}
+
 //~ fetch a repository from the database
 mongoc_cursor_t* fetchFromDB(char* link)
 {
     mongoc_cursor_t *cur;
-    mongoc_client_t *client;
-    mongoc_collection_t *collection;
-    bson_t *query, *opts;
-    const bson_t *doc;
     bson_error_t error;
+    cleanupFetchResources();
     mongoc_init();
     //keep for testing, restart link + add as backend feature
-    client = mongoc_client_new("mongodb+srv://chizeldb:qpGAJlAbOt6zgEu5@chizel.0dqvas4.mongodb.net/?appName=Chizel");
-    if (client == NULL)
+    g_fetch_client = mongoc_client_new("mongodb+srv://chizeldb:qpGAJlAbOt6zgEu5@chizel.0dqvas4.mongodb.net/?appName=Chizel");
+    if (g_fetch_client == NULL)
     {
         printf(FETCH_ERROR_MSG_START"Failed To Create MangoDB Client"MSG_END);
         whatIsTheError();
-        mongoc_cleanup();
         return NULL;
     }
     
     //# Test Connection
-    if (!mongoc_client_command_simple(client, "admin", BCON_NEW("ping", BCON_INT32(1)), NULL, NULL, &error))
+    if (!mongoc_client_command_simple(g_fetch_client, "admin", BCON_NEW("ping", BCON_INT32(1)), NULL, NULL, &error))
     {
         fprintf(stderr, "Error: %s\n", error.message);
-        mongoc_client_destroy(client);
-        mongoc_cleanup();
+        cleanupFetchResources();
         return NULL;
     }
 
-    collection = mongoc_client_get_collection(client, "test", "repositories");   //# get table
-    query = BCON_NEW("url", BCON_UTF8(link));
-    opts = BCON_NEW("limit", BCON_INT64(1));
+    // File restores read from the files collection, not the repositories collection.
+    g_fetch_collection = mongoc_client_get_collection(g_fetch_client, "test", "files");
+    // Query by the same lookup field the uploader stores in Mongo.
+    g_fetch_query = BCON_NEW("url", BCON_UTF8(link));
+    g_fetch_opts = BCON_NEW("limit", BCON_INT64(1));
 
-    cur = mongoc_collection_find_with_opts(collection, query, opts, NULL);   //# db.repositories.find({url: link}).limit(1)
+    cur = mongoc_collection_find_with_opts(g_fetch_collection, g_fetch_query, g_fetch_opts, NULL);   //# db.files.find({url: link}).limit(1)
     
     /*
     if(mongoc_cursor_next(cur, &doc)){              // iterate through results
@@ -51,12 +85,7 @@ mongoc_cursor_t* fetchFromDB(char* link)
     }
     */
     
-    // cleanup
-    mongoc_collection_destroy(collection);          
-    bson_destroy(query);
-    bson_destroy(opts);
-    mongoc_client_destroy(client);
-    mongoc_cleanup();
+    // Do not clean up here; the returned cursor still depends on these objects.
     return cur;
 }
 

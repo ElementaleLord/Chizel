@@ -46,8 +46,6 @@ F: is Faust
     #define DESC_PATH ".chz/description"
     #define STAGING_AREA_PATH ".chz/index"
     #define ORIGIN_FILE  ".chz/origin"
-    //! #define HOOKS_PATH ".chz/hooks"
-    //! #define UNPACK_REFS_PATH ".chz/unpacked-refs"
 
     //~ Offsets
     #define ARG_BASE -1
@@ -102,6 +100,8 @@ F: is Faust
     FILE* getStagingArea();
     bool clearStagingArea();
     void whatIsTheError();
+    int uploadToDB(const char *name, const char *content);
+    char *restoreFromDB(const char *name);
 
 
     //& DType Template
