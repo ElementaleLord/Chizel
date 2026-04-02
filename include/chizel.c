@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <postgresql/libpq-fe.h>
 
+//& General
 //~ helper used to print a string representation of the current error number
 void whatIsTheError()
 {
@@ -79,6 +80,84 @@ bool clearStagingArea()
         return false;
     }
 }
+//& General
+
+//& .chzignore
+//~ make relative path from full path and root path (getcwd)
+const char* makeRelativePath(const char* fullpath, const char* root_path)
+{
+    size_t root_len = strlen(root_path);
+    //# strncmp compares the characters of fullpath and root_path with a max of root_len characters
+    //# for each character, if fullpath's character is bigger than root_path's character, return 1
+    //# if smaller, return -1 and if equal return 0, if 0 continue on the next character until root_len compares
+    //# here we check if the fullpath (built by going through directories) and root_path (getcwd) are the same
+    if (strncmp(fullpath, root_path, root_len) == 0 &&
+        (fullpath[root_len] == '\\' || fullpath[root_len] == '/'))
+    {
+        return fullpath + root_len + 1;
+    }
+    return fullpath;
+}
+
+
+//~ checks if the file is ignored using its name, extension or relative path
+bool checkIgnore(char* file, const char* relative_path){
+    if(relative_path == NULL || relative_path[0] == '\0')
+    {
+        //# No parameter
+        return false;
+    }
+    FILE* ignoreFile = fopen(IGNORE_FILE, "r");
+    if(ignoreFile == NULL){
+        //# no ignores to check
+        return true;
+    }
+    char line[256];
+    while(fgets(line, sizeof(line), ignoreFile) != NULL){
+        line[strcspn(line,"\r\n")] = '\0';
+        if(line[0] == '\0'){
+            //# empty line
+            continue;
+        }
+        if(strcmp(line, file) == 0)
+        {
+            //# file name found, ignored
+            fclose(ignoreFile);
+            return false;
+        }
+        if(strcmp(line, relative_path) == 0)
+        {
+            //# path found, ignored
+            fclose(ignoreFile);
+            return false;
+        }
+        //# example: *.exe
+        if(line[0] == '*' && line[1] == '.'){
+            //# getting the last occurence of "." inside the line to determine the extension of the files that need to be ignored
+            //# then get the extension, compare with the -size of the extension and see if the file has same extention
+            const char* index = strrchr(file, '.');
+            if(index != NULL && strcmp(index, line + 1) == 0)
+            {
+                //# same extension
+                fclose(ignoreFile);
+                return false;
+            }
+        }
+        size_t len = strlen(line);
+        if(len > 0 && line[len - 1] == '/')
+        {
+            if(strncmp(relative_path, line, len) == 0)
+            {
+                //# same relative path
+                fclose(ignoreFile);
+                return false;
+            }
+        }
+    }
+    fclose(ignoreFile);
+    return true;
+}
+//& .chzignore
 
 //& LCS
 //~ 
