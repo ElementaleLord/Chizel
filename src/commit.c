@@ -6,7 +6,7 @@
 #include <zlib.h>
 #include <openssl/sha.h> 
 //DEPENDENCIES: INSTALL OPENSSL/ ZLIB
-// -lcrypto to compile
+// -lcrypto for openSSL -lz for zlib
 //used for SHA1, while not recommended its fast and doesn't use much memory
 //future changes might include moving to SHA2 and reworking blob objects
 
@@ -82,6 +82,43 @@ Lines read_staging_area()
     return index_content;
 }
 
+void get_current_branch_path(char* dst)
+{
+    FILE* f_ptr = fopen(HEAD_PATH, "r");
+    if(!f_ptr)
+    {
+        perror("HEAD not found");
+        return;
+    }
+
+    if(fscanf(f_ptr, "%s", dst) != 1)
+    {
+        strcpy(dst, "refs/heads/master");
+    }
+
+    return;
+}
+
+int get_parent_hash(char* parent_hex)
+{
+    char branch_ref[256];
+    get_current_branch_path(branch_ref);
+
+    char full_path[512];
+    sprintf(full_path, "%s/%s", CHZ_PATH, branch_ref);
+
+    FILE* f_ptr = fopen(full_path, "r");
+    if (!f_ptr) return 0; 
+
+    if (fscanf(f_ptr, "%s", parent_hex) != 1)
+    {
+        fclose(f_ptr);
+        return 0;
+    }
+
+    fclose(f_ptr);
+    return 1;
+}
 int hash_file(const char* path,unsigned char* hash_out)
 {
     FILE *f_ptr = fopen(path, "rb"); //# rb as edge case for some windows systems
@@ -113,7 +150,6 @@ int compression(const char *out_path, const unsigned int *data, size_t len)
     FILE* f_ptr = fopen(out_path, "wb");
     if(!f_ptr)
     {
-        printf("something");
         perror("compression fail: fopen failure");
         return -1;
     }
@@ -157,6 +193,7 @@ void hash_to_string(unsigned char* hash, char* dst)
     }
     dst[40] = '\0';
 }
+
 void write_chz_object(const char* type, const char* content, size_t len, char* bin_hash)
 {
     char header[64];
