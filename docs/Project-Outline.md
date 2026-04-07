@@ -1,10 +1,11 @@
 >> Tools:
   1. C
-  2. Mongo DB
-  3. Typescript
-  4. ReactJs
-  5. NodeJS
-  6. Git
+  2. PostgresSQL
+  3. Supabase
+  4. Typescript
+  5. ReactJs
+  6. NodeJS
+  7. Git
 
 >> Order of Priorities:
   1. Software Diagrams (All members)

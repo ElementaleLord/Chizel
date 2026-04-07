@@ -8,40 +8,74 @@
 #define mkdir(dir) _mkdir(dir)
 #endif
 
+// These statics keep the Mongo objects alive for as long as the returned
+// cursor is in use. Destroying them before returning invalidates the cursor.
+static mongoc_client_t *g_fetch_client = NULL;
+static mongoc_collection_t *g_fetch_collection = NULL;
+static bson_t *g_fetch_query = NULL;
+static bson_t *g_fetch_opts = NULL;
+
+// Release any previous fetch state before starting a new query.
+static void cleanupFetchResources(void)
+{
+    if (g_fetch_collection)
+    {
+        mongoc_collection_destroy(g_fetch_collection);
+        g_fetch_collection = NULL;
+    }
+
+    if (g_fetch_query)
+    {
+        bson_destroy(g_fetch_query);
+        g_fetch_query = NULL;
+    }
+
+    if (g_fetch_opts)
+    {
+        bson_destroy(g_fetch_opts);
+        g_fetch_opts = NULL;
+    }
+
+    if (g_fetch_client)
+    {
+        mongoc_client_destroy(g_fetch_client);
+        g_fetch_client = NULL;
+    }
+
+    mongoc_cleanup();
+}
+
 //~ fetch a repository from the database
 mongoc_cursor_t* fetchFromDB(char* link)
 {
     mongoc_cursor_t *cur;
-    mongoc_client_t *client;
-    mongoc_collection_t *collection;
-    bson_t *query, *opts;
-    const bson_t *doc;
     bson_error_t error;
+    cleanupFetchResources();
     mongoc_init();
     //keep for testing, restart link + add as backend feature
-    client = mongoc_client_new("mongodb+srv://chizeldb:qpGAJlAbOt6zgEu5@chizel.0dqvas4.mongodb.net/?appName=Chizel");
-    if (client == NULL)
+    g_fetch_client = mongoc_client_new("mongodb+srv://chizeldb:qpGAJlAbOt6zgEu5@chizel.0dqvas4.mongodb.net/?appName=Chizel");
+    if (g_fetch_client == NULL)
     {
         printf(FETCH_ERROR_MSG_START"Failed To Create MangoDB Client"MSG_END);
         whatIsTheError();
-        mongoc_cleanup();
         return NULL;
     }
     
     //# Test Connection
-    if (!mongoc_client_command_simple(client, "admin", BCON_NEW("ping", BCON_INT32(1)), NULL, NULL, &error))
+    if (!mongoc_client_command_simple(g_fetch_client, "admin", BCON_NEW("ping", BCON_INT32(1)), NULL, NULL, &error))
     {
         fprintf(stderr, "Error: %s\n", error.message);
-        mongoc_client_destroy(client);
-        mongoc_cleanup();
+        cleanupFetchResources();
         return NULL;
     }
 
-    collection = mongoc_client_get_collection(client, "test", "repositories");   //# get table
-    query = BCON_NEW("url", BCON_UTF8(link));
-    opts = BCON_NEW("limit", BCON_INT64(1));
+    // File restores read from the files collection, not the repositories collection.
+    g_fetch_collection = mongoc_client_get_collection(g_fetch_client, "test", "files");
+    // Query by the same lookup field the uploader stores in Mongo.
+    g_fetch_query = BCON_NEW("url", BCON_UTF8(link));
+    g_fetch_opts = BCON_NEW("limit", BCON_INT64(1));
 
-    cur = mongoc_collection_find_with_opts(collection, query, opts, NULL);   //# db.repositories.find({url: link}).limit(1)
+    cur = mongoc_collection_find_with_opts(g_fetch_collection, g_fetch_query, g_fetch_opts, NULL);   //# db.files.find({url: link}).limit(1)
     
     /*
     if(mongoc_cursor_next(cur, &doc)){              // iterate through results
@@ -51,18 +85,19 @@ mongoc_cursor_t* fetchFromDB(char* link)
     }
     */
     
-    // cleanup
-    mongoc_collection_destroy(collection);          
-    bson_destroy(query);
-    bson_destroy(opts);
-    mongoc_client_destroy(client);
-    mongoc_cleanup();
+    // Do not clean up here; the returned cursor still depends on these objects.
     return cur;
 }
 
 //~ checks for the repository's origin before fetching
-bool checkOrigin(DIR* p)
+bool checkOrigin(char* link)
 {
+    DIR* p_dir = opendir(CHZ_PATH);
+    if(!checkChz()){
+        printf(FETCH_ERROR_MSG_START"Not in a .chz directory"MSG_END);
+        whatIsTheError();
+        return false;
+    }
     FILE *file = fopen(ORIGIN_FILE,"r");
     if(file == NULL)
     {
@@ -70,13 +105,51 @@ bool checkOrigin(DIR* p)
         whatIsTheError();
         return false;
     }
+
+    if(link == NULL)
+    {
+        // check if origin exists
+        char line[256];
+        rewind(file);
+        fgets(line,sizeof(line),file);
+        if(line[0] == '\0')
+        {
+            // NO ORIGIN
+            printf(FETCH_ERROR_MSG_START"Repository Doesn't Have An Origin"MSG_END);
+            whatIsTheError();
+            return false;
+        }
+        // ORIGIN EXISTS so returns true
+        return true;
+    }else{
+        // compare file content with the argument
+        char line[256];
+        rewind(file);
+        fgets(line,sizeof(line),file);
+        line[strcspn(line, "\n")] = '\0';
+        if(strcmp(line,link) == 0){
+            return true;
+        }else{
+            return false;
+        }
+    }
     fclose(file);
-    return true;  
 }
 
 //~ checks if the repository has an origin before fetching
-bool checkOriginURL(DIR* p,char* originCheck)
+bool checkOriginURL(char* originCheck)
 {
+    if(checkChz())
+    {
+        //check if origin = link
+        if(checkOrigin(originCheck)){
+            return true;
+        }else{
+            printf(FETCH_ERROR_MSG_START"Can't perform action in a .chz directory"MSG_END);
+            whatIsTheError();
+            return false;
+        }
+    }
     FILE *file;
     char origin[256];
 
@@ -132,84 +205,84 @@ bool checkOriginURL(DIR* p,char* originCheck)
 }
 
 //~ fetchs data from the database
-void fetchFunction(char* link)
+mongoc_cursor_t* fetchFunction(char* link)
 {
     if (link == NULL || link[0] == '\0') 
     {
         printf(FETCH_ERROR_MSG_START"Invalid Link, Origin Is Empty"MSG_END);
         whatIsTheError();
-        return;
+        return NULL;
     }
 
     char* p = strstr(link,"chizel.com/");
-    bool status;
+    mongoc_cursor_t* status;
     if(p == link)
     {
         status = fetchFromDB(link);
         if(status != NULL)
         {
             printf(FETCH_REPORT_MSG_START"Successfully Fetched From Remote"MSG_END);
+            return status;
         }
         else
         {
             printf(FETCH_ERROR_MSG_START"Can Not Fetch From Remote"MSG_END);
             whatIsTheError();
+            return NULL;
         }
     }
     else
     {
         printf(FETCH_ERROR_MSG_START"Invalid link, make sure repository is from Chizel"MSG_END);
         whatIsTheError();
+        return NULL;
     }
 }
 
 //~ main runner function used to determine case and call appropriate function
-void fetch(int argc, char* argv[])
+mongoc_cursor_t* fetch(int argc, char* argv[])
 {
-    DIR* p_dir = opendir(CHZ_PATH);
+    
     switch(argc)
     {
         //@ chz fetch
         case(ARG_BASE + 2):    
             //% chz fetch
-            if(checkOrigin(p_dir))
+            if(checkOrigin(NULL))
             {
                 FILE *file = fopen(ORIGIN_FILE,"r");
                 if(file == NULL)
                 {
                     printf(FETCH_ERROR_MSG_START"ERROR OPENING ORIGIN FILE"MSG_END);
                     whatIsTheError();
+                    return NULL;
                     break;
                 }
                 char origin[256];
-                //? B: pato did u put this?
-                if (fscanf(file, "%s", origin) != 1) 
-                {
-                    printf(FETCH_ERROR_MSG_START"Origin file is empty"MSG_END);
-                    whatIsTheError();
-                    fclose(file);
-                    break;
-                }
-                fetchFunction(origin);
+                rewind(file);
+                fgets(origin, sizeof(origin), file);
                 fclose(file);
+                return fetchFunction(origin);
             }
             else
             {
                 printf(FETCH_ERROR_MSG_START"This Repository Does Not Have An Origin"MSG_END);
                 whatIsTheError();
                 printf(FETCH_REPORT_MSG_START"Please Insert An Origin Via Remote Repository HTTPS"MSG_END);
+                return NULL;
             }
             break;
         //@ chz fetch <arg>
         case(ARG_BASE + 3):    
             //% chz fetch <link>
-            if(checkOriginURL(p_dir, argv[ARG_BASE + 2]))
+            if(checkOriginURL(argv[ARG_BASE + 2]))
             {
-                fetchFunction(argv[ARG_BASE + 2]);
+                return fetchFunction(argv[ARG_BASE + 2]);
             }
             break;
         default:
             printf(CHZ_ERROR_MSG_START"Invalid Command"MSG_END);
+            return NULL;
             break;
     }
 }
