@@ -1,92 +1,16 @@
 #include "../include/chizel.h"
+#include "../include/chzdb.h"
 #include <dirent.h>
-#include <bson/bson.h>
-#include <mongoc/mongoc.h>
 
 #ifdef _WIN32
 #include <direct.h>
 #define mkdir(dir) _mkdir(dir)
 #endif
 
-// These statics keep the Mongo objects alive for as long as the returned
-// cursor is in use. Destroying them before returning invalidates the cursor.
-static mongoc_client_t *g_fetch_client = NULL;
-static mongoc_collection_t *g_fetch_collection = NULL;
-static bson_t *g_fetch_query = NULL;
-static bson_t *g_fetch_opts = NULL;
-
-// Release any previous fetch state before starting a new query.
-static void cleanupFetchResources(void)
-{
-    if (g_fetch_collection)
-    {
-        mongoc_collection_destroy(g_fetch_collection);
-        g_fetch_collection = NULL;
-    }
-
-    if (g_fetch_query)
-    {
-        bson_destroy(g_fetch_query);
-        g_fetch_query = NULL;
-    }
-
-    if (g_fetch_opts)
-    {
-        bson_destroy(g_fetch_opts);
-        g_fetch_opts = NULL;
-    }
-
-    if (g_fetch_client)
-    {
-        mongoc_client_destroy(g_fetch_client);
-        g_fetch_client = NULL;
-    }
-
-    mongoc_cleanup();
-}
-
 //~ fetch a repository from the database
-mongoc_cursor_t* fetchFromDB(char* link)
+PGresult* fetchFromDB(char* link)
 {
-    mongoc_cursor_t *cur;
-    bson_error_t error;
-    cleanupFetchResources();
-    mongoc_init();
-    //keep for testing, restart link + add as backend feature
-    g_fetch_client = mongoc_client_new("mongodb+srv://chizeldb:qpGAJlAbOt6zgEu5@chizel.0dqvas4.mongodb.net/?appName=Chizel");
-    if (g_fetch_client == NULL)
-    {
-        printf(FETCH_ERROR_MSG_START"Failed To Create MangoDB Client"MSG_END);
-        whatIsTheError();
-        return NULL;
-    }
-    
-    //# Test Connection
-    if (!mongoc_client_command_simple(g_fetch_client, "admin", BCON_NEW("ping", BCON_INT32(1)), NULL, NULL, &error))
-    {
-        fprintf(stderr, "Error: %s\n", error.message);
-        cleanupFetchResources();
-        return NULL;
-    }
-
-    // File restores read from the files collection, not the repositories collection.
-    g_fetch_collection = mongoc_client_get_collection(g_fetch_client, "test", "files");
-    // Query by the same lookup field the uploader stores in Mongo.
-    g_fetch_query = BCON_NEW("url", BCON_UTF8(link));
-    g_fetch_opts = BCON_NEW("limit", BCON_INT64(1));
-
-    cur = mongoc_collection_find_with_opts(g_fetch_collection, g_fetch_query, g_fetch_opts, NULL);   //# db.files.find({url: link}).limit(1)
-    
-    /*
-    if(mongoc_cursor_next(cur, &doc)){              // iterate through results
-        char *json = bson_as_json(doc, NULL);       // turn BSON into JSON
-        printf("%s\n", json);
-        bson_free(json);                            // cleaning lingering data
-    }
-    */
-    
-    // Do not clean up here; the returned cursor still depends on these objects.
-    return cur;
+    return restoreFromDB("repositories", "*", "url", link);
 }
 
 //~ checks for the repository's origin before fetching
@@ -205,7 +129,7 @@ bool checkOriginURL(char* originCheck)
 }
 
 //~ fetchs data from the database
-mongoc_cursor_t* fetchFunction(char* link)
+PGresult* fetchFunction(char* link)
 {
     if (link == NULL || link[0] == '\0') 
     {
@@ -215,7 +139,7 @@ mongoc_cursor_t* fetchFunction(char* link)
     }
 
     char* p = strstr(link,"chizel.com/");
-    mongoc_cursor_t* status;
+    PGresult* status;
     if(p == link)
     {
         status = fetchFromDB(link);
@@ -240,7 +164,7 @@ mongoc_cursor_t* fetchFunction(char* link)
 }
 
 //~ main runner function used to determine case and call appropriate function
-mongoc_cursor_t* fetch(int argc, char* argv[])
+PGresult* fetch(int argc, char* argv[])
 {
     
     switch(argc)
