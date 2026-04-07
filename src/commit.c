@@ -35,6 +35,39 @@ typedef struct
         d_arr.content[d_arr.size++] = val;\
     }while(0)
 
+
+// Environment & Staging
+int check_chz();
+int check_staging_area();
+Lines read_staging_area();
+Lines preCommit();
+
+// Path & Hashing Helpers
+int compare_paths(const void* a, const void* b);
+void get_current_branch_path(char* dst);
+int get_parent_hash(char* parent_hex);
+int hash_file(const char* path, unsigned char* hash_out);
+void hash_to_string(unsigned char* hash, char* dst);
+struct tm* get_time();
+
+// Object & File Manipulation
+int compression(const char *out_path, const unsigned int *data, size_t len);
+void write_chz_object(const char* type, const char* content, size_t len, char* bin_hash);
+char* read_file_content(const char* path, size_t* file_size);
+unsigned char* build_tree(Lines index, size_t* tree_len);
+void create_commit_object(const char* tree_hash, const char* parent_hash, const char* message, char* out_commit_hash);
+void update_branch_ref(const char* new_commit_hash);
+
+// CLI Entry Points
+void commitHelp();
+void commit(int argc, char* argv[]);
+
+int main(int argc, char* argv[])
+{
+    commit(argc, argv);
+    return 0;
+}
+
 int check_chz()
 {
     DIR* pdir = opendir(CHZ_PATH);
@@ -119,6 +152,7 @@ int get_parent_hash(char* parent_hex)
     fclose(f_ptr);
     return 1;
 }
+
 int hash_file(const char* path,unsigned char* hash_out)
 {
     FILE *f_ptr = fopen(path, "rb"); //# rb as edge case for some windows systems
@@ -194,7 +228,7 @@ void hash_to_string(unsigned char* hash, char* dst)
     dst[40] = '\0';
 }
 
-void write_chz_object(const char* type, const char* content, size_t len, char* bin_hash)
+void write_chz_object( const char* type, const char* content, size_t len, char* bin_hash)
 {
     char header[64];
     int header_len = sprintf(header, "%s %zu", type, len) + 1;
@@ -221,9 +255,41 @@ void write_chz_object(const char* type, const char* content, size_t len, char* b
     free(full_content);
 }
 
-char* read_file_content(char* path, size_t* file_size)
+void create_commit_object(
+        const char* tree_hash, 
+        const char* parent_hash, 
+        const char* message,
+        char* commit_hash
+        )
 {
-    FILE* f_ptr = fopen("path", "rb");
+    char commit_content[1024];
+    int offset = 0;
+
+    offset += sprintf(commit_content + offset, "tree %s\n" , tree_hash);
+
+    if(parent_hash && strlen(parent_hash) > 0)
+    {
+        offset += sprintf(commit_content + offset, "parent %s\n", parent_hash);
+        struct tm* time_info = get_time();
+        char time_str[64];
+        strftime(time_str, sizeof(time_str),"%s %z", time_info);
+        
+        //temp author and committer fields until I find a good way to dynamically do that
+        offset += sprintf(commit_content + offset, "author ChizelUser <user@example.com> %s\n", time_str);
+        offset += sprintf(commit_content + offset, "committer ChizelUser <user@example.com> %s\n\n", time_str);
+
+        offset += sprintf(commit_content + offset, "%s\n", message);
+
+        char bin_hash[20];
+        write_chz_object("commit", commit_content, offset, bin_hash);
+        hash_to_string((unsigned char*) bin_hash, commit_hash);
+    }
+}
+
+
+char* read_file_content(const char* path, size_t* file_size)
+{
+    FILE* f_ptr = fopen(path, "rb");
     if(!f_ptr)
     {
         perror("Failed in opening the file");
@@ -254,7 +320,7 @@ char* read_file_content(char* path, size_t* file_size)
     buffer[*file_size] = '\0';
     fclose(f_ptr);
 
-    return 0;
+    return buffer;
 }
 
 unsigned char* build_tree(Lines index, size_t* tree_len)
@@ -306,39 +372,40 @@ unsigned char* build_tree(Lines index, size_t* tree_len)
     return tree_buffer;
 }
 
-bool preCommit()
+Lines preCommit()
 {
+    Lines empty_index = {0};
     int status = check_chz();
     if(status == 0)
     {
         printf(COMMIT_ERROR_MSG_START".chz workspace not initialized"MSG_END);
         whatIsTheError();
         printf(COMMIT_REPORT_MSG_START"initialize, .chz with chz init before running any chz operations"MSG_END);
-        return false;
+        return empty_index;
     }
     else if(status < 0)
     {
         printf(COMMIT_ERROR_MSG_START"failed to access .chz workspace"MSG_END);
         whatIsTheError();
-        return false;
+        return empty_index;
     }
 
     status = check_staging_area();
     if(status == 0)
     {
         printf(COMMIT_ERROR_MSG_START"errorMSG"MSG_END);
-        return false;
+        return empty_index;
     }
     else if(status < 0)
     {
         printf(COMMIT_ERROR_MSG_START"failed to access staging area in the workspace"MSG_END);
         whatIsTheError();
-        return false;
+        return empty_index;
     }
 
     Lines index = read_staging_area();
     qsort(index.content, index.size, sizeof(index.content[0]), compare_paths);
-    return true;
+    return index;
 }
 
 void commitHelp()
@@ -346,29 +413,72 @@ void commitHelp()
     printf(COMMIT_REPORT_MSG_START"\nUsage: chz commit -h | chz commit -m \"msg\""MSG_END);
 }
 
-void commit(int argc, char* argv[]){
+void commit(int argc, char* argv[])
+{
     switch(argc)
     {
-        //@ chz commit <arg>
         case ARG_BASE + 3:
             if(strcmp(argv[ARG_BASE + 3], "-h") == 0)
-            {//% chz commit -h
+            {
                 commitHelp();
             }
-        //@ chz commit <arg> <arg>
+            break;
+
         case ARG_BASE + 4:
             if(strcmp(argv[ARG_BASE + 3], "-m") == 0)
-            {//% chz commit -m "message"
-                preCommit();
+            {
+                Lines index = preCommit();
+                if (index.size == 0 && index.capacity == 0) return; 
+
+                size_t tree_len = 0;
+                unsigned char* tree_buffer = build_tree(index, &tree_len);
+
+                char bin_tree_hash[20];
+                write_chz_object("tree", (const char*)tree_buffer, tree_len, bin_tree_hash);
+                free(tree_buffer); 
+
+                char hex_tree_hash[41];
+                hash_to_string((unsigned char*)bin_tree_hash, hex_tree_hash);
+
+                char parent_hash[41] = {0};
+                get_parent_hash(parent_hash);
+
+                char commit_hash[41];
+                //message arg
+                char* commit_message = argv[ARG_BASE + 4]; 
+                create_commit_object(hex_tree_hash, parent_hash, commit_message, commit_hash);
+
+                update_branch_ref(commit_hash);
+
+                printf("[master %s] %s\n", commit_hash, commit_message);
+
+                for(size_t i = 0; i < index.size; i++) free(index.content[i]);
+                free(index.content);
             }
+            break;
+
         default:
-            printf(CHZ_ERROR_MSG_START"Invalid Command"MSG_END);
+            printf(CHZ_ERROR_MSG_START"Invalid Command"MSG_END"\n");
             break;
     }
 }
 
-int main(int argc, char* argv[])
+void update_branch_ref(const char* new_commit_hash)
 {
-    commit(argc, argv);
-    return 0;
+    char branch_ref[256];
+    get_current_branch_path(branch_ref);
+    
+    char full_path[512];
+    sprintf(full_path, "%s %s", CHZ_PATH, branch_ref);
+    
+    FILE* f_ptr = fopen(full_path, "w");
+    if(!f_ptr)
+    {
+        perror("Failed to update branch ref");
+        return;
+    }
+
+    fprintf(f_ptr, "%s\n", new_commit_hash);
+    fclose(f_ptr);
 }
+
