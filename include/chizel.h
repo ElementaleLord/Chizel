@@ -202,7 +202,7 @@ F: is Faust
         {OBJECTS_PATH,          NULL},
         {OBJECTS_INFO_PATH,     NULL},
         {INFO_PATH,             NULL},
-        {HEAD_PATH,             "ref: refs/heads/main\n"},
+        {HEAD_PATH,             "refs/heads/main\n"},
         {INDEX_PATH,            ""},
         {CONFIG_PATH,           "[core]\n\trepositoryformatversion = 0\n"},
         {DESC_PATH,             "Unnamed repository\n"}
