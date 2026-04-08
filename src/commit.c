@@ -7,6 +7,12 @@
 //DEPENDENCIES: INSTALL OPENSSL/ ZLIB
 // -lcrypto for openSSL -lz for zlib
 
+#ifdef _WIN32
+#include <direct.h>
+#define rmdir(path) _rmdir(path)
+#define mkdir(dir) _mkdir(dir)
+#endif  
+
 // Environment & Staging
 Lines preCommit();
 
@@ -174,7 +180,11 @@ void write_chz_object( const char* type, const char* content, size_t len, char* 
 
     char dir_path[256];
     sprintf(dir_path, "%s/objects/%.2s", CHZ_PATH, hex_hash);
-    mkdir(dir_path, 0777); 
+    #ifdef _WIN32
+        mkdir(dir_path);
+    #else
+        mkdir(dir_path, 0777);
+    #endif
 
     char obj_path[512];
     sprintf(obj_path, "%s/%s", dir_path, hex_hash + 2);
