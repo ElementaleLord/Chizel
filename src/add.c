@@ -1,6 +1,6 @@
 #include <dirent.h>
 #include <sys/stat.h>
-#include "../include/chizel.c"
+#include "../include/chizel.h"
 
 #ifdef _WIN32
 #include <direct.h>

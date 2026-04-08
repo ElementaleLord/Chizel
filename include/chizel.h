@@ -31,6 +31,20 @@ F: is Faust
 #ifndef CHIZEL_H
 #define CHIZEL_H
 
+    //& LCS Algorithm
+    typedef struct
+    {
+        char** content;
+        size_t capacity;
+        size_t size;
+    } Lines;
+
+    int lcs(Lines s1, Lines s2);
+
+
+
+    //& General
+
     //~ Paths
     #define CHZ_PATH ".chz"
     #define BRANCHES_PATH ".chz/branches"
@@ -93,16 +107,17 @@ F: is Faust
     #define MSG_END ".\n"
 
 
-
     //~ Functions
     bool checkForFile(char *file);
-    bool checkChz(); 
-    bool checkStagingArea();
+    int checkChz();
+    int checkStagingArea();
     FILE* getStagingArea();
+    Lines readStagingArea();
     bool clearStagingArea();
     void whatIsTheError();
     bool checkIgnore(char* file, const char* relative_path);
     const char* makeRelativePath(const char* fullpath, const char* root_path);
+
 
 
     //& DType Template
@@ -194,17 +209,5 @@ F: is Faust
     };
 
     static const size_t REPO_TEMPLATE_SIZE = sizeof(REPO_TEMPLATE) / sizeof(REPO_TEMPLATE[0]);
-
-
-    //& LCS Algorithm
-    typedef struct
-    {
-        char** content;
-        size_t capacity;
-        size_t size;
-    } Lines;
-
-    int lcs(Lines s1, Lines s2);
     
-
 #endif
