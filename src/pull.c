@@ -4,7 +4,7 @@
 #include "merge.c"
 
 void pullHelp(){
-    printf(PULL_REPORT_MSG_START"\nUsage: chz pull | chz init -h"MSG_END);
+    printf(PULL_REPORT_MSG_START"\nUsage: chz pull | chz pull -h"MSG_END);
 }
 
 void pull(int argc, char* argv[]){
@@ -33,7 +33,7 @@ void pull(int argc, char* argv[]){
                 if(data == NULL){
                     return;
                 }
-                merge(argc, argv);
+                merge(argc, argv); // + data
                 break;
             }
             break;
