@@ -1,6 +1,6 @@
 #include <dirent.h>
 #include <sys/stat.h>
-#include "../include/chizel.c"
+#include "../include/chizel.h"
 
 #ifdef _WIN32
 #include <direct.h>
@@ -24,24 +24,50 @@ bool checkDup(FILE* staging_area, char* file){
 }
 
 //~ adds a file to the staging area
-bool addFunction(char* file, const char* path){
-    (void) path;        //# void the path since its the path of the current working directory
+bool addFunction(char* file, const char* root_path)
+{
+    char fullpath[1024];
+    const char* relative_path;
+    if (file == NULL || file[0] == '\0')
+    {
+        return false;
+    }
+    if (strncmp(file, root_path, strlen(root_path)) == 0)
+    {
+        //# file is a full path (including root)
+        relative_path = makeRelativePath(file, root_path);
+    }
+    else
+    {
+        //# build fullpath, and then make relative
+        snprintf(fullpath, sizeof(fullpath), "%s\\%s", root_path, file);
+        relative_path = makeRelativePath(fullpath, root_path);
+    }
     FILE* staging_area = fopen(STAGING_AREA_PATH, "a+");
-    if(staging_area == NULL){
+    if (staging_area == NULL)
+    {
         printf(ADD_ERROR_MSG_START"Failed To Open Staging Area"MSG_END);
         whatIsTheError();
         return false;
     }
-    if(checkDup(staging_area, file)){
-        printf(ADD_REPORT_MSG_START"%s Is In The Staging Area Already"MSG_END, file);
+    if (checkDup(staging_area, (char*) relative_path))
+    {
+        printf(ADD_REPORT_MSG_START"%s Is Already In The Staging Area"MSG_END, relative_path);
+        fclose(staging_area);
+        return false;
+    }
+    if (!checkIgnore(file, relative_path))
+    {
+        printf(ADD_REPORT_MSG_START"%s Is Ignored"MSG_END, relative_path);
         fclose(staging_area);
         return false;
     }
     fseek(staging_area, 0, SEEK_END);
-    fprintf(staging_area, "%s\n", file);
+    fprintf(staging_area, "%s\n", relative_path);
     fclose(staging_area);
     return true;
 }
+
 
 //~ adds all files to the staging area
 bool addAllFunction(const char* path, int depth)
@@ -49,55 +75,52 @@ bool addAllFunction(const char* path, int depth)
     struct dirent *recDir;
     struct stat st;
     char fullpath[1024], root_path[1024];
-    size_t root_len;
+    const char* relative_path;
+    (void) depth;
     getcwd(root_path, sizeof(root_path));
-    root_len = strlen(root_path);
-
     FILE* staging_area = fopen(STAGING_AREA_PATH, "a+");
-    //# a+ for reading and writing, initial reading pos is at the start, initial writing pos is at the end.
-    if(staging_area == NULL)
+    if (staging_area == NULL)
     {
         printf(ADD_ERROR_MSG_START"Failed To Open Staging Area"MSG_END);
         whatIsTheError();
         return false;
     }
-    //# content are the files inside the directory
     DIR* content = opendir(path);
-    if(!content)
+    if (!content)
     {
         printf(ADD_ERROR_MSG_START"Failed To Access Directory"MSG_END);
         whatIsTheError();
+        fclose(staging_area);
         return false;
     }
-
-    while((recDir = readdir(content)) != NULL)
+    while ((recDir = readdir(content)) != NULL)
     {
-        if(strcmp(recDir->d_name, ".") == 0 || strcmp(recDir->d_name, "..") == 0)
+        if (strcmp(recDir->d_name, ".") == 0 || strcmp(recDir->d_name, "..") == 0)
         {
             continue;
         }
-
         snprintf(fullpath, sizeof(fullpath), "%s\\%s", path, recDir->d_name);
-
-        if(stat(fullpath, &st) == 0 && S_ISDIR(st.st_mode))
+        if (stat(fullpath, &st) == 0 && S_ISDIR(st.st_mode))
         {
-            if(strcmp(recDir->d_name, ".chz") == 0)
+            relative_path = makeRelativePath(fullpath, root_path);
+            if (strcmp(recDir->d_name, ".chz") == 0)
+            {
+                continue;
+            }
+            if (!checkIgnore(recDir->d_name, relative_path))
             {
                 continue;
             }
             addAllFunction(fullpath, depth + 1);
-        }else
+        }
+        else
         {
-            const char* relative_path = fullpath;
-            //# strncmp compares the characters of fullpath and root_path with a max of root_len characters
-            //# for each character, if fullpath's character is bigger than root_path's character, return 1
-            //# if smaller, return -1 and if equal return 0, if 0 continue on the next character until root_len compares
-            //# here we check if the fullpath (built by going through directories) and root_path (getcwd) are the same
-            if(strncmp(fullpath, root_path, root_len) == 0 && (fullpath[root_len] == '\\' || fullpath[root_len] == '/'))
+            relative_path = makeRelativePath(fullpath, root_path);
+            if (!checkIgnore(recDir->d_name, relative_path))
             {
-                relative_path = fullpath + root_len + 1;
+                continue;
             }
-            if(!checkDup(staging_area, (char*) relative_path))
+            if (!checkDup(staging_area, (char*) relative_path))
             {
                 fseek(staging_area, 0, SEEK_END);
                 fprintf(staging_area, "%s\n", relative_path);
@@ -106,7 +129,7 @@ bool addAllFunction(const char* path, int depth)
     }
     closedir(content);
     fclose(staging_area);
-    return true;    
+    return true;
 }
 
 //~ checking for .chz before adding all files to the staging area

@@ -10,3 +10,4 @@ All coded in C, with the surveillance of a supervisor and advice from professors
 that we're pouring our hearts out on.
 
 ***TO ANYONE LOOKING AT CONTRIBUTIONS, THE WORK IS DIVIDED EVENLY, ELEMENTALE & VOLTRO ARE THE MAIN COMMITERS OF THE PROJECT.***
+## WORK IN PROGRESS, THIS PROJECT STARTED FOR ACADEMIC PURPOSES
