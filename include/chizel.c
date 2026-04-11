@@ -6,22 +6,6 @@
 
 //& General
 //~
-#define dynamic_append(d_arr, val)\
-    do{\
-        if(d_arr.size >= d_arr.capacity)\
-        {\
-            if(d_arr.size == 0) d_arr.capacity = 256;\
-            else d_arr.capacity *= 2;\
-            void *temp = realloc(d_arr.content, d_arr.capacity * sizeof(*d_arr.content));\
-            if(!temp)\
-            {\
-                perror("realloc failed");\
-                exit(1);\
-            }\
-            d_arr.content = temp;\
-        }\
-        d_arr.content[d_arr.size++] = val;\
-    }while(0)
 
 
 int max(int a, int b) { return (a > b) ? a : b; }

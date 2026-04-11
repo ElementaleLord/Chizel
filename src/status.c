@@ -10,6 +10,19 @@
 #define mkdir(dir) _mkdir(dir)
 #endif
 
+
+Lines read_file(FILE* f)
+{
+    Lines result = {0};
+    char line[1024];
+    while(fgets(line, sizeof(line), f))
+    {
+        dynamic_append(result, strdup(line));
+    }
+    
+    return result;
+}
+
 time_t getHeadCommitTime()
 {//# searches for and retrieves the current branches head commit path (could just retrieve a file ptr instead)
 
@@ -111,13 +124,16 @@ void sortStaged(time_t commitTime, Lines fileList)
             printf("%s | %.f\n", *(fileList.content + i), difftime(st.st_ctime, commitTime));
 
             //# 1 is in index ? if yes put in staged
-            if (strcmp(*(fileList.content + i), *(stagingList.content + j)) == 0) lines_append(stagedList, *(fileList.content + i));
+            if (strcmp(*(fileList.content + i), *(stagingList.content + j)) == 0) 
+                //strdup
+                dynamic_append(stagedList, *(fileList.content + i));
             else
             {
                 stat(*(fileList.content + i), &st);
                 //# 2 is created after commit ? if yes put in untracked
-                if (difftime(st.st_ctime, commitTime) > 0) lines_append(untrackedList, *(fileList.content + i));
-                else lines_append(modList, *(fileList.content + i));
+                //strdup
+                if (difftime(st.st_ctime, commitTime) > 0) dynamic_append(untrackedList, *(fileList.content + i));
+                else dynamic_append(modList, *(fileList.content + i)); //strdup
                 //# else put in modList
             }
         }
@@ -147,7 +163,7 @@ void makeModFileList(time_t commitTime, Lines modFileVect, char* dirPath){
         else
         {
             if (difftime(st.st_ctime, commitTime) > 0){ //# checks if the file has been modified since the commit
-                lines_append(modFileVect, fullPath);
+                dynamic_append(modFileVect, strdup(fullPath));
             }
         }
     }
@@ -188,7 +204,7 @@ void makeModifiedFileList(time_t commitTime)
         else
         {
             if (difftime(st.st_ctime, commitTime) < 0){ //# checks if the file has been modified since the commit
-                lines_append(modFileVect, fullPath);
+                dynamic_append(modFileVect, strdup(fullPath));
             }
         }
     }
