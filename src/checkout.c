@@ -23,7 +23,7 @@ time_t getHeadCommitTime(){
         //! P: make sure to add to header a prototype for whatIsTheError()
         return -1;
     }
-    if (!fgets(path, 1024, head_ptr))
+    if (!fgets(headPath, 1024, head_ptr))
     {
         printf(STATUS_ERROR_MSG_START"Failed To Read HEAD File"MSG_END);
         // whatIsTheError();
@@ -118,7 +118,7 @@ bool checkCurBranch(char* branchName)
     }
     if (!fgets(path, 1024, head_ptr))
     {
-        printf(STATUS_ERROR_MSG_START"Failed To Read PAth From HEAD File"MSG_END);
+        printf(STATUS_ERROR_MSG_START"Failed To Read Path From HEAD File"MSG_END);
         // whatIsTheError();
         return true;
     }
@@ -140,7 +140,9 @@ bool checkForChanges()
 {//# check if theres modified files by comparing the mtime of the head commit in current branch with the current repo files mtime
     time_t commitTime = getHeadCommitTime();
 
-    DIR* repo_ptr = opendir("something");
+    char cwd[512];          // current working directory
+    getcwd(cwd, sizeof(cwd));
+    DIR* repo_ptr = opendir(cwd);
     if (!repo_ptr)
     {
         printf(STATUS_ERROR_MSG_START"Failed To Open Repo Directory"MSG_END);
@@ -180,7 +182,7 @@ void alterHEAD(char* branchName)
 {
     char path[1024];
 
-    FILE* head_ptr = fopen(HEAD_PATH, "r");
+    FILE* head_ptr = fopen(HEAD_PATH, "w");
     if (!head_ptr)
     {
         printf(STATUS_ERROR_MSG_START"Failed To Open HEAD File To Alter Path"MSG_END);
