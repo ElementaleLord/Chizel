@@ -47,7 +47,7 @@ F: is Faust
 
     //~ Paths
     #define CHZ_PATH ".chz"
-    #define BRANCHES_PATH ".chz/branches"
+    #define BRANCHES_PATH ".chz/refs/heads/"
     #define REFS_PATH ".chz/refs"
     #define REFS_HEADS_PATH ".chz/refs/heads"
     #define REFS_TAGS_PATH ".chz/refs/tags"
@@ -110,6 +110,7 @@ F: is Faust
     //~ Functions
     bool checkForFile(char *file);
     int checkChz();
+    char* getHead();
     int checkStagingArea();
     FILE* getStagingArea();
     Lines readStagingArea();
