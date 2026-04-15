@@ -39,6 +39,7 @@ F: is Faust
         size_t size;
     } Lines;
 
+
     int lcs(Lines s1, Lines s2);
 
 

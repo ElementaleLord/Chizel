@@ -163,7 +163,7 @@ void hash_to_string(unsigned char* hash, char* dst)
     dst[40] = '\0';
 }
 
-void write_chz_object( const char* type, const char* content, size_t len, char* bin_hash)
+void write_chz_object(const char* type, const char* content, size_t len, char* bin_hash)
 {
     char header[64];
     int header_len = sprintf(header, "%s %zu", type, len) + 1;

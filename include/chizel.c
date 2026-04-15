@@ -1,4 +1,5 @@
 #include "chizel.h"
+#include <cstdio>
 #include <ctype.h>
 #include <errno.h>
 #include <dirent.h>
