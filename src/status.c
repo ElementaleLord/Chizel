@@ -2,7 +2,6 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-//! P: getStagingArea() lines_append(res, line) read_file(FILE* f) need to be added to chizel.h first
 
 #ifdef _WIN32
 #include <direct.h>
@@ -10,18 +9,6 @@
 #define mkdir(dir) _mkdir(dir)
 #endif
 
-
-Lines read_file(FILE* f)
-{
-    Lines result = {0};
-    char line[1024];
-    while(fgets(line, sizeof(line), f))
-    {
-        dynamic_append(result, strdup(line));
-    }
-    
-    return result;
-}
 
 time_t getHeadCommitTime()
 {//# searches for and retrieves the current branches head commit path (could just retrieve a file ptr instead)
@@ -31,14 +18,13 @@ time_t getHeadCommitTime()
     if (!head_ptr)
     {
         printf(STATUS_ERROR_MSG_START"Failed To Open HEAD File"MSG_END);
-        // whatIsTheError();
-        //! P: make sure to add to header a prototype for whatIsTheError()
+        whatIsTheError();
         return -1;
     }
     if (!fgets(headPath, 1024, head_ptr))
     {
         printf(STATUS_ERROR_MSG_START"Failed To Read HEAD File"MSG_END);
-        // whatIsTheError();
+        whatIsTheError();
         return -1;
     }
     fclose(head_ptr);
@@ -50,13 +36,13 @@ time_t getHeadCommitTime()
     if (!branch_ptr)
     {
         printf(STATUS_ERROR_MSG_START"Failed To Open Branch File"MSG_END);
-        // whatIsTheError();
+        whatIsTheError();
         return -1;
     }
     if (!fgets(branchPath, 1024, branch_ptr))
     {
         printf(STATUS_ERROR_MSG_START"Failed To Read Branch File"MSG_END);
-        // whatIsTheError();
+        whatIsTheError();
         return -1;
     }
     fclose(branch_ptr);
@@ -71,7 +57,7 @@ time_t getHeadCommitTime()
     if (!commit_ptr)
     {
         printf(STATUS_ERROR_MSG_START"Failed To Open Commit File"MSG_END);
-        // whatIsTheError();
+        whatIsTheError();
         return 0;
     }
     struct dirent *file;
@@ -96,17 +82,17 @@ void displayStatus(Lines stagedList, Lines modList, Lines untrackedList)
     printf("-Staged Files:\n");
     for (int i= 0; i < stagedList.size; i++)
     {
-        printf("\t%s\n", *(stagedList.content + i));
+        printf("\t%s\n", stagedList.content[i]);
     }
     printf("-Modified Files:\n");
     for (int i= 0; i < modList.size; i++)
     {
-        printf("\t%s\n", *(modList.content + i));
+        printf("\t%s\n", modList.content[i]);
     }
     printf("-Untracked Files:\n");
     for (int i= 0; i < untrackedList.size; i++)
     {
-        printf("\t%s\n", *(untrackedList.content + i));
+        printf("\t%s\n", untrackedList.content[i]);
     }
 }
 
@@ -121,19 +107,18 @@ void sortStaged(time_t commitTime, Lines fileList)
     printf("-Files:\n");
     for (int i= 0; i < fileList.size; i++){
         for (int j= 0; j < stagingList.size; j++){
-            printf("%s | %.f\n", *(fileList.content + i), difftime(st.st_ctime, commitTime));
+            printf("%s | %.f\n", fileList.content[i], difftime(st.st_ctime, commitTime));
 
             //# 1 is in index ? if yes put in staged
-            if (strcmp(*(fileList.content + i), *(stagingList.content + j)) == 0) 
-                //strdup
-                dynamic_append(stagedList, *(fileList.content + i));
+            if (strcmp(fileList.content[i], stagingList.content[j]) == 0) 
+                dynamic_append(stagedList, strdup(fileList.content[i]));
             else
             {
                 stat(*(fileList.content + i), &st);
                 //# 2 is created after commit ? if yes put in untracked
-                //strdup
-                if (difftime(st.st_ctime, commitTime) > 0) dynamic_append(untrackedList, *(fileList.content + i));
-                else dynamic_append(modList, *(fileList.content + i)); //strdup
+                if (difftime(st.st_ctime, commitTime) > 0) 
+                    dynamic_append(untrackedList, strdup(fileList.content[i]));
+                else dynamic_append(modList, strdup(fileList.content[i]));
                 //# else put in modList
             }
         }
@@ -152,7 +137,7 @@ void makeModFileList(time_t commitTime, Lines modFileVect, char* dirPath){
         strcmp(srcIter->d_name, "..") == 0 || strcmp(srcIter->d_name, ".chz") == 0) continue;
 
         sprintf(fullPath, "%s\\%s", dirPath, srcIter->d_name);
-        printf("fullModRec= %s\n", fullPath);
+        printf("Recurs= %s | %.f\n", fullPath,  difftime(st.st_ctime, commitTime));
         stat(fullPath, &st);
 
         if (!false) //# checks if fullPath is included in .chzIgnore
@@ -161,10 +146,8 @@ void makeModFileList(time_t commitTime, Lines modFileVect, char* dirPath){
             makeModFileList(commitTime, modFileVect, fullPath);
         }
         else
-        {
-            if (difftime(st.st_ctime, commitTime) > 0){ //# checks if the file has been modified since the commit
-                dynamic_append(modFileVect, strdup(fullPath));
-            }
+        {//# checks if the file has been modified since the commit
+            if (difftime(st.st_ctime, commitTime) > 0) dynamic_append(modFileVect, strdup(fullPath));
         }
     }
 }
@@ -183,7 +166,7 @@ void makeModifiedFileList(time_t commitTime)
     DIR* p_srcDir = opendir(dirPath);
     if(!p_srcDir){
         printf(MERGE_ERROR_MSG_START"Failed To Open Repository Directory"MSG_END);
-        // whatIsTheError();
+        whatIsTheError();
         exit(EXIT_FAILURE);
     }
 
@@ -196,16 +179,12 @@ void makeModifiedFileList(time_t commitTime)
 
         stat(fullPath, &st);
 
-        if (!false) //# checks if fullPath is included in .chzIgnore
-        if (S_ISDIR(st.st_mode)) //# checks if fullpath is a directory
-        {
-            makeModFileList(commitTime, modFileVect, fullPath);
-        }
-        else
-        {
-            if (difftime(st.st_ctime, commitTime) < 0){ //# checks if the file has been modified since the commit
-                dynamic_append(modFileVect, strdup(fullPath));
-            }
+        if (checkIgnore(srcIter->d_name, fullPath)) //# checks if fullPath is included in .chzIgnore
+        {//# checks if fullpath is a directory
+            if (S_ISDIR(st.st_mode)) makeModFileList(commitTime, modFileVect, fullPath);
+            else 
+                if (difftime(st.st_ctime, commitTime) < 0) dynamic_append(modFileVect, strdup(fullPath));
+            //# else checks if the file has been modified since the commit
         }
     }
     sortStaged(commitTime, modFileVect);
@@ -246,7 +225,6 @@ void status(int argc, char* argv[])
         default:
             break;
     }
-    closedir(p_dir);
 }
 
 int main(int argc, char* argv[])

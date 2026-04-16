@@ -134,6 +134,7 @@ F: is Faust
     void whatIsTheError();
     bool checkIgnore(char* file, const char* relative_path);
     const char* makeRelativePath(const char* fullpath, const char* root_path);
+    Lines read_file(FILE* f);
 
 
 
