@@ -7,6 +7,7 @@
 #include <direct.h>
 #define rmdir(path) _rmdir(path)
 #define mkdir(dir) _mkdir(dir)
+#define getcwd(dirPath, num) _getcwd(dirPath, num)
 #endif
 
 
@@ -77,56 +78,121 @@ time_t getHeadCommitTime()
 }
 
 //~ helper that displays the staged and unstaged files of current branch
-void displayStatus(Lines stagedList, Lines modList, Lines untrackedList)
+void displayStatus(Lines list, char* fileType)
 {
-    printf("-Staged Files:\n");
-    for (int i= 0; i < stagedList.size; i++)
+    printf("-%s Files:\n", fileType);
+    for (int i= 0; i < list.size; i++)
     {
-        printf("\t%s\n", stagedList.content[i]);
-    }
-    printf("-Modified Files:\n");
-    for (int i= 0; i < modList.size; i++)
-    {
-        printf("\t%s\n", modList.content[i]);
-    }
-    printf("-Untracked Files:\n");
-    for (int i= 0; i < untrackedList.size; i++)
-    {
-        printf("\t%s\n", untrackedList.content[i]);
+        printf("\t%s\n", list.content[i]);
     }
 }
 
-void sortStaged(time_t commitTime, Lines fileList)
+Lines getUntrackedFileList(time_t commitTime, Lines fileList)
 {//# sorts the modified file list between a staged and unstaged file lists
 //# sort is based on the index file (staging area)
-    Lines stagedList = {0}, modList = {0}, untrackedList = {0}, stagingList = {0};
+    Lines stagingList = {0}, untrackedList = {0};
     struct stat st;
-    FILE *stagingFile = getStagingArea();
-    stagingList = read_file(stagingFile);
+    char path[1024], dirPath[512];
+    stagingList = readStagingArea();
 
-    printf("-Files:\n");
-    for (int i= 0; i < fileList.size; i++){
-        for (int j= 0; j < stagingList.size; j++){
-            printf("%s | %.f\n", fileList.content[i], difftime(st.st_ctime, commitTime));
 
-            //# 1 is in index ? if yes put in staged
-            if (strcmp(fileList.content[i], stagingList.content[j]) == 0) 
-                dynamic_append(stagedList, strdup(fileList.content[i]));
-            else
+    if (stagingList.size < 1)
+    {
+        dynamic_append(stagingList, strdup(" "));
+    }
+    getcwd(dirPath, 512);
+    for (size_t i= 0; i < fileList.size; i++){
+        for (size_t j= 0; j < stagingList.size; j++){
+            // printf("%s | %.f\n", fileList.content[i], difftime(st.st_ctime, commitTime));
+
+            sprintf(path, "%s\\%s", dirPath, stagingList.content[j]);
+            path[strlen(path)-1]= '\0';
+            // printf("%s\n%s\n\n", path, fileList.content[i]);
+
+            if (strcmp(fileList.content[i], path) != 0) 
             {
-                stat(*(fileList.content + i), &st);
-                //# 2 is created after commit ? if yes put in untracked
+                stat(fileList.content[i], &st);
                 if (difftime(st.st_ctime, commitTime) > 0) 
+                {
                     dynamic_append(untrackedList, strdup(fileList.content[i]));
-                else dynamic_append(modList, strdup(fileList.content[i]));
-                //# else put in modList
+                    break;
+                }
             }
         }
     }
-    displayStatus(stagedList, modList, untrackedList);
+    return untrackedList;
 }
 
-void makeModFileList(time_t commitTime, Lines modFileVect, char* dirPath){
+Lines getModifiedFileList(time_t commitTime, Lines fileList)
+{//# sorts the modified file list between a staged and unstaged file lists
+//# sort is based on the index file (staging area)
+    Lines stagingList = {0}, modList = {0};
+    struct stat st;
+    char path[1024], dirPath[512];
+    stagingList = readStagingArea();
+
+    if (stagingList.size < 1)
+    {
+        dynamic_append(stagingList, strdup(" "));
+    }
+    getcwd(dirPath, 512);
+    for (size_t i= 0; i < fileList.size; i++){
+        for (size_t j= 0; j < stagingList.size; j++){
+            // printf("%s | %.f\n", fileList.content[i], difftime(st.st_ctime, commitTime));
+
+            sprintf(path, "%s\\%s", dirPath, stagingList.content[j]);
+            path[strlen(path)-1]= '\0';
+            // printf("%s\n%s\n\n", path, fileList.content[i]);
+
+            if (strcmp(fileList.content[i], path) != 0) 
+            {
+                stat(fileList.content[i], &st);
+                if (difftime(st.st_ctime, commitTime) < 0) 
+                {
+                    dynamic_append(modList, strdup(fileList.content[i]));
+                    break;
+                }
+            }
+        }
+    }
+    return modList;
+}
+
+Lines getStagedFileList(time_t commitTime, Lines fileList)
+{//# sorts the modified file list between a staged and unstaged file lists
+//# sort is based on the index file (staging area)
+    Lines stagingList = {0}, stagedList = {0};
+    struct stat st;
+    char path[1024], dirPath[512];
+    stagingList = readStagingArea();
+    
+
+
+    if (stagingList.size < 1)
+    {
+        dynamic_append(stagingList, strdup(" "));
+    }
+    getcwd(dirPath, 512);
+    for (size_t i= 0; i < fileList.size; i++){
+        for (size_t j= 0; j < stagingList.size; j++){
+            // printf("%s | %.f\n", fileList.content[i], difftime(st.st_ctime, commitTime));
+
+
+            sprintf(path, "%s\\%s", dirPath, stagingList.content[j]);
+            path[strlen(path)-1]= '\0';
+            // printf("%s\n%s\n\n", path, fileList.content[i]);
+            if (strcmp(fileList.content[i], path) == 0)
+            {
+                dynamic_append(stagedList, strdup(fileList.content[i]));
+                break;
+            }
+        }
+    }
+    return stagedList;
+}
+
+//~ gets all modied files and appends to list
+void makeModFileList(time_t commitTime, Lines* modFileVect, char* dirPath){
     struct dirent *srcIter;
     struct stat st;
     char fullPath[1024];
@@ -137,27 +203,31 @@ void makeModFileList(time_t commitTime, Lines modFileVect, char* dirPath){
         strcmp(srcIter->d_name, "..") == 0 || strcmp(srcIter->d_name, ".chz") == 0) continue;
 
         sprintf(fullPath, "%s\\%s", dirPath, srcIter->d_name);
-        printf("Recurs= %s | %.f\n", fullPath,  difftime(st.st_ctime, commitTime));
         stat(fullPath, &st);
 
-        if (!false) //# checks if fullPath is included in .chzIgnore
-        if (S_ISDIR(st.st_mode)) //# checks if fullpath is a directory
-        {
-            makeModFileList(commitTime, modFileVect, fullPath);
-        }
-        else
-        {//# checks if the file has been modified since the commit
-            if (difftime(st.st_ctime, commitTime) > 0) dynamic_append(modFileVect, strdup(fullPath));
+        printf("Recurs= %s | %.f\n", fullPath,  difftime(st.st_mtime, commitTime));
+        if (checkIgnore(srcIter->d_name, fullPath)) 
+        {//# checks if fullPath is included in .chzIgnore
+            if (S_ISDIR(st.st_mode))
+            {//# checks if fullpath is a directory
+                makeModFileList(commitTime, modFileVect, fullPath);
+            }
+            else
+            {//# checks if the file has been modified since the commit
+                if (difftime(st.st_mtime, commitTime) > 0) 
+                {
+                    dynamic_append(modFileVect, strdup(fullPath));
+                }
+            }
         }
     }
 }
 
 //~ helper that compiles a list (vector) of file paths (strings)
-void makeModifiedFileList(time_t commitTime)
+Lines makeModifiedFileList(time_t commitTime)
 {//# compare uses the last modified value of the commit file and all the current files in repo
 //# and if it exists the .chzignore file is used to eliminate unneeded cases
-
-    Lines modFileVect = {0};
+    Lines fileList= {0};
     struct dirent *srcIter;
     struct stat st;
     char fullPath[1024], dirPath[512];
@@ -175,35 +245,100 @@ void makeModifiedFileList(time_t commitTime)
         strcmp(srcIter->d_name, "..") == 0 || strcmp(srcIter->d_name, ".chz") == 0) continue;
 
         sprintf(fullPath, "%s\\%s", dirPath, srcIter->d_name);
-        printf("%s | %.f\n", fullPath, difftime(st.st_ctime, commitTime));
-
         stat(fullPath, &st);
 
-        if (checkIgnore(srcIter->d_name, fullPath)) //# checks if fullPath is included in .chzIgnore
-        {//# checks if fullpath is a directory
-            if (S_ISDIR(st.st_mode)) makeModFileList(commitTime, modFileVect, fullPath);
+        // printf("%s |---| %.f\n", fullPath, difftime(st.st_mtime, commitTime));
+        if (checkIgnore(srcIter->d_name, fullPath))
+        {//# checks if fullPath is included in .chzIgnore
+            if (S_ISDIR(st.st_mode))
+            {//# checks if fullpath is a directory
+                makeModFileList(commitTime, &fileList, fullPath);
+            }
             else 
-                if (difftime(st.st_ctime, commitTime) < 0) dynamic_append(modFileVect, strdup(fullPath));
-            //# else checks if the file has been modified since the commit
+            {   if (difftime(st.st_mtime, commitTime) > 0)
+                {//# else checks if the file has been modified since the commit
+                    // printf("%s || %.f\n", fullPath, difftime(st.st_mtime, commitTime));
+                    dynamic_append(fileList, strdup(fullPath));
+                }
+            }
         }
     }
-    sortStaged(commitTime, modFileVect);
+    return fileList;
 }
 
 //~ function used as interface to call needed functions
-void doStatus()
+void preAlterStatus()
 {
     if (checkChz())
     {
         time_t commitTime=  getHeadCommitTime();
-        makeModifiedFileList(commitTime);
+        Lines fileList = {0};
+        fileList= makeModifiedFileList(commitTime);
+        displayStatus(fileList, "Altered");
+    }
+}
+
+//~ function used as interface to call needed functions
+void preUntrackStatus()
+{
+    if (checkChz())
+    {
+        time_t commitTime=  getHeadCommitTime();
+        Lines fileList = {0}, untrackedList = {0};
+        fileList= makeModifiedFileList(commitTime);
+        untrackedList= getUntrackedFileList(commitTime, fileList);
+        displayStatus(untrackedList, "Untracked");
+    }
+}
+
+//~ function used as interface to call needed functions
+void preStagedStatus()
+{
+    if (checkChz())
+    {
+        time_t commitTime=  getHeadCommitTime();
+        Lines fileList = {0}, stagedList = {0};
+        fileList= makeModifiedFileList(commitTime);
+        stagedList= getStagedFileList(commitTime, fileList);
+        displayStatus(stagedList, "Staged");
+    }
+}
+
+//~ function used as interface to call needed functions
+void preModStatus()
+{
+    if (checkChz())
+    {
+        time_t commitTime=  getHeadCommitTime();
+        Lines fileList = {0}, modList = {0};
+        fileList= makeModifiedFileList(commitTime);
+        modList= getModifiedFileList(commitTime, fileList);
+        displayStatus(modList, "Modified");
+    }
+}
+
+//~ function used as interface to call needed functions
+void preStatus()
+{
+    if (checkChz())
+    {
+        time_t commitTime=  getHeadCommitTime();
+        Lines fileList = {0}, stagedList = {0}, modList = {0}, untrackedList = {0};
+        fileList= makeModifiedFileList(commitTime);
+        stagedList= getStagedFileList(commitTime, fileList);
+        displayStatus(stagedList, "Staged");
+        modList= getModifiedFileList(commitTime, fileList);
+        displayStatus(modList, "Modified");
+        untrackedList= getUntrackedFileList(commitTime, fileList);
+        displayStatus(untrackedList, "Untracked");
+        
     }
 }
 
 //~ helper used to display help menu
 void statusHelp()
 {
-    printf(STATUS_REPORT_MSG_START"Usage: chz status, chz status -h"MSG_END);
+    printf(STATUS_REPORT_MSG_START"Usage: chz status, chz status -h, chz status -a, chz status -m, chz status -s, chz status -u"MSG_END);
 }
 
 void status(int argc, char* argv[])
@@ -215,12 +350,30 @@ void status(int argc, char* argv[])
         //@ chz status
         case ARG_BASE + 2:
             //% chz status
-            doStatus();
+            preStatus();
             break;
         //@ chz status <arg>
         case ARG_BASE + 3:
-            //% chz status -h
-            statusHelp();
+            if(strcmp(argv[ARG_BASE + 2], "-h") == 0)
+            {//% chz status -h
+                statusHelp();
+            }
+            else if(strcmp(argv[ARG_BASE + 2], "-a") == 0)
+            {//% chz status -a
+                preAlterStatus();
+            }
+            else if(strcmp(argv[ARG_BASE + 2], "-m") == 0)
+            {//% chz status -m
+                preModStatus();
+            }
+            else if(strcmp(argv[ARG_BASE + 2], "-s") == 0)
+            {//% chz status -s
+                preStagedStatus();
+            }
+            else if(strcmp(argv[ARG_BASE + 2], "-u") == 0)
+            {//% chz status -u
+                preUntrackStatus();
+            }
             break;
         default:
             break;
