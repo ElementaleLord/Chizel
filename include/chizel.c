@@ -32,6 +32,31 @@ void whatIsTheError()
     printf("Error String: %s.\n", strerror(errno));
 }
 
+//~ Returns the head
+char* getHead(){
+    static char head[256];
+    FILE* f = fopen(HEAD_PATH, "r");
+    if(!f){
+        printf(CHZ_ERROR_MSG_START"Error opening HEAD"MSG_END);
+        return NULL;
+    }
+
+    if(fgets(head, sizeof(head), f) == NULL){
+        printf(CHZ_ERROR_MSG_START"Error reading HEAD"MSG_END);
+        return NULL;
+    }
+    fclose(f);
+
+    head[strcspn(head, "\n")] = '\0';  // replace newline
+    char* prefix = "refs/heads/";
+
+    if(strncmp(head, prefix, strlen(prefix)) == 0){
+        memmove(head, head + strlen(prefix), strlen(head + strlen(prefix)) + 1);
+    }
+
+    return head;
+}
+
 //~ helper used to check if .chz exists
 int checkChz()
 {
