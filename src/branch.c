@@ -68,7 +68,7 @@ void deleteBranch(const char* branch)
         printf(BRANCH_REPORT_MSG_START"Branch doesnt exist"MSG_END);
         return;
     }
-
+    fclose(br);
     res = remove(branchPath);
 
     if(res){
@@ -126,11 +126,12 @@ void renameBranch(char* oldName, char* newName)
 
     char oldPath[1024];
     snprintf(oldPath, sizeof(oldPath), "%s%s", BRANCHES_PATH, oldName);
-    FILE* old = fopen(branchPath, "r");
+    FILE* old = fopen(oldPath, "r");
     if(!old){
         printf(BRANCH_REPORT_MSG_START"Branch %s doesnt exist"MSG_END, oldName);
         return;
     }
+    fclose(old);
                 
     if(rename(oldPath, branchPath) == 0){ 
         printf(BRANCH_REPORT_MSG_START"Branch Renamed Successfully"MSG_END);
