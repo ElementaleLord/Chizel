@@ -8,6 +8,9 @@
 #define rmdir(path) _rmdir(path)
 #define mkdir(dir) _mkdir(dir)
 #define getcwd(dirPath, num) _getcwd(dirPath, num)
+#else
+#include <unistd.h>
+#define get_cwd getcwd
 #endif
 
 
@@ -216,7 +219,7 @@ void makeModFileList(time_t commitTime, Lines* modFileVect, char* dirPath){
             {//# checks if the file has been modified since the commit
                 if (difftime(st.st_mtime, commitTime) > 0) 
                 {
-                    dynamic_append(modFileVect, strdup(fullPath));
+                    dynamic_append((*modFileVect), strdup(fullPath));
                 }
             }
         }
