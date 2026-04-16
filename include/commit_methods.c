@@ -2,10 +2,11 @@
 #include "commit_methods.h"
 #include <stdlib.h>
 
-int parse_object_header(FILE* obj_ptr, CommitObject* out_object) 
+int load_commit_payload(FILE* obj_ptr, CommitObject* out_commit) 
 {
     size_t BUF_SIZE = 16384; 
     unsigned char* raw_buffer = malloc(BUF_SIZE);
+    if (!raw_buffer) return -1;
     
     z_stream strm = {0};
     unsigned char in_buf[4096];
@@ -23,31 +24,66 @@ int parse_object_header(FILE* obj_ptr, CommitObject* out_object)
         return -1; 
     }
 
+    memset(out_commit, 0, sizeof(CommitObject));
+
+    // 2. Skip the Git Object Header (e.g., "commit 184\0")
     char* buffer_ptr = (char*)raw_buffer;
+    char* null_ptr = strchr(buffer_ptr, '\0');
+    if (!null_ptr) {
+        free(raw_buffer);
+        return -1;
+    }
+    
+    char* payload = null_ptr + 1;
 
-    char* space_ptr = strchr(buffer_ptr, ' ');
-    if (!space_ptr) return -1;
+    char* line = payload;
+    while (line && *line != '\0') {
+        
+        if (*line == '\n') {
+            size_t msg_len = strlen(line + 1);
+            out_commit->message = malloc(msg_len + 1);
+            strcpy(out_commit->message, line + 1);
+            break; // We are done parsing
+        }
+        // Find the end of the current line
+        char* next_line = strchr(line, '\n');
+        if (next_line) {
+            *next_line = '\0'; 
+        }
 
-    char* null_ptr = strchr(space_ptr, '\0');
-    if (!null_ptr) return -1;
+        if (strncmp(line, "tree ", 5) == 0) {
+            strncpy(out_commit->tree_hash, line + 5, 64);
+        }
+        else if (strncmp(line, "parent ", 7) == 0) {
+            strncpy(out_commit->parent_hash, line + 7, 64);
+        }
+        else if (strncmp(line, "author ", 7) == 0) {
+            char* email_end = strchr(line, '>');
+            if (email_end) {
+                size_t author_len = email_end - (line + 7) + 1;
+                out_commit->author = malloc(author_len + 1);
+                strncpy(out_commit->author, line + 7, author_len);
+                out_commit->author[author_len] = '\0';
+                
+                out_commit->commit_date = (time_t)strtol(email_end + 2, NULL, 10);
+            }
+        }
 
-    size_t type_len = space_ptr - buffer_ptr;
-    out_object->type = malloc(type_len + 1);
-    strncpy(out_object->type, buffer_ptr, type_len);
-    out_object->type[type_len] = '\0';
+        if (next_line) {
+            line = next_line + 1;
+        } else {
+            break;
+        }
+    }
 
-    out_object->size = strtoull(space_ptr + 1, NULL, 10);
-    out_object->data = (unsigned char*)(null_ptr + 1);
-
-
-    return 0;
+    free(raw_buffer);
+    return 1;
 }
 
-int read_commit_header(CommitObject* out_object)
+int get_object_path(char* out_path)
 {
-    char* path;
     char object_hash[64];
-    char object_path[256];
+    char branch_path[256]; 
 
     int status = checkChz();
     if(status == 0)
@@ -71,34 +107,33 @@ int read_commit_header(CommitObject* out_object)
         return -1;
     }
 
-    if(!fgets(object_path,sizeof(object_path), f_ptr))
+    if(!fgets(branch_path, sizeof(branch_path), f_ptr))
     {
         perror("Failed to read from HEAD");
+        fclose(f_ptr); 
         return -1;
     }
     fclose(f_ptr);
-    object_path[strcspn(object_path, "\r\n")] = 0;
-    FILE* hash_ptr = fopen(object_path, "r");
+    
+    branch_path[strcspn(branch_path, "\r\n")] = 0;
+    
+    FILE* hash_ptr = fopen(branch_path, "r");
     if(!hash_ptr)
     {
         perror("Failed to read from branch head ref");
         return -1;
     }
 
-    char buffer[64];
-    if(!fgets(buffer, sizeof(buffer), hash_ptr))
+    if(!fgets(object_hash, sizeof(object_hash), hash_ptr))
     {
         perror("Failed to read commit hash");
+        fclose(hash_ptr); 
         return -1;
     }
+    fclose(hash_ptr);
 
-    char object_dir[8];
-    char full_path[256];
-    if(sscanf(buffer, "%63s", object_hash) == 1)
-    {
-        sprintf(object_dir, "%.2s", object_hash);
-        sprintf(object_path, "%s", object_hash + 2);
-        sprintf(full_path, "%s/%s/%s", OBJECTS_PATH, object_dir, object_path);
-    }
+    object_hash[strcspn(object_hash, "\r\n")] = 0;
+    snprintf(out_path, 256, "%s/%.2s/%s", OBJECTS_PATH, object_hash, object_hash + 2);
+
+    return 1;
 }
-
