@@ -184,6 +184,7 @@ Lines getStagedFileList(time_t commitTime, Lines fileList)
             sprintf(path, "%s\\%s", dirPath, stagingList.content[j]);
             path[strlen(path)-1]= '\0';
             // printf("%s\n%s\n\n", path, fileList.content[i]);
+
             if (strcmp(fileList.content[i], path) == 0)
             {
                 dynamic_append(stagedList, strdup(fileList.content[i]));
@@ -207,8 +208,8 @@ void makeModFileList(time_t commitTime, Lines* modFileVect, char* dirPath){
 
         sprintf(fullPath, "%s\\%s", dirPath, srcIter->d_name);
         stat(fullPath, &st);
-
-        printf("Recurs= %s | %.f\n", fullPath,  difftime(st.st_mtime, commitTime));
+        // printf("Recurs= %s | %.f\n", fullPath,  difftime(st.st_mtime, commitTime));
+        
         if (checkIgnore(srcIter->d_name, fullPath)) 
         {//# checks if fullPath is included in .chzIgnore
             if (S_ISDIR(st.st_mode))
