@@ -2,7 +2,7 @@
 #include "commit_methods.h"
 #include <stdlib.h>
 
-int load_commit_payload(FILE* obj_ptr, CommitObject* out_commit) 
+int load_commit_object(FILE* obj_ptr, CommitObject* out_commit) 
 {
     size_t BUF_SIZE = 16384; 
     unsigned char* raw_buffer = malloc(BUF_SIZE);
@@ -26,7 +26,6 @@ int load_commit_payload(FILE* obj_ptr, CommitObject* out_commit)
 
     memset(out_commit, 0, sizeof(CommitObject));
 
-    // 2. Skip the Git Object Header (e.g., "commit 184\0")
     char* buffer_ptr = (char*)raw_buffer;
     char* null_ptr = strchr(buffer_ptr, '\0');
     if (!null_ptr) {
@@ -43,9 +42,9 @@ int load_commit_payload(FILE* obj_ptr, CommitObject* out_commit)
             size_t msg_len = strlen(line + 1);
             out_commit->message = malloc(msg_len + 1);
             strcpy(out_commit->message, line + 1);
-            break; // We are done parsing
+            break; 
         }
-        // Find the end of the current line
+
         char* next_line = strchr(line, '\n');
         if (next_line) {
             *next_line = '\0'; 
@@ -78,6 +77,47 @@ int load_commit_payload(FILE* obj_ptr, CommitObject* out_commit)
 
     free(raw_buffer);
     return 1;
+}
+
+void walk_history(const char* start_hash) 
+{
+    char current_hash[65];
+    strncpy(current_hash, start_hash, 64);
+    current_hash[64] = '\0';
+
+    while (strlen(current_hash) > 0) 
+    {
+        char obj_path[512];
+        snprintf(
+                obj_path, 
+                sizeof(obj_path), 
+                "%s/%.2s/%s", 
+                 OBJECTS_PATH, 
+                 current_hash, 
+                 current_hash + 2
+                 );
+
+        FILE* obj_ptr = fopen(obj_path, "rb");
+        if (!obj_ptr) break; 
+
+        CommitObject commit;
+        if (load_commit_object(obj_ptr, &commit) > 0) 
+        {
+            printf("commit %s\n", current_hash);
+            printf("Author: %s\n", commit.author);
+            printf("Date:   %s", ctime(&commit.commit_date));
+            printf("\n    %s\n\n", commit.message);
+
+            strncpy(current_hash, commit.parent_hash, 64);
+            
+            if (commit.author) free(commit.author);
+            if (commit.message) free(commit.message);
+        }
+
+        fclose(obj_ptr);
+        
+        if (current_hash[0] == '\0') break;
+    }
 }
 
 int get_object_path(char* out_path)
