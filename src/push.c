@@ -1,22 +1,8 @@
 #include "../include/chzdb.h"
 #include "commit.c"
-#include "log.c"
 #include <unistd.h>
 
-#define PATH_MAX 4096
-
-// for more reliable uploading & restoring, i opted for blobs :)
-
-typedef struct{
-    char* data;
-    size_t len;
-}Buffer;
-
-typedef struct{
-    unsigned int pathLen;
-    unsigned long long blobLen;
-    unsigned int isDir;
-}Blob;
+//& O: for more reliable uploading & restoring, i opted for blobs :>
 
 //~ Compresses raw bytes from memory and returns buffer
 int compressBuffer(const unsigned char* data, size_t len, unsigned char** outBuf, size_t* outLen){
@@ -104,7 +90,7 @@ int appendBlobFile(const char *relative, int is_dir,
                    const unsigned char *compressed, size_t compressed_len){
 
     char path[PATH_MAX];
-    snprintf(path, sizeof(path), "%s/blobs.pack", OBJECTS_INFO_PATH);
+    snprintf(path, sizeof(path), "%s/blobs.pack", PACK_PUSH_PATH);
 
     FILE *pack = fopen(path, "ab");
     if (!pack){
@@ -222,7 +208,7 @@ int zipDirectory(){
     }
 
     char pack[PATH_MAX];
-    snprintf(pack, sizeof(pack), "%s/blobs.pack", OBJECTS_INFO_PATH);
+    snprintf(pack, sizeof(pack), "%s/blobs.pack", PACK_PUSH_PATH);
     FILE *pfile = fopen(pack, "wb");
     if(!pfile){
         return -1;
@@ -240,7 +226,7 @@ int push(int argc, char* argv[]){
     switch(argc){
         //@ chz push
         case ARG_BASE + 2:
-            // idk what to do here, the extra identifiers are required :/
+            // idk what to do here, the extra identifiers are required :/  backend? 
             break;
 
         case ARG_BASE + 3:
@@ -257,14 +243,24 @@ int push(int argc, char* argv[]){
                     return 0;
                 }
 
-                int count = argc - 3;
-                char* args[] = {argv[0], argv[1]};
+                char message[128];
+                snprintf(message, 128, "Pushing to %s", getHead());
 
-                // logentry = commit(count, args);
-                // addEntry(logentry)
+                char* args[] = {"./commit", "-m", message};
+                int count = 3;
 
+                commit(count, args);    // no idea as of currently, how will we implement the name and email
+                if(addLogEntry() < 0){
+                    return -1;
+                }                       // into these, for now it'll stay as local
+                
                 int zip = zipDirectory();
-
+                if(zip == -1){
+                    printf(PUSH_ERROR_MSG_START"Zipping went wrong"MSG_END);
+                    return -1;
+                }
+                
+                uploadToDB();
             }
             break;
 
@@ -276,169 +272,4 @@ int push(int argc, char* argv[]){
 
 int main(int argc, char* argv[]){
     push(argc, argv);
-}
-
-//! Restoration for later-on
-
-//~ Inflates compressed bytes
-int decompressBuffer(const unsigned char* data, size_t len, unsigned char** out_buf, size_t* out_len){
-    z_stream zs = {0};
-    if(inflateInit(&zs) != Z_OK){
-        return -1;
-    }
-
-    size_t cap = 4096;
-    unsigned char* buf = malloc(cap);
-    if(!buf){
-        inflateEnd(&zs);
-        return -1;
-    }
-
-    zs.next_in = (Bytef*)data;
-    zs.avail_in = len;
-
-    size_t written = 0;
-    int ret;
-
-    do{
-        if(written == cap){
-            cap *= 2;
-            unsigned char* temp = realloc(buf, cap);
-            if(!temp){
-                free(buf);
-                inflateEnd(&zs);
-                return -1;
-            }
-            buf = temp;
-        }
-
-        zs.next_out = buf + written;
-        zs.avail_out = cap - written;
-
-        ret = inflate(&zs, Z_NO_FLUSH);
-        written = cap - zs.avail_out;
-
-        if(ret == Z_STREAM_ERROR || ret == Z_DATA_ERROR || ret == Z_MEM_ERROR){
-            free(buf);
-            inflateEnd(&zs);
-            return -1;
-        }
-
-    }while(ret != Z_STREAM_END);
-
-    inflateEnd(&zs);
-    *out_buf = buf;
-    *out_len = written;
-    return 0;
-}
-
-//~ Constructs files via blobs
-int restoreFile(const char* path, const unsigned char* compressed_data, size_t compressed_len){
-    unsigned char* raw = NULL;
-    size_t raw_len = 0;
-
-    if(decompressBuffer(compressed_data, compressed_len, &raw, &raw_len) != 0){
-        return -1;
-    }
-
-    FILE* f_ptr = fopen(path, "wb");
-    if(!f_ptr){
-        free(raw);
-        return -1;
-    }
-
-    fwrite(raw, 1, raw_len, f_ptr);
-    fclose(f_ptr);
-    free(raw);
-    return 1;
-}
-
-int ensureParentDirs(const char* path){
-    char tmp[PATH_MAX];
-    snprintf(tmp, sizeof(tmp), "%s", path);
-
-    for(char* p = tmp + 1; *p; p++){
-        if(*p == '/'){
-            *p = '\0';
-            #ifdef _WIN32
-                mkdir(tmp);
-            #else
-                mkdir(tmp, 0777);
-            #endif
-            *p = '/';
-        }
-    }
-
-    return 1;
-}
-
-int restorePack(const char* pack_path, const char* restore_root){
-    FILE* pack = fopen(pack_path, "rb");
-    if(!pack){
-        return -1;
-    }
-
-    while(1){
-        Blob hdr;
-        size_t n = fread(&hdr, sizeof(hdr), 1, pack);
-
-        if(n == 0){
-            break;
-        }
-
-        if(n != 1){
-            fclose(pack);
-            return -1;
-        }
-
-        char rel_path[PATH_MAX];
-        if(hdr.pathLen >= PATH_MAX){
-            fclose(pack);
-            return -1;
-        }
-
-        if(fread(rel_path, 1, hdr.pathLen, pack) != hdr.pathLen){
-            fclose(pack);
-            return -1;
-        }
-        rel_path[hdr.pathLen] = '\0';
-
-        char full_path[PATH_MAX];
-        snprintf(full_path, sizeof(full_path), "%s/%s", restore_root, rel_path);
-
-        if(hdr.isDir){
-            ensureParentDirs(full_path);
-            #ifdef _WIN32
-                mkdir(full_path);
-            #else
-                mkdir(full_path, 0777);
-            #endif
-            continue;
-        }
-
-        unsigned char* compressed = malloc(hdr.blobLen);
-        if(!compressed){
-            fclose(pack);
-            return -1;
-        }
-
-        if(fread(compressed, 1, hdr.blobLen, pack) != hdr.blobLen){
-            free(compressed);
-            fclose(pack);
-            return -1;
-        }
-
-        ensureParentDirs(full_path);
-
-        if(restoreFile(full_path, compressed, hdr.blobLen) != 1){
-            free(compressed);
-            fclose(pack);
-            return -1;
-        }
-
-        free(compressed);
-    }
-
-    fclose(pack);
-    return 1;
 }

@@ -384,7 +384,7 @@ void commit(int argc, char* argv[])
 
                 char commit_hash[41];
                 //message arg
-                char* commit_message = argv[ARG_BASE + 4]; 
+                char* commit_message = argv[ARG_BASE + 3]; 
                 create_commit_object(hex_tree_hash, parent_hash, commit_message, commit_hash);
 
                 update_branch_ref(commit_hash);
@@ -393,6 +393,8 @@ void commit(int argc, char* argv[])
 
                 for(size_t i = 0; i < index.size; i++) free(index.content[i]);
                 free(index.content);
+
+                addLogEntry();
             }
             break;
 

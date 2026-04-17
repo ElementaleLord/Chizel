@@ -8,9 +8,9 @@
 #endif
 
 //~ fetch a repository from the database
-PGresult* fetchFromDB(char* link)
+bool fetchFromDB(char* link)
 {
-    return restoreFromDB("repositories", "*", "url", link);
+    return restoreFromDB(link);
 }
 
 //~ checks for the repository's origin before fetching
@@ -129,7 +129,7 @@ bool checkOriginURL(char* originCheck)
 }
 
 //~ fetchs data from the database
-PGresult* fetchFunction(char* link)
+bool fetchFunction(char* link)
 {
     if (link == NULL || link[0] == '\0') 
     {
@@ -139,32 +139,28 @@ PGresult* fetchFunction(char* link)
     }
 
     char* p = strstr(link,"chizel.com/");
-    PGresult* status;
+    bool status;
     if(p == link)
     {
-        status = fetchFromDB(link);
-        if(status != NULL)
+        if((status = fetchFromDB(link)))
         {
             printf(FETCH_REPORT_MSG_START"Successfully Fetched From Remote"MSG_END);
-            return status;
         }
         else
         {
             printf(FETCH_ERROR_MSG_START"Can Not Fetch From Remote"MSG_END);
-            whatIsTheError();
-            return NULL;
         }
+        return status;
     }
     else
     {
         printf(FETCH_ERROR_MSG_START"Invalid link, make sure repository is from Chizel"MSG_END);
-        whatIsTheError();
-        return NULL;
+        return false;
     }
 }
 
 //~ main runner function used to determine case and call appropriate function
-PGresult* fetch(int argc, char* argv[])
+bool fetch(int argc, char* argv[])
 {
     
     switch(argc)
@@ -193,7 +189,7 @@ PGresult* fetch(int argc, char* argv[])
                 printf(FETCH_ERROR_MSG_START"This Repository Does Not Have An Origin"MSG_END);
                 whatIsTheError();
                 printf(FETCH_REPORT_MSG_START"Please Insert An Origin Via Remote Repository HTTPS"MSG_END);
-                return NULL;
+                return false;
             }
             break;
         //@ chz fetch <arg>
@@ -206,13 +202,15 @@ PGresult* fetch(int argc, char* argv[])
             break;
         default:
             printf(CHZ_ERROR_MSG_START"Invalid Command"MSG_END);
-            return NULL;
+            return false;
             break;
     }
 }
 
+/*
 int main(int argc, char* argv[])
 {
     fetch(argc, argv);
     return 0;
 }
+*/

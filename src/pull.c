@@ -1,24 +1,29 @@
 #include "../include/chizel.h"
 #include "../include/chzdb.h"
 #include "fetch.c"
-#include "merge.c"
+//#include "merge.c"
 
 void pullHelp(){
     printf(PULL_REPORT_MSG_START"\nUsage: chz pull | chz pull -h"MSG_END);
 }
 
 void pull(int argc, char* argv[]){
-    
-    PGresult* data;
 
     switch(argc){
         //@ chz pull
         case ARG_BASE + 2:
-            data = fetch(argc, argv);
-            if(data == NULL){
+            if(!fetch(argc, argv)){
                 return;
             }
-            merge(argc, argv);
+            //merge(argc, argv);
+            
+            /*          //& O: probably in some aspect of merge?
+            int r = restorePack(".chz/objects/restored/pulled.pack", ".");
+            if(r < 0){
+                printf(PULL_ERROR_MSG_START"Could not unpack restored content"MSG_END);
+                return;
+            }
+            */
             break;
 
         //@ chz pull <arg>
@@ -29,11 +34,10 @@ void pull(int argc, char* argv[]){
             }
             else{
                 //% chz pull <url>
-                data = fetch(argc, argv);
-                if(data == NULL){
+                if(!fetch(argc, argv)){
                     return;
                 }
-                merge(argc, argv); // + data
+                //merge(argc, argv); // + data
                 break;
             }
             break;

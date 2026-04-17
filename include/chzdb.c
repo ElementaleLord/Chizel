@@ -1,5 +1,6 @@
 #include "chzdb.h"
 #include <ctype.h>
+#include <zlib.h>
 
 //& Database
 //~ Trim leading space
@@ -42,7 +43,7 @@ static void loadEnv(void){
     }
 
     loaded = true;
-    env_file = fopen(".env", "r");
+    env_file = fopen("../.env", "r");
     if (env_file == NULL){
         return;
     }
@@ -80,6 +81,169 @@ static void loadEnv(void){
     fclose(env_file);
 }
 
+//~ Inflates compressed bytes
+int decompressBuffer(const unsigned char* data, size_t len, unsigned char** out_buf, size_t* out_len){
+    z_stream zs = {0};
+    if(inflateInit(&zs) != Z_OK){
+        return -1;
+    }
+
+    size_t cap = 4096;
+    unsigned char* buf = malloc(cap);
+    if(!buf){
+        inflateEnd(&zs);
+        return -1;
+    }
+
+    zs.next_in = (Bytef*)data;
+    zs.avail_in = len;
+
+    size_t written = 0;
+    int ret;
+
+    do{
+        if(written == cap){
+            cap *= 2;
+            unsigned char* temp = realloc(buf, cap);
+            if(!temp){
+                free(buf);
+                inflateEnd(&zs);
+                return -1;
+            }
+            buf = temp;
+        }
+
+        zs.next_out = buf + written;
+        zs.avail_out = cap - written;
+
+        ret = inflate(&zs, Z_NO_FLUSH);
+        written = cap - zs.avail_out;
+
+        if(ret == Z_STREAM_ERROR || ret == Z_DATA_ERROR || ret == Z_MEM_ERROR){
+            free(buf);
+            inflateEnd(&zs);
+            return -1;
+        }
+
+    }while(ret != Z_STREAM_END);
+
+    inflateEnd(&zs);
+    *out_buf = buf;
+    *out_len = written;
+    return 0;
+}
+
+//~ Constructs files via blobs
+int restoreFile(const char* path, const unsigned char* compressed_data, size_t compressed_len){
+    unsigned char* raw = NULL;
+    size_t raw_len = 0;
+
+    if(decompressBuffer(compressed_data, compressed_len, &raw, &raw_len) != 0){
+        return -1;
+    }
+
+    FILE* f_ptr = fopen(path, "wb");
+    if(!f_ptr){
+        free(raw);
+        return -1;
+    }
+
+    fwrite(raw, 1, raw_len, f_ptr);
+    fclose(f_ptr);
+    free(raw);
+    return 1;
+}
+
+int ensureParentDirs(const char* path){
+    char tmp[PATH_MAX];
+    snprintf(tmp, sizeof(tmp), "%s", path);
+
+    for(char* p = tmp + 1; *p; p++){
+        if(*p == '/'){
+            *p = '\0';
+            #ifdef _WIN32
+                mkdir(tmp);
+            #else
+                mkdir(tmp, 0777);
+            #endif
+            *p = '/';
+        }
+    }
+
+    return 1;
+}
+
+int restorePack(const char* pack_path, const char* restore_root){
+    FILE* pack = fopen(pack_path, "rb");
+    if(!pack){
+        return -1;
+    }
+
+    while(1){
+        Blob hdr;
+        size_t n = fread(&hdr, sizeof(hdr), 1, pack);
+
+        if(n == 0){
+            break;
+        }
+
+        if(n != 1){
+            fclose(pack);
+            return -1;
+        }
+
+        char rel_path[PATH_MAX];
+        if(hdr.pathLen >= PATH_MAX){
+            fclose(pack);
+            return -1;
+        }
+
+        if(fread(rel_path, 1, hdr.pathLen, pack) != hdr.pathLen){
+            fclose(pack);
+            return -1;
+        }
+        rel_path[hdr.pathLen] = '\0';
+
+        char full_path[PATH_MAX + 4];
+        snprintf(full_path, sizeof(full_path), "%s/%s", restore_root, rel_path);
+
+        if(hdr.isDir){
+            ensureParentDirs(full_path);
+            #ifdef _WIN32
+                mkdir(full_path);
+            #else
+                mkdir(full_path, 0777);
+            #endif
+            continue;
+        }
+
+        unsigned char* compressed = malloc(hdr.blobLen);
+        if(!compressed){
+            fclose(pack);
+            return -1;
+        }
+
+        if(fread(compressed, 1, hdr.blobLen, pack) != hdr.blobLen){
+            free(compressed);
+            fclose(pack);
+            return -1;
+        }
+
+        ensureParentDirs(full_path);
+
+        if(restoreFile(full_path, compressed, hdr.blobLen) != 1){
+            free(compressed);
+            fclose(pack);
+            return -1;
+        }
+
+        free(compressed);
+    }
+
+    fclose(pack);
+    return 1;
+}
+
 //~ Establish db connection
 static PGconn *openDB(void){
     const char *db_key = getenv("DB_KEY");
@@ -106,139 +270,124 @@ static PGconn *openDB(void){
     return conn;
 }
 
-//~ Checks for missing values or potential injections
-bool checkContraband(const char *s){
-    if(s == NULL || s[0] == '\0'){ return false; }
+bool fillRepoData(RepositoryChz* repo){
+    char path[1024];
+    FILE* f;
 
-    size_t i;
+    memset(repo, 0, sizeof(*repo));
 
-    if(!(isalpha((unsigned char)s[0]) || s[0] == '_')){ return false; }
-
-    for(i=1; s[i] != '\0'; i++){
-        if(!(isalnum((unsigned char)s[i]) || s[i] == '_')){ return false; }
+    f = fopen(ORIGIN_FILE, "r");
+    if(!f){
+        return false;
     }
+    if(!fgets(repo->repoURL, sizeof(repo->repoURL), f)){
+        fclose(f);
+        return false;
+    }
+    fclose(f);
+    repo->repoURL[strcspn(repo->repoURL, "\r\n")] = '\0';
 
-    return true;
-}
-
-//~ Format a repository creation date to SQL DATE
-static bool formatRepoDate(time_t raw_date, char *buffer, size_t buffer_size){
-    struct tm date_info;
-
-    if (localtime_r(&raw_date, &date_info) == NULL){
+    f = fopen(DESC_PATH, "r");
+    if(!f){
+        return false;
+    }
+    if(!fgets(repo->repoName, sizeof(repo->repoName), f)){
+        fclose(f);
+        return false;
+    }
+    fclose(f);
+    repo->repoName[strcspn(repo->repoName, "\r\n")] = '\0';
+    
+    snprintf(path, 1024, "%s/blobs.pack", PACK_PUSH_PATH);
+    FILE* pack = fopen(path, "rb");
+    if(!pack){
         return false;
     }
 
-    return strftime(buffer, buffer_size, "%d-%m-%Y", &date_info) != 0;
-}
+    fseek(pack, 0, SEEK_END);
+    long pack_size = ftell(pack);
+    rewind(pack);
 
-//~ Serialize contributors to BIGINT[] text
-static bool formatContributors(const RepositoryChz *repo, char *buffer, size_t buffer_size){
-    size_t used = 0;
-
-    if (repo->contributors == NULL || repo->contributorCount == 0){
-        if (buffer_size < 3){
-            return false;
-        }
-
-        strcpy(buffer, "{}");
-        return true;
+    if(pack_size < 0){
+        fclose(pack);
+        return false;
     }
+    size_t size = (size_t)pack_size;
 
-    used = (size_t)snprintf(buffer, buffer_size, "{");
-    if (used >= buffer_size){
+    repo->data = malloc(size);
+    if(!repo->data){
+        fclose(pack);
         return false;
     }
 
-    for (size_t i = 0; i < repo->contributorCount; i++){
-        int written = snprintf(
-            buffer + used,
-            buffer_size - used,
-            i == 0 ? "%lld" : ",%lld",
-            repo->contributors[i]
-        );
+    repo->dataLen = fread(repo->data, 1, size, pack);
+    fclose(pack);
 
-        if (written < 0 || (size_t)written >= buffer_size - used){
-            return false;
-        }
-
-        used += (size_t)written;
-    }
-
-    if (used + 2 > buffer_size){
+    if(repo->dataLen != size){
+        free(repo->data);
+        repo->data = NULL;
+        repo->dataLen = 0;
         return false;
     }
 
-    buffer[used++] = '}';
-    buffer[used] = '\0';
     return true;
 }
 
 //~ Uploads a repository
-bool uploadRepo(RepositoryChz repo){
-    const char *params[8];
-    char id_buffer[32];
-    char date_buffer[16];
-    char followers_buffer[32];
-    char stars_buffer[32];
-    char contributors_buffer[512];
+bool uploadToDB(){
+    const char *params[4];
     unsigned char *data_buffer = NULL;
     PGconn *conn;
     PGresult *res;
 
-    if (repo.repoName == NULL){
+    RepositoryChz repo;
+    if(!fillRepoData(&repo)){
+        return false;
+    }
+
+    if (repo.repoName[0] == '\0' || repo.repoURL[0] == '\0'){
+        free(repo.data);
         return false;
     }
 
     if ((conn = openDB()) == NULL){
+        free(repo.data);
         return false;
     }
 
-    //# libpq expects text parameters here, so numeric fields are formatted
-    snprintf(id_buffer, sizeof(id_buffer), "%lld", repo.id);
-    if (!formatRepoDate(repo.repoDate, date_buffer, sizeof(date_buffer))){
-        PQfinish(conn);
-        return false;
-    }
-
-    snprintf(followers_buffer, sizeof(followers_buffer), "%lld", repo.followers);
-    snprintf(stars_buffer, sizeof(stars_buffer), "%lld", repo.stars);
-    if (!formatContributors(&repo, contributors_buffer, sizeof(contributors_buffer))){
-        PQfinish(conn);
-        return false;
-    }
-
-    //# repo contents are stored as a BYTEA blob in SQL
-    if (repo.data != NULL && sizeof(repo.data) > 0){
-        data_buffer = PQescapeByteaConn(conn, repo.data, sizeof(repo.data), NULL);
+    size_t escapedLen = 0;      // for PQescapeByteaConn
+    //# convertion to BYTEA
+    if (repo.data != NULL && repo.dataLen > 0){
+        data_buffer = PQescapeByteaConn(conn, repo.data, repo.dataLen, &escapedLen);
         if (data_buffer == NULL){
             PQfinish(conn);
+            free(repo.data);
             return false;
         }
     }
 
-    params[0] = id_buffer;
+    params[0] = repo.repoURL;
     params[1] = repo.repoName;
-    params[2] = date_buffer;
-    params[3] = repo.repoURL;
-    params[4] = followers_buffer;
-    params[5] = stars_buffer;
-    params[6] = contributors_buffer;
-    params[7] = (const char *)data_buffer;
+    params[2] = (const char *)data_buffer;
 
     res = PQexecParams(
         conn,
-        "INSERT INTO repositories (r_id, r_name, r_creationDate, r_url, r_followers, r_stars, r_contributors, r_chz) "
-        "VALUES ($1, $2, $3, $4, $5, $6, $7, $8) "
-        "ON CONFLICT (r_id) DO UPDATE SET "
+        "INSERT INTO repositories (r_url, r_name, r_chz) "
+        "VALUES ($1, $2, $3) "
+        "ON CONFLICT (r_url) DO UPDATE SET "
         "r_name = EXCLUDED.r_name, "
-        "r_creationDate = EXCLUDED.r_creationDate, "
-        "r_url = EXCLUDED.r_url, "
-        "r_followers = EXCLUDED.r_followers, "
-        "r_stars = EXCLUDED.r_stars, "
-        "r_contributors = EXCLUDED.r_contributors, "
         "r_chz = EXCLUDED.r_chz",
-        8, NULL, params, NULL, NULL, 0);
+        3, NULL, params, NULL, NULL, 0);
+
+    if(res == NULL){
+        printf(CHZ_ERROR_MSG_START"Upload failed: %s\n"MSG_END, PQerrorMessage(conn));
+        if (data_buffer != NULL){
+            PQfreemem(data_buffer);
+        }
+        free(repo.data);
+        PQfinish(conn);
+        return false;
+    }
 
     if (PQresultStatus(res) != PGRES_COMMAND_OK){
         printf(CHZ_ERROR_MSG_START"Upload failed: %s\n"MSG_END, PQerrorMessage(conn));
@@ -246,6 +395,7 @@ bool uploadRepo(RepositoryChz repo){
         if (data_buffer != NULL){
             PQfreemem(data_buffer);
         }
+        free(repo.data);
         PQfinish(conn);
         return false;
     }
@@ -255,32 +405,49 @@ bool uploadRepo(RepositoryChz repo){
         PQfreemem(data_buffer);
     }
     PQfinish(conn);
+    free(repo.data);
     return true;
 }
 
-//~ Restores content via table, wanted content, a condition with its value
-PGresult* restoreFromDB(const char* table, const char* content, const char* condition, const char* cond_value){
+//~ Places fetched data into objects/restored
+bool placeRestored(PGresult* data){
+    if(data == NULL || PQntuples(data) < 1 || PQnfields(data) < 1 || PQgetisnull(data, 0, 0)){
+        PQclear(data);
+        return false;
+    }
+
+    char* bytes = PQgetvalue(data, 0, 0);
+    int len = PQgetlength(data, 0, 0);
+
+    char output[1024];
+    snprintf(output, 1024, "%s/pulled.pack", PACK_PULL_PATH);
+    FILE* f = fopen(output, "wb");
+    if(!f){
+        PQclear(data);
+        return false;
+    }
+
+    fwrite(bytes, 1, len, f);
+    fclose(f);
+    PQclear(data);
+    return true;
+}
+
+//~ Restores content from the db via link. If not passed, uses origin
+bool restoreFromDB(const char* link){
     const char *params[1];
     PGconn *conn;
     PGresult *res;
     char cmd[255];
 
-    if (!checkContraband(table) || !checkContraband(content) || !checkContraband(condition)){
-        return NULL;
-    }
-
-    if(cond_value == NULL){
-        return NULL;
-    }
-
     if ((conn = openDB()) == NULL){
         return NULL;
     }
 
-    params[0] = cond_value;
-    snprintf(cmd, sizeof(cmd), "SELECT %s FROM %s WHERE %s = $1", content, table, condition);
+    snprintf(cmd, sizeof(cmd), "SELECT r_chz FROM repositories WHERE r_url = $1");
+    params[0] = link;
 
-    res = PQexecParams(conn, cmd, 1, NULL, params, NULL, NULL, 0);
+    res = PQexecParams(conn, cmd, 1, NULL, params, NULL, NULL, 1);
 
     //# checks query success
     if (PQresultStatus(res) != PGRES_TUPLES_OK){
@@ -298,7 +465,7 @@ PGresult* restoreFromDB(const char* table, const char* content, const char* cond
     }
 
     PQfinish(conn);
-    return res;
+    return placeRestored(res);
 }
 
 //^ O: The following snippet shows how you iterate through the result
