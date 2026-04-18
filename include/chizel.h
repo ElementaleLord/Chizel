@@ -65,7 +65,7 @@ F: is Faust
 
     //~ Offsets
     #define ARG_BASE -1
-    #define PATH_MAX 4096
+    //#define PATH_MAX 4096
 
     //~ Permissions
     #define DEF_PERM 0700

@@ -8,7 +8,7 @@
 
 void logHelp(){
     printf(LOG_REPORT_MSG_START"Usage:\\n chz log | chz log -o | chz log -h | ");
-    printf("chz log -r | chz log -D | chz log -b <branch> | chz log -n <number>");
+    printf("chz log -r | chz log -b <branch> | chz log -n <number>");
 }
 
 //~ Prints a log entry differently via modes
@@ -279,9 +279,6 @@ bool logs(int argc, char* argv[]){
 
             }else if(strcmp(argv[ARG_BASE + 2], "-r") == 0){//% chz log -r
                 readLogsReverse();
-
-            }else if(strcmp(argv[ARG_BASE + 2], "-a") == 0){//% chz log -a
-                //readAllLogs();     // 6 letter hashes, message + branch names
 
             }
             break;

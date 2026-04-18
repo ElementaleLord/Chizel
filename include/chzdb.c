@@ -75,7 +75,11 @@ static void loadEnv(void){
             continue;
         }
 
-        setenv(key, value, 0);
+        #ifdef _WIN32
+            _putenv_s(key, value);
+        #else
+            setenv(key, value, 0);
+        #endif
     }
 
     fclose(env_file);
