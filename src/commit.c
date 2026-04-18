@@ -1,6 +1,5 @@
 #include "../include/chizel.h"
 #include <dirent.h>
-#include <errno.h>
 #include <sys/stat.h>
 #include <zlib.h>
 #include <openssl/sha.h>
@@ -13,6 +12,7 @@
 #define mkdir(dir) _mkdir(dir)
 #endif  
 
+#define ZERO_HASH "0000000000000000000000000000000000000000"
 // Environment & Staging
 Lines preCommit();
 
@@ -78,8 +78,9 @@ int get_parent_hash(char* parent_hex)
     FILE* f_ptr = fopen(full_path, "r");
     if (!f_ptr) return 0; 
 
-    if (fscanf(f_ptr, "%s", parent_hex) != 1)
+    if (fscanf(f_ptr, "%40s", parent_hex) != 1)
     {
+        strcpy(parent_hex, ZERO_HASH);
         fclose(f_ptr);
         return 0;
     }
