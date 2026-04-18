@@ -45,6 +45,16 @@ bool createBranch(char* branchName)
         fputs(buffer, f);
     }
 
+    char log[1024];
+    snprintf(log, sizeof(log), "%s%s.log", LOGS_PATH, branchName);
+
+    FILE* l = fopen(log, "w");
+    if(!l){ return false; }
+
+    fclose(f);
+    fclose(head);
+    fclose(l);
+
     return true;
 }
 
@@ -76,6 +86,10 @@ void deleteBranch(const char* branch)
     }else{
         printf(BRANCH_REPORT_MSG_START"Successfully deleted branch %s"MSG_END, branch);
     }
+
+    char branchLog[1024];
+    snprintf(branchLog, sizeof(branchLog), "%s%s.log", LOGS_PATH, branch);
+    remove(branchLog);
 
     //& O: IF the head was the deleted branch (ie: chz branch -D)
     if(strcmp(branch, getHead()) == 0){
@@ -140,6 +154,11 @@ void renameBranch(char* oldName, char* newName)
         printf(BRANCH_ERROR_MSG_START"Failed To Rename Branch %s to %s"MSG_END, oldName, newName);
         return;
     }
+
+    char oldLog[1024], newLog[1024];
+    snprintf(oldLog, 1024, "%s%s.log", LOGS_PATH, oldName);
+    snprintf(newLog, 1024, "%s%s.log", LOGS_PATH, newName);
+    rename(oldLog, newLog);
 
     //& O: IF the head was the renamed branch
     if(strcmp(oldName, getHead()) == 0){

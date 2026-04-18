@@ -4,7 +4,18 @@
 #ifndef CHZDB_H
 #define CHZDB_H
 
-    PGresult* restoreFromDB(const char* table, const char* content, const char* condition, const char* cond_value);
-    bool uploadRepo(RepositoryChz repo);
+    typedef struct{
+        char* data;
+        size_t len;
+    }Buffer;
+
+    typedef struct{
+        unsigned int pathLen;
+        unsigned long long blobLen;
+        unsigned int isDir;
+    }Blob;
+
+    bool restoreFromDB(const char* link);
+    bool uploadToDB();
 
 #endif
