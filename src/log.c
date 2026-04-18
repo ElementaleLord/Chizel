@@ -7,7 +7,7 @@
 #define LOG_NUMBERED 3
 
 void logHelp(){
-    printf(LOG_REPORT_MSG_START"Usage:\\n chz log | chz log -o | chz log -h | ");
+    printf(LOG_REPORT_MSG_START"Usage:\n chz log | chz log -o | chz log -h | ");
     printf("chz log -r | chz log -b <branch> | chz log -n <number>");
 }
 

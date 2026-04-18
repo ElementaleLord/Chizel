@@ -89,7 +89,7 @@ char* readRaw(const char* path, size_t* fileSize){
 int appendBlobFile(const char *relative, int is_dir,
                    const unsigned char *compressed, size_t compressed_len){
 
-    char path[PATH_MAX];
+    char path[4096];
     snprintf(path, sizeof(path), "%s/blobs.pack", PACK_PUSH_PATH);
 
     FILE *pack = fopen(path, "ab");
@@ -126,7 +126,7 @@ int appendBlobFile(const char *relative, int is_dir,
 
 //~ Recursively walks the dir, uploading subdir metadata and compressing files
 int pushPath(const char* root, const char* relative){
-    char full_path[PATH_MAX];
+    char full_path[4096];
     struct stat st;
 
     if(relative[0] == '\0'){
@@ -155,7 +155,7 @@ int pushPath(const char* root, const char* relative){
                 continue;
             }
 
-            char child_rel[PATH_MAX];
+            char child_rel[4096];
             if(relative[0] == '\0'){
                 snprintf(child_rel, sizeof(child_rel), "%s", entry->d_name);
             }else{
@@ -201,13 +201,13 @@ int pushPath(const char* root, const char* relative){
 
 //~ Starts the compression process
 int zipDirectory(){
-    char curpath[PATH_MAX];
+    char curpath[4096];
     if(getcwd(curpath, sizeof(curpath)) == NULL){
         printf(PUSH_REPORT_MSG_START"Could not access workin directory"MSG_END);
         return -1;
     }
 
-    char pack[PATH_MAX];
+    char pack[4096];
     snprintf(pack, sizeof(pack), "%s/blobs.pack", PACK_PUSH_PATH);
     FILE *pfile = fopen(pack, "wb");
     if(!pfile){
@@ -249,10 +249,10 @@ int push(int argc, char* argv[]){
                 char* args[] = {"./commit", "-m", message};
                 int count = 3;
 
-                commit(count, args);    // no idea as of currently, how will we implement the name and email
+                commit(count, args);
                 if(addLogEntry() < 0){
                     return -1;
-                }                       // into these, for now it'll stay as local
+                }
                 
                 int zip = zipDirectory();
                 if(zip == -1){

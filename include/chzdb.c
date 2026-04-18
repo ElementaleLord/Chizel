@@ -159,7 +159,7 @@ int restoreFile(const char* path, const unsigned char* compressed_data, size_t c
 }
 
 int ensureParentDirs(const char* path){
-    char tmp[PATH_MAX];
+    char tmp[4096];
     snprintf(tmp, sizeof(tmp), "%s", path);
 
     for(char* p = tmp + 1; *p; p++){
@@ -196,8 +196,8 @@ int restorePack(const char* pack_path, const char* restore_root){
             return -1;
         }
 
-        char rel_path[PATH_MAX];
-        if(hdr.pathLen >= PATH_MAX){
+        char rel_path[4096];
+        if(hdr.pathLen >= 4096){
             fclose(pack);
             return -1;
         }
@@ -208,7 +208,7 @@ int restorePack(const char* pack_path, const char* restore_root){
         }
         rel_path[hdr.pathLen] = '\0';
 
-        char full_path[PATH_MAX + 4];
+        char full_path[4096 + 4];
         snprintf(full_path, sizeof(full_path), "%s/%s", restore_root, rel_path);
 
         if(hdr.isDir){
