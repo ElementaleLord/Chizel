@@ -1,45 +1,19 @@
-#include "../include/chizel.c"
+#include "../include/chizel.h"
 #include <dirent.h>
-#include <errno.h>
-
-//DEPENDENCIES
+#include <sys/stat.h>
 #include <zlib.h>
-#include <openssl/sha.h> 
+#include <openssl/sha.h>
 //DEPENDENCIES: INSTALL OPENSSL/ ZLIB
 // -lcrypto for openSSL -lz for zlib
-//used for SHA1, while not recommended its fast and doesn't use much memory
-//future changes might include moving to SHA2 and reworking blob objects
 
-typedef struct
-{
-    char* name; 
-    unsigned int mode;
-    unsigned char hash[20];
-}blob_object;
+#ifdef _WIN32
+#include <direct.h>
+#define rmdir(path) _rmdir(path)
+#define mkdir(dir) _mkdir(dir)
+#endif  
 
-
-#define dynamic_append(d_arr, val)\
-    do{\
-        if(d_arr.size >= d_arr.capacity)\
-        {\
-            if(d_arr.size == 0) d_arr.capacity = 256;\
-            else d_arr.capacity *= 2;\
-            void *temp = realloc(d_arr.content, d_arr.capacity * sizeof(*d_arr.content));\
-            if(!temp)\
-            {\
-                perror("realloc failed");\
-                exit(1);\
-            }\
-            d_arr.content = temp;\
-        }\
-        d_arr.content[d_arr.size++] = val;\
-    }while(0)
-
-
+#define ZERO_HASH "0000000000000000000000000000000000000000"
 // Environment & Staging
-int check_chz();
-int check_staging_area();
-Lines read_staging_area();
 Lines preCommit();
 
 // Path & Hashing Helpers
@@ -68,51 +42,12 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-int check_chz()
-{
-    DIR* pdir = opendir(CHZ_PATH);
-    if(pdir)
-    {
-        closedir(pdir);
-        return 1;
-    }
-    //file doesnt exist
-    if(errno == ENOENT) return 0;
-    //permission error or other issues
-    return -1;
-}
-
-int check_staging_area()
-{
-    FILE *f_ptr = fopen(INDEX_PATH, "r");
-    if(!f_ptr)
-    {
-        perror("couldnt access index");
-        return 0;
-    }
-
-    fclose(f_ptr);
-    return 1;
-}
-
 int compare_paths(const void* a, const void* b)
 {
     const char* path_a = *(const char**) a;
     const char* path_b = *(const char**) b;
 
     return strcmp(path_a, path_b);
-}
-
-Lines read_staging_area()
-{
-    Lines index_content = {0};
-    FILE *f_ptr = fopen(INDEX_PATH, "r");
-    char line[256];
-    while(fgets(line,sizeof(line), f_ptr))
-    {
-        dynamic_append(index_content, strdup(line));
-    }
-    return index_content;
 }
 
 void get_current_branch_path(char* dst)
@@ -143,8 +78,9 @@ int get_parent_hash(char* parent_hex)
     FILE* f_ptr = fopen(full_path, "r");
     if (!f_ptr) return 0; 
 
-    if (fscanf(f_ptr, "%s", parent_hex) != 1)
+    if (fscanf(f_ptr, "%40s", parent_hex) != 1)
     {
+        strcpy(parent_hex, ZERO_HASH);
         fclose(f_ptr);
         return 0;
     }
@@ -245,9 +181,13 @@ void write_chz_object( const char* type, const char* content, size_t len, char* 
 
     char dir_path[256];
     sprintf(dir_path, "%s/objects/%.2s", CHZ_PATH, hex_hash);
-    mkdir(dir_path, 0777); 
+    #ifdef _WIN32
+        mkdir(dir_path);
+    #else
+        mkdir(dir_path, 0777);
+    #endif
 
-    char obj_path[256];
+    char obj_path[512];
     sprintf(obj_path, "%s/%s", dir_path, hex_hash + 2);
 
     compression(obj_path, (unsigned int*)full_content, full_len);
@@ -270,20 +210,20 @@ void create_commit_object(
     if(parent_hash && strlen(parent_hash) > 0)
     {
         offset += sprintf(commit_content + offset, "parent %s\n", parent_hash);
-        struct tm* time_info = get_time();
-        char time_str[64];
-        strftime(time_str, sizeof(time_str),"%s %z", time_info);
-        
-        //temp author and committer fields until I find a good way to dynamically do that
-        offset += sprintf(commit_content + offset, "author ChizelUser <user@example.com> %s\n", time_str);
-        offset += sprintf(commit_content + offset, "committer ChizelUser <user@example.com> %s\n\n", time_str);
-
-        offset += sprintf(commit_content + offset, "%s\n", message);
-
-        char bin_hash[20];
-        write_chz_object("commit", commit_content, offset, bin_hash);
-        hash_to_string((unsigned char*) bin_hash, commit_hash);
     }
+        
+    struct tm* time_info = get_time();
+    char time_str[64];
+    strftime(time_str, sizeof(time_str),"%s %z", time_info);
+        
+    //temp author and committer fields until I find a good way to dynamically do that
+    offset += sprintf(commit_content + offset, "author ChizelUser <user@example.com> %s\n", time_str);
+    offset += sprintf(commit_content + offset, "committer ChizelUser <user@example.com> %s\n\n", time_str);
+    offset += sprintf(commit_content + offset, "%s\n", message);
+
+    char bin_hash[20];
+    write_chz_object("commit", commit_content, offset, bin_hash);
+    hash_to_string((unsigned char*) bin_hash, commit_hash);    
 }
 
 
@@ -375,7 +315,7 @@ unsigned char* build_tree(Lines index, size_t* tree_len)
 Lines preCommit()
 {
     Lines empty_index = {0};
-    int status = check_chz();
+    int status = checkChz();
     if(status == 0)
     {
         printf(COMMIT_ERROR_MSG_START".chz workspace not initialized"MSG_END);
@@ -390,10 +330,10 @@ Lines preCommit()
         return empty_index;
     }
 
-    status = check_staging_area();
+    status = checkStagingArea();
     if(status == 0)
     {
-        printf(COMMIT_ERROR_MSG_START"errorMSG"MSG_END);
+        printf(COMMIT_ERROR_MSG_START"Staging area failure"MSG_END);
         return empty_index;
     }
     else if(status < 0)
@@ -403,14 +343,14 @@ Lines preCommit()
         return empty_index;
     }
 
-    Lines index = read_staging_area();
+    Lines index = readStagingArea();
     qsort(index.content, index.size, sizeof(index.content[0]), compare_paths);
     return index;
 }
 
 void commitHelp()
 {
-    printf(COMMIT_REPORT_MSG_START"\nUsage: chz commit -h | chz commit -m \"msg\""MSG_END);
+    printf(COMMIT_REPORT_MSG_START"\nUsage: chz commit -h | chz commit -m <msg>"MSG_END);
 }
 
 void commit(int argc, char* argv[])
@@ -418,14 +358,14 @@ void commit(int argc, char* argv[])
     switch(argc)
     {
         case ARG_BASE + 3:
-            if(strcmp(argv[ARG_BASE + 3], "-h") == 0)
+            if(strcmp(argv[ARG_BASE + 2], "-h") == 0)
             {
                 commitHelp();
             }
             break;
 
         case ARG_BASE + 4:
-            if(strcmp(argv[ARG_BASE + 3], "-m") == 0)
+            if(strcmp(argv[ARG_BASE + 2], "-m") == 0)
             {
                 Lines index = preCommit();
                 if (index.size == 0 && index.capacity == 0) return; 
@@ -445,7 +385,7 @@ void commit(int argc, char* argv[])
 
                 char commit_hash[41];
                 //message arg
-                char* commit_message = argv[ARG_BASE + 4]; 
+                char* commit_message = argv[ARG_BASE + 3]; 
                 create_commit_object(hex_tree_hash, parent_hash, commit_message, commit_hash);
 
                 update_branch_ref(commit_hash);
@@ -454,6 +394,8 @@ void commit(int argc, char* argv[])
 
                 for(size_t i = 0; i < index.size; i++) free(index.content[i]);
                 free(index.content);
+
+                addLogEntry();
             }
             break;
 
@@ -469,9 +411,9 @@ void update_branch_ref(const char* new_commit_hash)
     get_current_branch_path(branch_ref);
     
     char full_path[512];
-    sprintf(full_path, "%s %s", CHZ_PATH, branch_ref);
+    sprintf(full_path, "%s/%s", CHZ_PATH, branch_ref);
     
-    FILE* f_ptr = fopen(full_path, "w");
+    FILE* f_ptr = fopen(full_path, "w+");
     if(!f_ptr)
     {
         perror("Failed to update branch ref");
@@ -481,4 +423,3 @@ void update_branch_ref(const char* new_commit_hash)
     fprintf(f_ptr, "%s\n", new_commit_hash);
     fclose(f_ptr);
 }
-
