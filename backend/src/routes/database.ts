@@ -10,35 +10,52 @@ const pool = new Pool({
 
 // getUserPasswordEmail(email), for login by email
 export async function getUserPasswordEmail(params?: any[]) {
-    const string = "SELECT a_password FROM accounts WHERE a_email = $1";
+    const string = "SELECT a_password FROM accounts WHERE a_email = $1;";
     const res = await pool.query(string, params);
     return res.rows;
 }
 
 // getUserPasswordName(name), for login by username
 export async function getUserPasswordName(params?: any[]) {
-    const string = "SELECT a_password FROM accounts WHERE a_username = $1";
-    const res = await pool.query(string, params);
-    return res.rows;
-}
-
-// getUserRepos(name), fetches all repos owned/contributed by user NOT FINISHED
-export async function getUserRepos(params?: any[]) {
-    const string = "SELECT * FROM repositories WHERE r_owner = $1"; 
+    const string = "SELECT a_password FROM accounts WHERE a_username = $1;";
     const res = await pool.query(string, params);
     return res.rows;
 }
 
 // getRepoData(url), for repo file explorer view
 export async function getRepoData(params?: any[]) {
-    const string = "SELECT * FROM repositories WHERE r_url = $1";
+    const string = "SELECT * FROM repositories WHERE r_url = $1;";
     const res = await pool.query(string, params);
     return res.rows;
 }
 
-// getRepoPullRequests(url), for repo's pull requests
+// getRepoPullRequests(id), for repo's pull requests
 export async function getRepoPullRequests(params?: any[]) {
-    const string = "SELECT * FROM pull_requests WHERE repo_url = $1";
+    const string = "SELECT * FROM pull_requests WHERE repo_id = $1;";
+    const res = await pool.query(string, params);
+    return res.rows;
+}
+
+// getUserRepos(name), fetches all repos owned/contributed by user
+export async function getUserRepos(params?: any[]) {
+    const string = `WITH user_id AS (
+                        SELECT a_id
+                        FROM accounts
+                        WHERE a_username = $1
+                    )
+
+                    SELECT r.*
+                    FROM repositories r, user_id u
+                    WHERE r.r_owner = u.a_id
+
+                    UNION
+
+                    SELECT r.*
+                    FROM repositories r
+                    JOIN repository_contributors rc
+                    ON rc.repo_id = r.r_id
+                    JOIN user_id u
+                    ON rc.user_id = u.a_id;`; 
     const res = await pool.query(string, params);
     return res.rows;
 }
