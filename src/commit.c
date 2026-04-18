@@ -13,7 +13,6 @@
 #endif  
 
 #define ZERO_HASH "0000000000000000000000000000000000000000"
-
 // Environment & Staging
 Lines preCommit();
 
