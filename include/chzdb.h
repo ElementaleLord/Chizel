@@ -16,6 +16,7 @@
     }Blob;
 
     bool restoreFromDB(const char* link);
+    int restorePack(const char* pack_path, const char* restore_root);
     bool uploadToDB();
 
 #endif
