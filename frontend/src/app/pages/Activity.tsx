@@ -106,7 +106,7 @@ export function Activity() {
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-foreground">Activity Timeline</h1>
             <div className="flex gap-2">
-              <button className="px-3 py-1.5 text-sm bg-[#ff8c42] text-white rounded-md font-medium">
+              <button className="px-3 py-1.5 text-sm bg-[#fda410] text-white rounded-md font-medium">
                 All
               </button>
               <button className="px-3 py-1.5 text-sm bg-secondary text-foreground rounded-md hover:bg-secondary/80">
@@ -123,7 +123,7 @@ export function Activity() {
             <div className="space-y-6">
               {activityItems.map((item) => (
                 <div key={item.id} className="relative pl-12">
-                  <div className="absolute left-0 w-10 h-10 rounded-full bg-card border-2 border-border flex items-center justify-center text-[#ff8c42]">
+                  <div className="absolute left-0 w-10 h-10 rounded-full bg-card border-2 border-border flex items-center justify-center text-[#fda410]">
                     {getIcon(item.type)}
                   </div>
                   <div className="p-4 bg-card border border-border rounded-lg">
@@ -132,7 +132,7 @@ export function Activity() {
                         <div className="flex items-center gap-2 flex-wrap mb-1">
                           <span className="font-medium text-foreground">{item.user}</span>
                           <span className="text-sm text-[#c9d1d9]">{item.action}</span>
-                          <span className="text-sm text-[#ff8c42] hover:underline cursor-pointer">
+                          <span className="text-sm text-[#fda410] hover:underline cursor-pointer">
                             {item.repo}
                           </span>
                           {item.branch && (

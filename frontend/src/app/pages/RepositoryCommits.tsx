@@ -53,7 +53,7 @@ export function RepositoryCommits() {
         <div className="container max-w-6xl px-4 py-8">
           <div className="mb-6">
             <div className="flex items-center gap-2 text-sm text-[#c9d1d9] mb-4">
-              <Link to={`/repository/${owner}/${repo}`} className="text-[#ff8c42] hover:underline">
+              <Link to={`/repository/${owner}/${repo}`} className="text-[#fda410] hover:underline">
                 {owner}/{repo}
               </Link>
               <ChevronRight className="h-4 w-4" />
@@ -68,7 +68,7 @@ export function RepositoryCommits() {
                 key={i}
                 className="flex items-center gap-4 p-4 border-b border-border last:border-b-0 hover:bg-secondary/50 transition-colors"
               >
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#ff6b35] to-[#ff8c42] flex items-center justify-center text-white flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#e38c05] to-[#fda410] flex items-center justify-center text-white flex-shrink-0">
                   {commit.avatar}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -83,7 +83,7 @@ export function RepositoryCommits() {
                   <code className="px-2 py-1 text-xs bg-secondary text-foreground rounded font-mono">
                     {commit.hash}
                   </code>
-                  <button className="text-[#ff8c42] hover:text-[#ff6b35]">
+                  <button className="text-[#fda410] hover:text-[#e38c05]">
                     <GitCommit className="h-5 w-5" />
                   </button>
                 </div>

@@ -90,7 +90,7 @@ export function RepositoryInsights() {
                 { name: 'Alex Kim', commits: 171, avatar: 'A' },
               ].map((contributor) => (
                 <div key={contributor.name} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ff6b35] to-[#ff8c42] flex items-center justify-center text-white text-sm">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#e38c05] to-[#fda410] flex items-center justify-center text-white text-sm">
                     {contributor.avatar}
                   </div>
                   <div className="flex-1">

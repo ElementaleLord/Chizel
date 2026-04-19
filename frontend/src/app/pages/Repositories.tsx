@@ -66,13 +66,14 @@ export function Repositories() {
         <div className="container max-w-6xl px-4 py-8">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-foreground">Repositories</h1>
-            <Link
-              to="/new"
-              className="flex items-center gap-2 px-4 py-2 bg-[#ff8c42] text-white rounded-md hover:bg-[#ff6b35] transition-colors"
+            <button
+              type="button"
+              className="flex cursor-not-allowed items-center gap-2 rounded-md bg-[#fda410]/70 px-4 py-2 text-white"
+              title="New repository flow is not wired up yet."
             >
               <Plus className="h-4 w-4" />
               New repository
-            </Link>
+            </button>
           </div>
 
           <div className="flex items-center gap-4 mb-6">
@@ -89,7 +90,7 @@ export function Repositories() {
                 onClick={() => setFilter('all')}
                 className={`px-3 py-2 text-sm rounded-md transition-colors ${
                   filter === 'all'
-                    ? 'bg-[#ff8c42] text-white'
+                    ? 'bg-[#fda410] text-white'
                     : 'bg-secondary text-foreground hover:bg-secondary/80'
                 }`}
               >
@@ -99,7 +100,7 @@ export function Repositories() {
                 onClick={() => setFilter('public')}
                 className={`px-3 py-2 text-sm rounded-md transition-colors ${
                   filter === 'public'
-                    ? 'bg-[#ff8c42] text-white'
+                    ? 'bg-[#fda410] text-white'
                     : 'bg-secondary text-foreground hover:bg-secondary/80'
                 }`}
               >
@@ -109,7 +110,7 @@ export function Repositories() {
                 onClick={() => setFilter('private')}
                 className={`px-3 py-2 text-sm rounded-md transition-colors ${
                   filter === 'private'
-                    ? 'bg-[#ff8c42] text-white'
+                    ? 'bg-[#fda410] text-white'
                     : 'bg-secondary text-foreground hover:bg-secondary/80'
                 }`}
               >
@@ -126,7 +127,7 @@ export function Repositories() {
                     <div className="flex items-center gap-2 mb-1">
                       <Link
                         to={`/repository/sarahdev/${repo.name}`}
-                        className="text-[#ff8c42] hover:underline font-medium"
+                        className="text-[#fda410] hover:underline font-medium"
                       >
                         {repo.name}
                       </Link>

@@ -65,7 +65,7 @@ export function Stars() {
         <div className="container max-w-6xl px-4 py-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <Star className="h-6 w-6 text-[#ff8c42]" />
+              <Star className="h-6 w-6 text-[#fda410]" />
               <h1 className="text-foreground">Starred repositories</h1>
             </div>
           </div>
@@ -88,13 +88,13 @@ export function Stars() {
                   <div className="flex-1">
                     <Link
                       to={`/repository/${repo.owner}/${repo.name}`}
-                      className="text-[#ff8c42] hover:underline font-medium"
+                      className="text-[#fda410] hover:underline font-medium"
                     >
                       {repo.owner}/{repo.name}
                     </Link>
                     <p className="text-sm text-[#c9d1d9] mt-1">{repo.description}</p>
                   </div>
-                  <button className="text-[#ff8c42] hover:text-[#ff6b35]">
+                  <button className="text-[#fda410] hover:text-[#e38c05]">
                     <Star className="h-5 w-5 fill-current" />
                   </button>
                 </div>

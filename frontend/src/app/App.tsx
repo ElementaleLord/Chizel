@@ -1,5 +1,3 @@
-import { useState } from "react";
-import axios from "axios";
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import { ThemeProvider } from './components/layout/ThemeProvider';
 import { Landing } from './pages/Landing';
@@ -22,27 +20,8 @@ import { Profile } from './pages/Profile';
 import { Settings } from './pages/Settings';
 
 export default function App() {
-  const [msg, setMsg] = useState("");
-  const fetchHello = () => {
-    axios.get("http://localhost:3000/api/hello")
-      .then((response) => setMsg(response.data.message))
-      .catch((err) => console.error(err));
-  };
-
-  const chzInit = () => {
-    setMsg("running binary...");
-    axios.post("http://localhost:3000/api/execute", { message: 'init' })
-      .then((response) => setMsg(response.data.result))
-      .catch((err) => console.error(err));
-  };
-
   return (
     <ThemeProvider>
-      <div>
-        <button onClick={fetchHello}>Call Api</button>
-        <button onClick={chzInit}>Make Repo</button>
-        <div>{msg}</div>
-      </div>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />

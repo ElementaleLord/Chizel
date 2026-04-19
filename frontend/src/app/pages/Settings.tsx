@@ -54,7 +54,7 @@ export function Settings() {
                       <div className="space-y-2">
                         <label className="text-sm text-foreground">Profile picture</label>
                         <div className="flex items-center gap-4">
-                          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#ff6b35] to-[#ff8c42] flex items-center justify-center text-white text-2xl">
+                          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#e38c05] to-[#fda410] flex items-center justify-center text-white text-2xl">
                             S
                           </div>
                           <button className="px-3 py-1.5 text-sm text-foreground bg-secondary hover:bg-secondary/80 rounded-md transition-colors">
@@ -110,7 +110,7 @@ export function Settings() {
                     </div>
                   </div>
                   <div className="pt-4 border-t border-border">
-                    <button className="px-4 py-2 bg-[#ff8c42] text-white rounded-md hover:bg-[#ff6b35] transition-colors font-medium">
+                    <button className="px-4 py-2 bg-[#fda410] text-white rounded-md hover:bg-[#e38c05] transition-colors font-medium">
                       Save changes
                     </button>
                   </div>
@@ -143,7 +143,7 @@ export function Settings() {
                               </div>
                               <span className="text-sm text-foreground">GitHub</span>
                             </div>
-                            <span className="text-xs text-[#ff8c42]">Connected</span>
+                            <span className="text-xs text-[#fda410]">Connected</span>
                           </div>
                           <div className="flex items-center justify-between p-3 bg-secondary rounded-md">
                             <div className="flex items-center gap-3">
@@ -164,7 +164,7 @@ export function Settings() {
                     </div>
                   </div>
                   <div className="pt-4 border-t border-border">
-                    <button className="px-4 py-2 bg-[#ff8c42] text-white rounded-md hover:bg-[#ff6b35] transition-colors font-medium">
+                    <button className="px-4 py-2 bg-[#fda410] text-white rounded-md hover:bg-[#e38c05] transition-colors font-medium">
                       Save changes
                     </button>
                   </div>
@@ -204,7 +204,7 @@ export function Settings() {
                         />
                       </div>
                       <div className="pt-4">
-                        <button className="px-4 py-2 bg-[#ff8c42] text-white rounded-md hover:bg-[#ff6b35] transition-colors font-medium">
+                        <button className="px-4 py-2 bg-[#fda410] text-white rounded-md hover:bg-[#e38c05] transition-colors font-medium">
                           Update password
                         </button>
                       </div>
@@ -240,14 +240,14 @@ export function Settings() {
                           </div>
                           <label className="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" className="sr-only peer" defaultChecked />
-                            <div className="w-11 h-6 bg-secondary peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-ring rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#ff8c42]"></div>
+                            <div className="w-11 h-6 bg-secondary peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-ring rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#fda410]"></div>
                           </label>
                         </div>
                       ))}
                     </div>
                   </div>
                   <div className="pt-4 border-t border-border">
-                    <button className="px-4 py-2 bg-[#ff8c42] text-white rounded-md hover:bg-[#ff6b35] transition-colors font-medium">
+                    <button className="px-4 py-2 bg-[#fda410] text-white rounded-md hover:bg-[#e38c05] transition-colors font-medium">
                       Save preferences
                     </button>
                   </div>
@@ -265,7 +265,7 @@ export function Settings() {
                           <button
                             onClick={() => setTheme('light')}
                             className={`p-4 border-2 rounded-lg transition-colors ${
-                              theme === 'light' ? 'border-[#ff8c42]' : 'border-border hover:border-border/60'
+                              theme === 'light' ? 'border-[#fda410]' : 'border-border hover:border-border/60'
                             }`}
                           >
                             <div className="w-full h-12 bg-white border border-gray-200 rounded mb-2 flex items-center justify-center">
@@ -276,7 +276,7 @@ export function Settings() {
                           <button
                             onClick={() => setTheme('dark')}
                             className={`p-4 border-2 rounded-lg transition-colors ${
-                              theme === 'dark' ? 'border-[#ff8c42]' : 'border-border hover:border-border/60'
+                              theme === 'dark' ? 'border-[#fda410]' : 'border-border hover:border-border/60'
                             }`}
                           >
                             <div className="w-full h-12 bg-[#0d1117] rounded mb-2 flex items-center justify-center">

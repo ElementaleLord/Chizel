@@ -49,7 +49,7 @@ export function Repository() {
 
             <div className="bg-card border border-border rounded-lg overflow-hidden">
               <div className="p-3 border-b border-border flex items-center gap-3">
-                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#ff6b35] to-[#ff8c42]"></div>
+                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#e38c05] to-[#fda410]"></div>
                 <span className="text-sm text-foreground">{owner}</span>
                 <Link to={`/repository/${owner}/${repo}/commits`} className="text-sm text-muted-foreground hover:text-ring">
                   Fix authentication bug in login flow

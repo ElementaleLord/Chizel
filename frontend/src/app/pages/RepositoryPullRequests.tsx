@@ -50,7 +50,7 @@ export function RepositoryPullRequests() {
         <div className="container max-w-6xl px-4 py-8">
           <div className="mb-6">
             <div className="flex items-center gap-2 text-sm text-[#c9d1d9] mb-4">
-              <Link to={`/repository/${owner}/${repo}`} className="text-[#ff8c42] hover:underline">
+              <Link to={`/repository/${owner}/${repo}`} className="text-[#fda410] hover:underline">
                 {owner}/{repo}
               </Link>
               <ChevronRight className="h-4 w-4" />
@@ -58,14 +58,14 @@ export function RepositoryPullRequests() {
             </div>
             <div className="flex items-center justify-between">
               <h1 className="text-foreground">Pull Requests</h1>
-              <button className="px-4 py-2 bg-[#ff8c42] text-white rounded-md hover:bg-[#ff6b35] transition-colors">
+              <button className="px-4 py-2 bg-[#fda410] text-white rounded-md hover:bg-[#e38c05] transition-colors">
                 New pull request
               </button>
             </div>
           </div>
 
           <div className="flex gap-2 mb-6">
-            <button className="px-3 py-1.5 text-sm bg-[#ff8c42] text-white rounded-md font-medium">
+            <button className="px-3 py-1.5 text-sm bg-[#fda410] text-white rounded-md font-medium">
               Open (2)
             </button>
             <button className="px-3 py-1.5 text-sm bg-secondary text-foreground rounded-md hover:bg-secondary/80">
@@ -100,7 +100,7 @@ export function RepositoryPullRequests() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-foreground font-medium hover:text-[#ff8c42] cursor-pointer">
+                  <h3 className="text-foreground font-medium hover:text-[#fda410] cursor-pointer">
                     {pr.title} <span className="text-[#c9d1d9]">#{pr.number}</span>
                   </h3>
                   <div className="flex items-center gap-2 mt-1 text-sm text-[#c9d1d9]">

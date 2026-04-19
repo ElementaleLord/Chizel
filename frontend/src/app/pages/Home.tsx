@@ -36,13 +36,13 @@ export function Home() {
                   {recentActivity.map((item, i) => (
                     <div key={i} className="p-4 bg-card border border-border rounded-lg">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#ff6b35] to-[#ff8c42] flex items-center justify-center text-white text-sm">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#e38c05] to-[#fda410] flex items-center justify-center text-white text-sm">
                           {item.type === 'commit' && <GitCommit className="h-5 w-5" />}
                           {item.type === 'star' && <Star className="h-5 w-5" />}
                           {item.type === 'fork' && <GitFork className="h-5 w-5" />}
                         </div>
                         <div className="flex-1">
-                          <Link to={`/repository/${item.repo.split('/')[0]}/${item.repo.split('/')[1]}`} className="text-[#ff8c42] hover:underline">
+                          <Link to={`/repository/${item.repo.split('/')[0]}/${item.repo.split('/')[1]}`} className="text-[#fda410] hover:underline">
                             {item.repo}
                           </Link>
                           {item.message && <p className="text-sm text-[#c9d1d9]">{item.message}</p>}
@@ -52,7 +52,7 @@ export function Home() {
                     </div>
                   ))}
                 </div>
-                <Link to="/activity" className="inline-block mt-4 text-sm text-[#ff8c42] hover:underline">
+                <Link to="/activity" className="inline-block mt-4 text-sm text-[#fda410] hover:underline">
                   View all activity →
                 </Link>
               </div>
@@ -62,7 +62,7 @@ export function Home() {
                 <div className="grid gap-4">
                   {suggestedRepos.map((repo, i) => (
                     <div key={i} className="p-4 bg-card border border-border rounded-lg">
-                      <Link to="#" className="text-[#ff8c42] hover:underline font-medium">
+                      <Link to="#" className="text-[#fda410] hover:underline font-medium">
                         {repo.name}
                       </Link>
                       <p className="text-sm text-[#c9d1d9] mt-1">{repo.desc}</p>
@@ -88,13 +88,13 @@ export function Home() {
             <div className="space-y-6">
               <div className="p-4 bg-card border border-border rounded-lg">
                 <div className="flex items-center gap-2 mb-4">
-                  <TrendingUp className="h-5 w-5 text-[#ff8c42]" />
+                  <TrendingUp className="h-5 w-5 text-[#fda410]" />
                   <h3 className="text-foreground">Trending today</h3>
                 </div>
                 <div className="space-y-3">
                   {trending.map((repo, i) => (
                     <div key={i}>
-                      <Link to="#" className="text-[#ff8c42] hover:underline text-sm font-medium">
+                      <Link to="#" className="text-[#fda410] hover:underline text-sm font-medium">
                         {repo.name}
                       </Link>
                       <p className="text-xs text-[#c9d1d9] mt-0.5">{repo.desc}</p>
@@ -112,7 +112,7 @@ export function Home() {
 
               <div className="p-4 bg-card border border-border rounded-lg">
                 <div className="flex items-center gap-2 mb-4">
-                  <Users className="h-5 w-5 text-[#ff8c42]" />
+                  <Users className="h-5 w-5 text-[#fda410]" />
                   <h3 className="text-foreground">Your stats</h3>
                 </div>
                 <div className="space-y-3">

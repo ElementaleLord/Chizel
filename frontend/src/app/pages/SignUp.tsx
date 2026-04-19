@@ -1,6 +1,7 @@
 import { Header } from '../components/layout/Header';
 import { Link } from 'react-router';
 import { Github } from 'lucide-react';
+import { BrandLogo } from '../components/layout/BrandLogo';
 
 export function SignUp() {
   return (
@@ -11,9 +12,11 @@ export function SignUp() {
         <div className="max-w-md mx-auto">
           <div className="bg-card border border-border rounded-lg p-8 space-y-6">
             <div className="text-center space-y-2">
-              <div className="w-12 h-12 mx-auto rounded bg-gradient-to-br from-[#ff6b35] to-[#ff8c42] flex items-center justify-center">
-                <span className="text-white text-xl font-bold">C</span>
-              </div>
+              <BrandLogo
+                className="mx-auto w-fit"
+                imageClassName="h-12 w-12"
+                showLabel={false}
+              />
               <h1 className="text-2xl text-foreground">Create your account</h1>
             </div>
 
@@ -75,7 +78,7 @@ export function SignUp() {
               </div>
               <button
                 type="submit"
-                className="w-full px-4 py-2.5 bg-[#ff8c42] text-white rounded-md hover:bg-[#ff6b35] transition-colors font-medium"
+                className="w-full px-4 py-2.5 bg-[#fda410] text-white rounded-md hover:bg-[#e38c05] transition-colors font-medium"
               >
                 Create account
               </button>
@@ -83,14 +86,14 @@ export function SignUp() {
 
             <p className="text-xs text-[#c9d1d9] text-center">
               By creating an account, you agree to our{' '}
-              <a href="#" className="text-[#ff8c42] hover:underline">Terms of Service</a>
+              <a href="#" className="text-[#fda410] hover:underline">Terms of Service</a>
               {' '}and{' '}
-              <a href="#" className="text-[#ff8c42] hover:underline">Privacy Policy</a>
+              <a href="#" className="text-[#fda410] hover:underline">Privacy Policy</a>
             </p>
 
             <p className="text-center text-sm text-[#c9d1d9]">
               Already have an account?{' '}
-              <Link to="/signin" className="text-[#ff8c42] hover:underline">
+              <Link to="/signin" className="text-[#fda410] hover:underline">
                 Sign in
               </Link>
             </p>

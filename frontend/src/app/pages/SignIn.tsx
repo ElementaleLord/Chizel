@@ -1,6 +1,7 @@
 import { Header } from '../components/layout/Header';
 import { Link } from 'react-router';
 import { Github } from 'lucide-react';
+import { BrandLogo } from '../components/layout/BrandLogo';
 
 export function SignIn() {
   return (
@@ -11,9 +12,11 @@ export function SignIn() {
         <div className="max-w-md mx-auto">
           <div className="bg-card border border-border rounded-lg p-8 space-y-6">
             <div className="text-center space-y-2">
-              <div className="w-12 h-12 mx-auto rounded bg-gradient-to-br from-[#ff6b35] to-[#ff8c42] flex items-center justify-center">
-                <span className="text-white text-xl font-bold">C</span>
-              </div>
+              <BrandLogo
+                className="mx-auto w-fit"
+                imageClassName="h-12 w-12"
+                showLabel={false}
+              />
               <h1 className="text-2xl text-foreground">Sign in to Chizel</h1>
             </div>
 
@@ -55,7 +58,7 @@ export function SignIn() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label htmlFor="password" className="text-sm text-foreground">Password</label>
-                  <Link to="/forgot-password" className="text-xs text-[#ff8c42] hover:underline">
+                  <Link to="/forgot-password" className="text-xs text-[#fda410] hover:underline">
                     Forgot password?
                   </Link>
                 </div>
@@ -68,7 +71,7 @@ export function SignIn() {
               </div>
               <button
                 type="submit"
-                className="w-full px-4 py-2.5 bg-[#ff8c42] text-white rounded-md hover:bg-[#ff6b35] transition-colors font-medium"
+                className="w-full px-4 py-2.5 bg-[#fda410] text-white rounded-md hover:bg-[#e38c05] transition-colors font-medium"
               >
                 Sign in
               </button>
@@ -76,7 +79,7 @@ export function SignIn() {
 
             <p className="text-center text-sm text-[#c9d1d9]">
               Don't have an account?{' '}
-              <Link to="/signup" className="text-[#ff8c42] hover:underline">
+              <Link to="/signup" className="text-[#fda410] hover:underline">
                 Sign up
               </Link>
             </p>
