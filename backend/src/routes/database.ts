@@ -32,7 +32,7 @@ export async function getRepoId(params: string[]){
 
 // getRepoData(id), for repo file explorer view
 export async function getRepoData(params: BigInt[]) {
-    const string = "SELECT * FROM repositories WHERE r_url = $1;";
+    const string = "SELECT * FROM repositories WHERE r_id = $1;";
     const res = await pool.query(string, params);
     return res.rows;
 }
@@ -67,3 +67,5 @@ export async function getUserRepos(params: string[]) {
     const res = await pool.query(string, params);
     return res.rows;
 }
+
+export default pool;

@@ -36,11 +36,22 @@ export default function App() {
       .catch((err) => console.error(err));
   };
 
+  const dbTest = () => {
+    setMsg("fetching from databse...");
+    axios.get("http://localhost:3000/api/password/Chizel")
+      .then((response) => setMsg(JSON.stringify(response.data)))
+      .catch((err) => console.log(err));
+  }
+
   return (
     <ThemeProvider>
       <div>
         <button onClick={fetchHello}>Call Api</button>
+        <br/>
         <button onClick={chzInit}>Make Repo</button>
+        <br/>
+        <button onClick={dbTest}>Call db</button>
+        <br/>
         <div>{msg}</div>
       </div>
       <BrowserRouter>
