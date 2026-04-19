@@ -1,7 +1,6 @@
-#include "../include/chizel.c"
+#include "../include/chizel.h"
+#include "../include/chzdb.h"
 #include <dirent.h>
-#include <bson/bson.h>
-#include <mongoc/mongoc.h>
 
 #ifdef _WIN32
 #include <direct.h>
@@ -9,55 +8,9 @@
 #endif
 
 //~ fetch a repository from the database
-mongoc_cursor_t* fetchFromDB(char* link)
+bool fetchFromDB(char* link)
 {
-    mongoc_cursor_t *cur;
-    mongoc_client_t *client;
-    mongoc_collection_t *collection;
-    bson_t *query, *opts;
-    const bson_t *doc;
-    bson_error_t error;
-    mongoc_init();
-    //keep for testing, restart link + add as backend feature
-    client = mongoc_client_new("mongodb+srv://chizeldb:qpGAJlAbOt6zgEu5@chizel.0dqvas4.mongodb.net/?appName=Chizel");
-    if (client == NULL)
-    {
-        printf(FETCH_ERROR_MSG_START"Failed To Create MangoDB Client"MSG_END);
-        whatIsTheError();
-        mongoc_cleanup();
-        return NULL;
-    }
-    
-    //# Test Connection
-    if (!mongoc_client_command_simple(client, "admin", BCON_NEW("ping", BCON_INT32(1)), NULL, NULL, &error))
-    {
-        fprintf(stderr, "Error: %s\n", error.message);
-        mongoc_client_destroy(client);
-        mongoc_cleanup();
-        return NULL;
-    }
-
-    collection = mongoc_client_get_collection(client, "test", "repositories");   //# get table
-    query = BCON_NEW("url", BCON_UTF8(link));
-    opts = BCON_NEW("limit", BCON_INT64(1));
-
-    cur = mongoc_collection_find_with_opts(collection, query, opts, NULL);   //# db.repositories.find({url: link}).limit(1)
-    
-    /*
-    if(mongoc_cursor_next(cur, &doc)){              // iterate through results
-        char *json = bson_as_json(doc, NULL);       // turn BSON into JSON
-        printf("%s\n", json);
-        bson_free(json);                            // cleaning lingering data
-    }
-    */
-    
-    // cleanup
-    mongoc_collection_destroy(collection);          
-    bson_destroy(query);
-    bson_destroy(opts);
-    mongoc_client_destroy(client);
-    mongoc_cleanup();
-    return cur;
+    return restoreFromDB(link);
 }
 
 //~ checks for the repository's origin before fetching
@@ -176,7 +129,7 @@ bool checkOriginURL(char* originCheck)
 }
 
 //~ fetchs data from the database
-mongoc_cursor_t* fetchFunction(char* link)
+bool fetchFunction(char* link)
 {
     if (link == NULL || link[0] == '\0') 
     {
@@ -186,32 +139,28 @@ mongoc_cursor_t* fetchFunction(char* link)
     }
 
     char* p = strstr(link,"chizel.com/");
-    mongoc_cursor_t* status;
+    bool status;
     if(p == link)
     {
-        status = fetchFromDB(link);
-        if(status != NULL)
+        if((status = fetchFromDB(link)))
         {
             printf(FETCH_REPORT_MSG_START"Successfully Fetched From Remote"MSG_END);
-            return status;
         }
         else
         {
             printf(FETCH_ERROR_MSG_START"Can Not Fetch From Remote"MSG_END);
-            whatIsTheError();
-            return NULL;
         }
+        return status;
     }
     else
     {
         printf(FETCH_ERROR_MSG_START"Invalid link, make sure repository is from Chizel"MSG_END);
-        whatIsTheError();
-        return NULL;
+        return false;
     }
 }
 
 //~ main runner function used to determine case and call appropriate function
-mongoc_cursor_t* fetch(int argc, char* argv[])
+bool fetch(int argc, char* argv[])
 {
     
     switch(argc)
@@ -240,7 +189,7 @@ mongoc_cursor_t* fetch(int argc, char* argv[])
                 printf(FETCH_ERROR_MSG_START"This Repository Does Not Have An Origin"MSG_END);
                 whatIsTheError();
                 printf(FETCH_REPORT_MSG_START"Please Insert An Origin Via Remote Repository HTTPS"MSG_END);
-                return NULL;
+                return false;
             }
             break;
         //@ chz fetch <arg>
@@ -253,13 +202,15 @@ mongoc_cursor_t* fetch(int argc, char* argv[])
             break;
         default:
             printf(CHZ_ERROR_MSG_START"Invalid Command"MSG_END);
-            return NULL;
+            return false;
             break;
     }
 }
 
+/*
 int main(int argc, char* argv[])
 {
     fetch(argc, argv);
     return 0;
 }
+*/
