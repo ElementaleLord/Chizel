@@ -1,9 +1,12 @@
-import { Home, Activity, GitBranch, Star, Settings } from 'lucide-react';
+import { Home, Activity, Bell, GitBranch, GitCommitHorizontal, GitPullRequest, Star, Settings } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
 
 const navigation = [
-  { name: 'Home', href: '/home', icon: Home },
+  { name: 'Home', href: '/', icon: Home },
   { name: 'Activity', href: '/activity', icon: Activity },
+  { name: 'Notifications', href: '/notifications', icon: Bell },
+  { name: 'Contributions', href: '/contributions', icon: GitCommitHorizontal },
+  { name: 'Pull Requests', href: '/pull-requests', icon: GitPullRequest },
   { name: 'Repositories', href: '/repositories', icon: GitBranch },
   { name: 'Stars', href: '/stars', icon: Star },
   { name: 'Settings', href: '/settings', icon: Settings },

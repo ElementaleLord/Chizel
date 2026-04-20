@@ -2,17 +2,14 @@ import { Header } from '../components/layout/Header';
 import { Sidebar } from '../components/layout/Sidebar';
 import { GitCommit, Star, GitFork, TrendingUp, Users } from 'lucide-react';
 import { Link } from 'react-router';
+import { RepositoryStarButton } from '../components/repository/RepositoryStarButton';
+import { useAppState } from '../components/state/AppStateContext';
+import { formatStarCount, getLanguageColor, getRepositoriesByIds, homeSuggestedRepositoryIds } from '../data/repositories';
 
 const recentActivity = [
   { type: 'commit', repo: 'sarahdev/web-app', message: 'Fix authentication bug', time: '2h ago' },
   { type: 'star', repo: 'chizel/design-system', time: '4h ago' },
   { type: 'fork', repo: 'opensource/react-tools', time: '5h ago' },
-];
-
-const suggestedRepos = [
-  { name: 'vercel/next.js', desc: 'The React Framework', stars: '118k', lang: 'JavaScript' },
-  { name: 'facebook/react', desc: 'A declarative, efficient library', stars: '220k', lang: 'JavaScript' },
-  { name: 'microsoft/vscode', desc: 'Visual Studio Code', stars: '156k', lang: 'TypeScript' },
 ];
 
 const trending = [
@@ -21,6 +18,9 @@ const trending = [
 ];
 
 export function Home() {
+  const { isRepositoryStarred, toggleStarredRepository } = useAppState();
+  const suggestedRepos = getRepositoriesByIds(homeSuggestedRepositoryIds);
+
   return (
     <div className="min-h-screen bg-background dark">
       <Header isLoggedIn={true} />
@@ -36,13 +36,13 @@ export function Home() {
                   {recentActivity.map((item, i) => (
                     <div key={i} className="p-4 bg-card border border-border rounded-lg">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#ff6b35] to-[#ff8c42] flex items-center justify-center text-white text-sm">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#e38c05] to-[#fda410] flex items-center justify-center text-white text-sm">
                           {item.type === 'commit' && <GitCommit className="h-5 w-5" />}
                           {item.type === 'star' && <Star className="h-5 w-5" />}
                           {item.type === 'fork' && <GitFork className="h-5 w-5" />}
                         </div>
                         <div className="flex-1">
-                          <Link to={`/repository/${item.repo.split('/')[0]}/${item.repo.split('/')[1]}`} className="text-[#ff8c42] hover:underline">
+                          <Link to={`/repository/${item.repo.split('/')[0]}/${item.repo.split('/')[1]}`} className="text-[#fda410] hover:underline">
                             {item.repo}
                           </Link>
                           {item.message && <p className="text-sm text-[#c9d1d9]">{item.message}</p>}
@@ -52,7 +52,7 @@ export function Home() {
                     </div>
                   ))}
                 </div>
-                <Link to="/activity" className="inline-block mt-4 text-sm text-[#ff8c42] hover:underline">
+                <Link to="/activity" className="inline-block mt-4 text-sm text-[#fda410] hover:underline">
                   View all activity →
                 </Link>
               </div>
@@ -60,24 +60,27 @@ export function Home() {
               <div>
                 <h2 className="text-foreground mb-4">Suggested for you</h2>
                 <div className="grid gap-4">
-                  {suggestedRepos.map((repo, i) => (
-                    <div key={i} className="p-4 bg-card border border-border rounded-lg">
-                      <Link to="#" className="text-[#ff8c42] hover:underline font-medium">
-                        {repo.name}
+                  {suggestedRepos.map((repo) => (
+                    <div key={repo.id} className="p-4 bg-card border border-border rounded-lg">
+                      <Link to={`/repository/${repo.owner}/${repo.name}`} className="text-[#fda410] hover:underline font-medium">
+                        {repo.id}
                       </Link>
-                      <p className="text-sm text-[#c9d1d9] mt-1">{repo.desc}</p>
-                      <div className="flex items-center gap-4 mt-3 text-sm text-[#c9d1d9]">
+                      <p className="text-sm text-[#c9d1d9] mt-1">{repo.description}</p>
+                      <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-[#c9d1d9]">
                         <div className="flex items-center gap-1">
-                          <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                          <span>{repo.lang}</span>
+                          <div className={`w-3 h-3 rounded-full ${getLanguageColor(repo.language)}`}></div>
+                          <span>{repo.language}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Star className="h-4 w-4" />
-                          <span>{repo.stars}</span>
+                          <span>{formatStarCount(repo.stars)}</span>
                         </div>
-                        <button className="ml-auto px-3 py-1 text-sm text-foreground bg-secondary hover:bg-secondary/80 rounded-md">
-                          Star
-                        </button>
+                        <div className="ml-auto">
+                          <RepositoryStarButton
+                            isStarred={isRepositoryStarred(repo.id)}
+                            onToggle={() => toggleStarredRepository(repo.id)}
+                          />
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -88,13 +91,13 @@ export function Home() {
             <div className="space-y-6">
               <div className="p-4 bg-card border border-border rounded-lg">
                 <div className="flex items-center gap-2 mb-4">
-                  <TrendingUp className="h-5 w-5 text-[#ff8c42]" />
+                  <TrendingUp className="h-5 w-5 text-[#fda410]" />
                   <h3 className="text-foreground">Trending today</h3>
                 </div>
                 <div className="space-y-3">
                   {trending.map((repo, i) => (
                     <div key={i}>
-                      <Link to="#" className="text-[#ff8c42] hover:underline text-sm font-medium">
+                      <Link to="#" className="text-[#fda410] hover:underline text-sm font-medium">
                         {repo.name}
                       </Link>
                       <p className="text-xs text-[#c9d1d9] mt-0.5">{repo.desc}</p>
@@ -112,7 +115,7 @@ export function Home() {
 
               <div className="p-4 bg-card border border-border rounded-lg">
                 <div className="flex items-center gap-2 mb-4">
-                  <Users className="h-5 w-5 text-[#ff8c42]" />
+                  <Users className="h-5 w-5 text-[#fda410]" />
                   <h3 className="text-foreground">Your stats</h3>
                 </div>
                 <div className="space-y-3">

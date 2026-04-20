@@ -1,5 +1,5 @@
 import { Link, useParams, useLocation } from 'react-router';
-import { Star, GitFork, Eye, Code, GitPullRequest, FileText, BarChart3, Settings, ChevronDown, Copy } from 'lucide-react';
+import { Star, GitFork, Eye, Code, GitPullRequest, FileText, BarChart3, Settings } from 'lucide-react';
 
 export function RepositoryLayout({ children }: { children: React.ReactNode }) {
   const { owner = 'sarahdev', repo = 'web-app' } = useParams();
@@ -19,7 +19,7 @@ export function RepositoryLayout({ children }: { children: React.ReactNode }) {
         <div className="container max-w-6xl px-4 py-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Link to="/dashboard" className="text-ring hover:underline">
+              <Link to="/" className="text-ring hover:underline">
                 {owner}
               </Link>
               <span className="text-muted-foreground">/</span>

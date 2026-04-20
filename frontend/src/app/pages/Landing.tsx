@@ -1,6 +1,7 @@
 import { Header } from '../components/layout/Header';
 import { GitBranch, Code, Users, Shield, Zap, Lock } from 'lucide-react';
 import { Link } from 'react-router';
+import { BrandLogo } from '../components/layout/BrandLogo';
 
 export function Landing() {
   return (
@@ -9,24 +10,24 @@ export function Landing() {
 
       <main>
         <section className="container px-4 py-20 md:py-32">
-          <div className="max-w-4xl mx-auto text-center space-y-6">
-            <h1 className="text-5xl md:text-6xl tracking-tight text-foreground">
-              Code hosting for <span className="text-[#ff8c42]">modern teams</span>
+          <div className="mx-auto max-w-4xl space-y-6 text-center">
+            <h1 className="text-5xl tracking-tight text-foreground md:text-6xl">
+              Code hosting for <span className="text-[#fda410]">modern teams</span>
             </h1>
-            <p className="text-xl text-[#c9d1d9] max-w-2xl mx-auto">
+            <p className="mx-auto max-w-2xl text-xl text-[#c9d1d9]">
               Collaborate on code with powerful version control, seamless code review, and built-in security.
               Ship faster with Chizel.
             </p>
             <div className="flex items-center justify-center gap-4 pt-4">
               <Link
                 to="/signup"
-                className="px-6 py-3 bg-[#ff8c42] text-white rounded-md hover:bg-[#ff6b35] transition-colors font-medium"
+                className="rounded-md bg-[#fda410] px-6 py-3 font-medium text-white transition-colors hover:bg-[#e38c05]"
               >
                 Get started for free
               </Link>
               <Link
                 to="/signin"
-                className="px-6 py-3 bg-secondary text-foreground rounded-md hover:bg-secondary/80 transition-colors font-medium"
+                className="rounded-md bg-secondary px-6 py-3 font-medium text-foreground transition-colors hover:bg-secondary/80"
               >
                 Sign in
               </Link>
@@ -36,10 +37,10 @@ export function Landing() {
 
         <section className="border-t border-border bg-card/50">
           <div className="container px-4 py-20">
-            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
               <div className="space-y-3">
-                <div className="w-12 h-12 rounded-lg bg-[#ff8c42]/10 flex items-center justify-center">
-                  <GitBranch className="h-6 w-6 text-[#ff8c42]" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#fda410]/10">
+                  <GitBranch className="h-6 w-6 text-[#fda410]" />
                 </div>
                 <h3 className="text-foreground">Powerful version control</h3>
                 <p className="text-sm text-[#c9d1d9]">
@@ -47,8 +48,8 @@ export function Landing() {
                 </p>
               </div>
               <div className="space-y-3">
-                <div className="w-12 h-12 rounded-lg bg-[#ff8c42]/10 flex items-center justify-center">
-                  <Code className="h-6 w-6 text-[#ff8c42]" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#fda410]/10">
+                  <Code className="h-6 w-6 text-[#fda410]" />
                 </div>
                 <h3 className="text-foreground">Code review built-in</h3>
                 <p className="text-sm text-[#c9d1d9]">
@@ -56,8 +57,8 @@ export function Landing() {
                 </p>
               </div>
               <div className="space-y-3">
-                <div className="w-12 h-12 rounded-lg bg-[#ff8c42]/10 flex items-center justify-center">
-                  <Users className="h-6 w-6 text-[#ff8c42]" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#fda410]/10">
+                  <Users className="h-6 w-6 text-[#fda410]" />
                 </div>
                 <h3 className="text-foreground">Team collaboration</h3>
                 <p className="text-sm text-[#c9d1d9]">
@@ -70,30 +71,28 @@ export function Landing() {
 
         <section className="border-t border-border">
           <div className="container px-4 py-20">
-            <div className="max-w-5xl mx-auto">
-              <div className="text-center space-y-3 mb-12">
+            <div className="mx-auto max-w-5xl">
+              <div className="mb-12 space-y-3 text-center">
                 <h2 className="text-3xl text-foreground">Built for security and speed</h2>
-                <p className="text-[#c9d1d9]">
-                  Enterprise-grade features for teams of all sizes
-                </p>
+                <p className="text-[#c9d1d9]">Enterprise-grade features for teams of all sizes</p>
               </div>
-              <div className="grid md:grid-cols-3 gap-6">
-                <div className="p-6 rounded-lg border border-border bg-card">
-                  <Shield className="h-8 w-8 text-[#ff8c42] mb-3" />
+              <div className="grid gap-6 md:grid-cols-3">
+                <div className="rounded-lg border border-border bg-card p-6">
+                  <Shield className="mb-3 h-8 w-8 text-[#fda410]" />
                   <h4 className="mb-2 text-foreground">Security scanning</h4>
                   <p className="text-sm text-[#c9d1d9]">
                     Automatically detect vulnerabilities in your dependencies and code.
                   </p>
                 </div>
-                <div className="p-6 rounded-lg border border-border bg-card">
-                  <Zap className="h-8 w-8 text-[#ff8c42] mb-3" />
+                <div className="rounded-lg border border-border bg-card p-6">
+                  <Zap className="mb-3 h-8 w-8 text-[#fda410]" />
                   <h4 className="mb-2 text-foreground">CI/CD integration</h4>
                   <p className="text-sm text-[#c9d1d9]">
                     Deploy with confidence using integrated continuous integration workflows.
                   </p>
                 </div>
-                <div className="p-6 rounded-lg border border-border bg-card">
-                  <Lock className="h-8 w-8 text-[#ff8c42] mb-3" />
+                <div className="rounded-lg border border-border bg-card p-6">
+                  <Lock className="mb-3 h-8 w-8 text-[#fda410]" />
                   <h4 className="mb-2 text-foreground">Access control</h4>
                   <p className="text-sm text-[#c9d1d9]">
                     Fine-grained permissions ensure the right people have the right access.
@@ -106,14 +105,12 @@ export function Landing() {
 
         <section className="border-t border-border bg-card/50">
           <div className="container px-4 py-20">
-            <div className="max-w-3xl mx-auto text-center space-y-6">
+            <div className="mx-auto max-w-3xl space-y-6 text-center">
               <h2 className="text-3xl text-foreground">Ready to get started?</h2>
-              <p className="text-[#c9d1d9]">
-                Join thousands of developers building the future with Chizel
-              </p>
+              <p className="text-[#c9d1d9]">Join thousands of developers building the future with Chizel</p>
               <Link
                 to="/signup"
-                className="inline-block px-6 py-3 bg-[#ff8c42] text-white rounded-md hover:bg-[#ff6b35] transition-colors font-medium"
+                className="inline-block rounded-md bg-[#fda410] px-6 py-3 font-medium text-white transition-colors hover:bg-[#e38c05]"
               >
                 Create your account
               </Link>
@@ -124,16 +121,16 @@ export function Landing() {
 
       <footer className="border-t border-border">
         <div className="container px-4 py-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded bg-gradient-to-br from-[#ff6b35] to-[#ff8c42]"></div>
-              <span className="text-sm text-[#c9d1d9]">© 2026 Chizel</span>
+              <BrandLogo imageClassName="h-6 w-6" labelClassName="text-sm text-[#c9d1d9]" />
+              <span className="text-sm text-[#c9d1d9]">© 2026</span>
             </div>
             <div className="flex gap-6 text-sm text-[#c9d1d9]">
-              <a href="#" className="hover:text-[#ff8c42] transition-colors">Terms</a>
-              <a href="#" className="hover:text-[#ff8c42] transition-colors">Privacy</a>
-              <a href="#" className="hover:text-[#ff8c42] transition-colors">Docs</a>
-              <a href="#" className="hover:text-[#ff8c42] transition-colors">Contact</a>
+              <span className="transition-colors hover:text-[#fda410]">Terms</span>
+              <span className="transition-colors hover:text-[#fda410]">Privacy</span>
+              <span className="transition-colors hover:text-[#fda410]">Docs</span>
+              <span className="transition-colors hover:text-[#fda410]">Contact</span>
             </div>
           </div>
         </div>

@@ -63,7 +63,7 @@ export function RepositoryInsights() {
             <h2 className="text-lg font-semibold text-foreground">Commit Activity</h2>
           </div>
           <div className="space-y-2">
-            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => (
+            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
               <div key={day} className="flex items-center gap-4">
                 <span className="text-sm text-muted-foreground w-12">{day}</span>
                 <div className="flex-1 bg-secondary rounded-full h-6 overflow-hidden">
@@ -90,7 +90,7 @@ export function RepositoryInsights() {
                 { name: 'Alex Kim', commits: 171, avatar: 'A' },
               ].map((contributor) => (
                 <div key={contributor.name} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ff6b35] to-[#ff8c42] flex items-center justify-center text-white text-sm">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#e38c05] to-[#fda410] flex items-center justify-center text-white text-sm">
                     {contributor.avatar}
                   </div>
                   <div className="flex-1">

@@ -11,7 +11,7 @@ export function ForgotPassword() {
         <div className="max-w-md mx-auto">
           <div className="bg-card border border-border rounded-lg p-8 space-y-6">
             <div className="text-center space-y-2">
-              <div className="w-12 h-12 mx-auto rounded bg-gradient-to-br from-[#ff6b35] to-[#ff8c42] flex items-center justify-center">
+              <div className="w-12 h-12 mx-auto rounded bg-gradient-to-br from-[#e38c05] to-[#fda410] flex items-center justify-center">
                 <span className="text-white text-xl font-bold">C</span>
               </div>
               <h1 className="text-2xl text-foreground">Reset your password</h1>
@@ -32,7 +32,7 @@ export function ForgotPassword() {
               </div>
               <button
                 type="submit"
-                className="w-full px-4 py-2.5 bg-[#ff8c42] text-white rounded-md hover:bg-[#ff6b35] transition-colors font-medium"
+                className="w-full px-4 py-2.5 bg-[#fda410] text-white rounded-md hover:bg-[#e38c05] transition-colors font-medium"
               >
                 Send reset link
               </button>

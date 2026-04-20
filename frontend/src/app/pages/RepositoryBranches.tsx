@@ -22,7 +22,7 @@ export function RepositoryBranches() {
         <div className="container max-w-6xl px-4 py-8">
           <div className="mb-6">
             <div className="flex items-center gap-2 text-sm text-[#c9d1d9] mb-4">
-              <Link to={`/repository/${owner}/${repo}`} className="text-[#ff8c42] hover:underline">
+              <Link to={`/repository/${owner}/${repo}`} className="text-[#fda410] hover:underline">
                 {owner}/{repo}
               </Link>
               <ChevronRight className="h-4 w-4" />
@@ -38,7 +38,7 @@ export function RepositoryBranches() {
                 className="flex items-center justify-between p-4 border-b border-border last:border-b-0 hover:bg-secondary/50 transition-colors"
               >
                 <div className="flex items-center gap-3 flex-1">
-                  <GitBranch className="h-5 w-5 text-[#ff8c42]" />
+                  <GitBranch className="h-5 w-5 text-[#fda410]" />
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-foreground font-medium">{branch.name}</span>

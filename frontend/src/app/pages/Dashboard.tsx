@@ -1,4 +1,4 @@
-import { Menu, Search, Plus, Bell, GitPullRequest, Inbox, ChevronDown, Sparkles, FileCode, GitBranch, Code, MoreVertical } from 'lucide-react';
+import { Menu, Search, Plus, Bell, GitPullRequest, Inbox, Sparkles, FileCode, GitBranch, Code, MoreVertical } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../components/auth/AuthContext';
 import { Link } from 'react-router';
@@ -57,8 +57,8 @@ export function Dashboard() {
             <button className="p-2 hover:bg-[#21262d] rounded-md transition-colors">
               <Menu className="h-5 w-5 text-[#f0f6fc]" />
             </button>
-            <Link to="/dashboard" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded bg-gradient-to-br from-[#ff6b35] to-[#ff8c42] flex items-center justify-center">
+            <Link to="/home" className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded bg-gradient-to-br from-[#e38c05] to-[#fda410] flex items-center justify-center">
                 <span className="text-white font-bold">C</span>
               </div>
               <span className="font-semibold text-[#f0f6fc]">Dashboard</span>
@@ -90,7 +90,7 @@ export function Dashboard() {
             </button>
             <button className="relative p-2 hover:bg-[#21262d] rounded-md transition-colors">
               <Bell className="h-5 w-5 text-[#f0f6fc]" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-[#ff8c42] rounded-full"></span>
+              <span className="absolute top-1 right-1 w-2 h-2 bg-[#fda410] rounded-full"></span>
             </button>
             <button className="p-2 hover:bg-[#21262d] rounded-md transition-colors">
               <GitPullRequest className="h-5 w-5 text-[#f0f6fc]" />
@@ -101,7 +101,7 @@ export function Dashboard() {
             <div className="relative">
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ff6b35] to-[#ff8c42] flex items-center justify-center text-white text-sm hover:ring-2 hover:ring-[#ff8c42] transition-all"
+                className="w-8 h-8 rounded-full bg-gradient-to-br from-[#e38c05] to-[#fda410] flex items-center justify-center text-white text-sm hover:ring-2 hover:ring-[#fda410] transition-all"
               >
                 {user?.username?.charAt(0).toUpperCase() || 'U'}
               </button>
@@ -165,7 +165,7 @@ export function Dashboard() {
           {/* Composer Card */}
           <div className="mb-6 bg-[#161b22] border border-[#30363d] rounded-lg p-4">
             <div className="flex items-start gap-3 mb-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ff6b35] to-[#ff8c42] flex items-center justify-center text-white text-sm flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#e38c05] to-[#fda410] flex items-center justify-center text-white text-sm flex-shrink-0">
                 {user?.username?.charAt(0).toUpperCase() || 'U'}
               </div>
               <input
@@ -212,7 +212,7 @@ export function Dashboard() {
               {feedItems.map((item, i) => (
                 <div key={i} className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 hover:border-[#58a6ff]/30 transition-colors">
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#ff6b35] to-[#ff8c42] flex items-center justify-center text-white flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#e38c05] to-[#fda410] flex items-center justify-center text-white flex-shrink-0">
                       {item.avatar}
                     </div>
                     <div className="flex-1 min-w-0">

@@ -59,7 +59,7 @@ export function Profile() {
           <div className="grid md:grid-cols-[280px,1fr] gap-6">
             <aside className="space-y-6">
               <div className="flex flex-col items-center md:items-start">
-                <div className="w-64 h-64 rounded-full bg-gradient-to-br from-[#ff6b35] to-[#ff8c42] flex items-center justify-center text-white text-6xl mb-4">
+                <div className="w-64 h-64 rounded-full bg-gradient-to-br from-[#e38c05] to-[#fda410] flex items-center justify-center text-white text-6xl mb-4">
                   S
                 </div>
                 <h1 className="text-2xl text-foreground mb-1">Sarah Developer</h1>
@@ -79,7 +79,7 @@ export function Profile() {
                 </div>
                 <div className="flex items-center gap-2 text-[#c9d1d9]">
                   <LinkIcon className="h-4 w-4" />
-                  <a href="#" className="text-[#ff8c42] hover:underline">
+                  <a href="#" className="text-[#fda410] hover:underline">
                     sarahdev.com
                   </a>
                 </div>
@@ -132,7 +132,7 @@ export function Profile() {
                     <div key={repo.name} className="p-4 bg-card border border-border rounded-lg hover:border-border/60 transition-colors">
                       <div className="flex items-start justify-between mb-2">
                         <div>
-                          <h3 className="text-[#ff8c42] hover:underline cursor-pointer mb-1">
+                          <h3 className="text-[#fda410] hover:underline cursor-pointer mb-1">
                             {repo.name}
                           </h3>
                           <p className="text-sm text-[#c9d1d9]">{repo.description}</p>
@@ -179,18 +179,18 @@ export function Profile() {
                             const intensity = Math.random();
                             const bgClass =
                               intensity > 0.75
-                                ? 'bg-[#ff8c42]'
+                                ? 'bg-[#fda410]'
                                 : intensity > 0.5
-                                ? 'bg-[#ff8c42]/70'
+                                ? 'bg-[#fda410]/70'
                                 : intensity > 0.25
-                                ? 'bg-[#ff8c42]/40'
+                                ? 'bg-[#fda410]/40'
                                 : intensity > 0.1
-                                ? 'bg-[#ff8c42]/20'
+                                ? 'bg-[#fda410]/20'
                                 : 'bg-secondary';
                             return (
                               <div
                                 key={i}
-                                className={`w-[10px] h-[10px] rounded-sm ${bgClass} hover:ring-2 hover:ring-[#ff8c42] cursor-pointer transition-all`}
+                                className={`w-[10px] h-[10px] rounded-sm ${bgClass} hover:ring-2 hover:ring-[#fda410] cursor-pointer transition-all`}
                                 title={`${Math.floor(intensity * 15)} contributions`}
                               ></div>
                             );
@@ -203,10 +203,10 @@ export function Profile() {
                     <span>Less</span>
                     <div className="flex items-center gap-1">
                       <div className="w-[10px] h-[10px] rounded-sm bg-secondary"></div>
-                      <div className="w-[10px] h-[10px] rounded-sm bg-[#ff8c42]/20"></div>
-                      <div className="w-[10px] h-[10px] rounded-sm bg-[#ff8c42]/40"></div>
-                      <div className="w-[10px] h-[10px] rounded-sm bg-[#ff8c42]/70"></div>
-                      <div className="w-[10px] h-[10px] rounded-sm bg-[#ff8c42]"></div>
+                      <div className="w-[10px] h-[10px] rounded-sm bg-[#fda410]/20"></div>
+                      <div className="w-[10px] h-[10px] rounded-sm bg-[#fda410]/40"></div>
+                      <div className="w-[10px] h-[10px] rounded-sm bg-[#fda410]/70"></div>
+                      <div className="w-[10px] h-[10px] rounded-sm bg-[#fda410]"></div>
                     </div>
                     <span>More</span>
                   </div>

@@ -22,7 +22,6 @@ export function ExampleComponent() {
 }`;
 
   const pathParts = filePath?.split('/') || [];
-  const fileName = pathParts[pathParts.length - 1] || 'README.md';
 
   return (
     <RepositoryLayout>
@@ -49,7 +48,7 @@ export function ExampleComponent() {
         <div className="bg-card border border-border rounded-lg overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ff6b35] to-[#ff8c42] flex items-center justify-center text-white text-sm">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#e38c05] to-[#fda410] flex items-center justify-center text-white text-sm">
                 S
               </div>
               <div>
