@@ -575,16 +575,19 @@ int addLogEntry(){
     char objPath[1024];
 
     if(get_object_path(objPath) < 0){
+        printf(LOG_ERROR_MSG_START"Could not find object path"MSG_END);
         return -1;
     }
 
     FILE* obj_ptr = fopen(objPath, "rb");
     if(!obj_ptr){
+        printf(LOG_ERROR_MSG_START"Failed to open objects"MSG_END);
         return -1;
     }
 
     CommitObject commit;
     if(load_commit_object(obj_ptr, &commit) < 0){
+        printf(LOG_ERROR_MSG_START"Failure loading commit objects"MSG_END);
         fclose(obj_ptr);
         return -1;
     }
@@ -596,12 +599,14 @@ int addLogEntry(){
     snprintf(path, sizeof(path), "%s%s.log", LOGS_PATH, getHead());
     FILE* logs = fopen(path, "a");
     if(!logs){
+        printf(LOG_ERROR_MSG_START"Log file missing"MSG_END);
         return -1;
     }
 
     char content[5124];
 
     if(commit.author == NULL){
+        printf(LOG_ERROR_MSG_START"Author non-existent"MSG_END);
         return -1;
     }
     if(strcmp(commit.author, "ChizelUser <user@example.com>") == 0){

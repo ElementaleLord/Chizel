@@ -1,4 +1,5 @@
 #include "chzdb.h"
+#include <sys/stat.h>
 #include <ctype.h>
 #include <zlib.h>
 
@@ -463,6 +464,7 @@ bool restoreFromDB(const char* link){
 
     //# checks if no data is returned (rows)
     if (PQntuples(res) == 0){
+        printf(CHZ_REPORT_MSG_START"No data matching url"MSG_END);
         PQclear(res);
         PQfinish(conn);
         return NULL;

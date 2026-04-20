@@ -142,6 +142,7 @@ int pushPath(const char* root, const char* relative){
     if(S_ISDIR(st.st_mode)){
         if(relative[0] != '\0'){
             if(appendBlobFile(relative, 1, NULL, 0) != 1){
+                printf(LOG_ERROR_MSG_START"Failure whilst writing data blobs"MSG_END);
                 return -1;
             }
         }
@@ -207,15 +208,19 @@ int zipDirectory(){
         return -1;
     }
 
+    char zipPath[4096];
+    snprintf(zipPath, sizeof(zipPath) + 12, "%s/.chz", curpath);
+
     char pack[4096];
     snprintf(pack, sizeof(pack), "%s/blobs.pack", PACK_PUSH_PATH);
     FILE *pfile = fopen(pack, "wb");
     if(!pfile){
+        printf(LOG_ERROR_MSG_START"Failure creating zip destination"MSG_END);
         return -1;
     }
     fclose(pfile);
 
-    return pushPath(curpath, "");   // "" as in root
+    return pushPath(zipPath, "");   // "" as in root
 }   
 
 void pushHelp(){
@@ -251,6 +256,7 @@ int push(int argc, char* argv[]){
 
                 commit(count, args);
                 if(addLogEntry() < 0){
+                    printf(LOG_ERROR_MSG_START"Failed to add new log entry"MSG_END);
                     return -1;
                 }
                 
@@ -260,7 +266,12 @@ int push(int argc, char* argv[]){
                     return -1;
                 }
                 
-                uploadToDB();
+                bool status = uploadToDB();
+                if(status){
+                    printf(PUSH_REPORT_MSG_START"Push success"MSG_END);
+                }else{
+                    printf(PUSH_ERROR_MSG_START"Error occurred whilst uploading"MSG_END);
+                }
             }
             break;
 
