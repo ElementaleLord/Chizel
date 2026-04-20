@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router';
-import { CircleDot, MessageSquare, Check, X, Plus, Search, ChevronRight } from 'lucide-react';
+import { CircleDot, MessageSquare, Check, Plus, Search, ChevronRight } from 'lucide-react';
 import { RepositoryLayout } from '../components/repository/RepositoryLayout';
 
 const issues = [

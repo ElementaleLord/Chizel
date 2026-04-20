@@ -22,7 +22,6 @@ export function ExampleComponent() {
 }`;
 
   const pathParts = filePath?.split('/') || [];
-  const fileName = pathParts[pathParts.length - 1] || 'README.md';
 
   return (
     <RepositoryLayout>

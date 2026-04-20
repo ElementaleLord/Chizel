@@ -19,7 +19,7 @@ export function RepositoryLayout({ children }: { children: React.ReactNode }) {
         <div className="container max-w-6xl px-4 py-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Link to="/home" className="text-ring hover:underline">
+              <Link to="/" className="text-ring hover:underline">
                 {owner}
               </Link>
               <span className="text-muted-foreground">/</span>

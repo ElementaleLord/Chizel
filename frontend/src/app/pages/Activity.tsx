@@ -1,101 +1,29 @@
+import { useMemo, useState } from 'react';
 import { Header } from '../components/layout/Header';
 import { Sidebar } from '../components/layout/Sidebar';
-import { GitCommit, Star, GitFork, GitPullRequest, CircleDot, GitBranch } from 'lucide-react';
+import { contributionFeed, getContributionIcon, type ContributionType } from '../data/userActivity';
 
-const activityItems = [
-  {
-    id: 1,
-    type: 'commit',
-    user: 'sarahdev',
-    action: 'pushed to',
-    repo: 'sarahdev/web-app',
-    branch: 'main',
-    message: 'Fix authentication bug in login flow',
-    time: '2 hours ago',
-  },
-  {
-    id: 2,
-    type: 'star',
-    user: 'sarahdev',
-    action: 'starred',
-    repo: 'chizel/design-system',
-    time: '4 hours ago',
-  },
-  {
-    id: 3,
-    type: 'fork',
-    user: 'sarahdev',
-    action: 'forked',
-    repo: 'opensource/react-tools',
-    time: '5 hours ago',
-  },
-  {
-    id: 4,
-    type: 'pr',
-    user: 'sarahdev',
-    action: 'opened pull request in',
-    repo: 'company/api-server',
-    prTitle: 'Add rate limiting middleware',
-    time: '6 hours ago',
-  },
-  {
-    id: 5,
-    type: 'issue',
-    user: 'sarahdev',
-    action: 'opened issue in',
-    repo: 'team/mobile-app',
-    issueTitle: 'App crashes on iOS 17',
-    time: '8 hours ago',
-  },
-  {
-    id: 6,
-    type: 'branch',
-    user: 'sarahdev',
-    action: 'created branch',
-    repo: 'sarahdev/web-app',
-    branch: 'feature/dark-mode',
-    time: '1 day ago',
-  },
-  {
-    id: 7,
-    type: 'commit',
-    user: 'sarahdev',
-    action: 'pushed to',
-    repo: 'sarahdev/design-system',
-    branch: 'main',
-    message: 'Update button component styles',
-    time: '2 days ago',
-  },
-  {
-    id: 8,
-    type: 'star',
-    user: 'sarahdev',
-    action: 'starred',
-    repo: 'vercel/next.js',
-    time: '3 days ago',
-  },
+type ActivityFilter = 'all' | 'commit' | 'issue' | 'pull_request' | 'comment' | 'review';
+
+const filterOptions: { label: string; value: ActivityFilter }[] = [
+  { label: 'All', value: 'all' },
+  { label: 'Commits', value: 'commit' },
+  { label: 'Issues', value: 'issue' },
+  { label: 'Pull Requests', value: 'pull_request' },
+  { label: 'Comments', value: 'comment' },
+  { label: 'Reviews', value: 'review' },
 ];
 
-const getIcon = (type: string) => {
-  switch (type) {
-    case 'commit':
-      return <GitCommit className="h-4 w-4" />;
-    case 'star':
-      return <Star className="h-4 w-4" />;
-    case 'fork':
-      return <GitFork className="h-4 w-4" />;
-    case 'pr':
-      return <GitPullRequest className="h-4 w-4" />;
-    case 'issue':
-      return <CircleDot className="h-4 w-4" />;
-    case 'branch':
-      return <GitBranch className="h-4 w-4" />;
-    default:
-      return null;
-  }
-};
-
 export function Activity() {
+  const [activeFilter, setActiveFilter] = useState<ActivityFilter>('all');
+  const filteredActivity = useMemo(
+    () =>
+      contributionFeed.filter(
+        (item) => activeFilter === 'all' || item.type === (activeFilter as ContributionType),
+      ),
+    [activeFilter],
+  );
+
   return (
     <div className="min-h-screen bg-background dark">
       <Header isLoggedIn={true} />
@@ -105,26 +33,34 @@ export function Activity() {
         <div className="container max-w-4xl px-4 py-8">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-foreground">Activity Timeline</h1>
-            <div className="flex gap-2">
-              <button className="px-3 py-1.5 text-sm bg-[#fda410] text-white rounded-md font-medium">
-                All
-              </button>
-              <button className="px-3 py-1.5 text-sm bg-secondary text-foreground rounded-md hover:bg-secondary/80">
-                Commits
-              </button>
-              <button className="px-3 py-1.5 text-sm bg-secondary text-foreground rounded-md hover:bg-secondary/80">
-                Pull Requests
-              </button>
+            <div className="flex flex-wrap gap-2">
+              {filterOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setActiveFilter(option.value)}
+                  className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+                    activeFilter === option.value
+                      ? 'bg-[#fda410] text-white font-medium'
+                      : 'bg-secondary text-foreground hover:bg-secondary/80'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
             </div>
           </div>
 
           <div className="relative">
             <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-border"></div>
             <div className="space-y-6">
-              {activityItems.map((item) => (
+              {filteredActivity.map((item) => {
+                const Icon = getContributionIcon(item.type);
+
+                return (
                 <div key={item.id} className="relative pl-12">
                   <div className="absolute left-0 w-10 h-10 rounded-full bg-card border-2 border-border flex items-center justify-center text-[#fda410]">
-                    {getIcon(item.type)}
+                    <Icon className="h-4 w-4" />
                   </div>
                   <div className="p-4 bg-card border border-border rounded-lg">
                     <div className="flex items-start justify-between gap-4">
@@ -141,21 +77,21 @@ export function Activity() {
                             </span>
                           )}
                         </div>
-                        {item.message && (
-                          <p className="text-sm text-[#c9d1d9] mt-1">{item.message}</p>
-                        )}
-                        {item.prTitle && (
-                          <p className="text-sm text-foreground mt-1">{item.prTitle}</p>
-                        )}
-                        {item.issueTitle && (
-                          <p className="text-sm text-foreground mt-1">{item.issueTitle}</p>
-                        )}
+                        <p className="text-sm text-foreground mt-1">{item.title}</p>
+                        <p className="text-sm text-[#c9d1d9] mt-1">{item.description}</p>
                       </div>
                       <span className="text-xs text-[#c9d1d9] whitespace-nowrap">{item.time}</span>
                     </div>
                   </div>
                 </div>
-              ))}
+              )})}
+              {filteredActivity.length === 0 && (
+                <div className="relative pl-12">
+                  <div className="rounded-lg border border-dashed border-border bg-card p-4 text-sm text-muted-foreground">
+                    No activity matches this filter yet.
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

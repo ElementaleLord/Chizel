@@ -2,17 +2,14 @@ import { Header } from '../components/layout/Header';
 import { Sidebar } from '../components/layout/Sidebar';
 import { GitCommit, Star, GitFork, TrendingUp, Users } from 'lucide-react';
 import { Link } from 'react-router';
+import { RepositoryStarButton } from '../components/repository/RepositoryStarButton';
+import { useAppState } from '../components/state/AppStateContext';
+import { formatStarCount, getLanguageColor, getRepositoriesByIds, homeSuggestedRepositoryIds } from '../data/repositories';
 
 const recentActivity = [
   { type: 'commit', repo: 'sarahdev/web-app', message: 'Fix authentication bug', time: '2h ago' },
   { type: 'star', repo: 'chizel/design-system', time: '4h ago' },
   { type: 'fork', repo: 'opensource/react-tools', time: '5h ago' },
-];
-
-const suggestedRepos = [
-  { name: 'vercel/next.js', desc: 'The React Framework', stars: '118k', lang: 'JavaScript' },
-  { name: 'facebook/react', desc: 'A declarative, efficient library', stars: '220k', lang: 'JavaScript' },
-  { name: 'microsoft/vscode', desc: 'Visual Studio Code', stars: '156k', lang: 'TypeScript' },
 ];
 
 const trending = [
@@ -21,6 +18,9 @@ const trending = [
 ];
 
 export function Home() {
+  const { isRepositoryStarred, toggleStarredRepository } = useAppState();
+  const suggestedRepos = getRepositoriesByIds(homeSuggestedRepositoryIds);
+
   return (
     <div className="min-h-screen bg-background dark">
       <Header isLoggedIn={true} />
@@ -60,24 +60,27 @@ export function Home() {
               <div>
                 <h2 className="text-foreground mb-4">Suggested for you</h2>
                 <div className="grid gap-4">
-                  {suggestedRepos.map((repo, i) => (
-                    <div key={i} className="p-4 bg-card border border-border rounded-lg">
-                      <Link to="#" className="text-[#fda410] hover:underline font-medium">
-                        {repo.name}
+                  {suggestedRepos.map((repo) => (
+                    <div key={repo.id} className="p-4 bg-card border border-border rounded-lg">
+                      <Link to={`/repository/${repo.owner}/${repo.name}`} className="text-[#fda410] hover:underline font-medium">
+                        {repo.id}
                       </Link>
-                      <p className="text-sm text-[#c9d1d9] mt-1">{repo.desc}</p>
-                      <div className="flex items-center gap-4 mt-3 text-sm text-[#c9d1d9]">
+                      <p className="text-sm text-[#c9d1d9] mt-1">{repo.description}</p>
+                      <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-[#c9d1d9]">
                         <div className="flex items-center gap-1">
-                          <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                          <span>{repo.lang}</span>
+                          <div className={`w-3 h-3 rounded-full ${getLanguageColor(repo.language)}`}></div>
+                          <span>{repo.language}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Star className="h-4 w-4" />
-                          <span>{repo.stars}</span>
+                          <span>{formatStarCount(repo.stars)}</span>
                         </div>
-                        <button className="ml-auto px-3 py-1 text-sm text-foreground bg-secondary hover:bg-secondary/80 rounded-md">
-                          Star
-                        </button>
+                        <div className="ml-auto">
+                          <RepositoryStarButton
+                            isStarred={isRepositoryStarred(repo.id)}
+                            onToggle={() => toggleStarredRepository(repo.id)}
+                          />
+                        </div>
                       </div>
                     </div>
                   ))}

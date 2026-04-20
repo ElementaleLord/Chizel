@@ -1,4 +1,4 @@
-import { Menu, Search, Plus, Bell, GitPullRequest, Inbox, ChevronDown, Sparkles, FileCode, GitBranch, Code, MoreVertical } from 'lucide-react';
+import { Menu, Search, Plus, Bell, GitPullRequest, Inbox, Sparkles, FileCode, GitBranch, Code, MoreVertical } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../components/auth/AuthContext';
 import { Link } from 'react-router';
