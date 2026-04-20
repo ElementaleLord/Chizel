@@ -21,19 +21,33 @@ F: is Faust
 //& NOTE-1 P: others just indicate comment maker taklking to or about someone else
 */
 
-#include <time.h>       //# for header
-#include <stddef.h>     //# for header
-#include <string.h>     //# all files 
-#include <stdbool.h>    //# all files
-#include <stdio.h>      //# all files
-#include <stdlib.h>     //# all files
+#include <time.h>                   //# header
+#include <stddef.h>                 //# header
+#include <string.h>                 //# all files 
+#include <stdbool.h>                //# all files
+#include <stdio.h>                  //# all files
+#include <stdlib.h>                 //# all files
 
 #ifndef CHIZEL_H
 #define CHIZEL_H
 
+    //& LCS Algorithm
+    typedef struct
+    {
+        char** content;
+        size_t capacity;
+        size_t size;
+    } Lines;
+
+    int lcs(Lines s1, Lines s2);
+
+
+
+    //& General
+
     //~ Paths
     #define CHZ_PATH ".chz"
-    #define BRANCHES_PATH ".chz/branches"
+    #define BRANCHES_PATH ".chz/refs/heads/"
     #define REFS_PATH ".chz/refs"
     #define REFS_HEADS_PATH ".chz/refs/heads"
     #define REFS_TAGS_PATH ".chz/refs/tags"
@@ -46,8 +60,7 @@ F: is Faust
     #define DESC_PATH ".chz/description"
     #define STAGING_AREA_PATH ".chz/index"
     #define ORIGIN_FILE  ".chz/origin"
-    //! #define HOOKS_PATH ".chz/hooks"
-    //! #define UNPACK_REFS_PATH ".chz/unpacked-refs"
+    #define IGNORE_FILE "../.gitignore"
 
     //~ Offsets
     #define ARG_BASE -1
@@ -94,71 +107,33 @@ F: is Faust
     #define MSG_END ".\n"
 
 
-
     //~ Functions
     bool checkForFile(char *file);
-    bool checkChz(); 
-    bool checkStagingArea();
+    int checkChz();
+    char* getHead();
+    int checkStagingArea();
     FILE* getStagingArea();
+    Lines readStagingArea();
     bool clearStagingArea();
+    void whatIsTheError();
+    bool checkIgnore(char* file, const char* relative_path);
+    const char* makeRelativePath(const char* fullpath, const char* root_path);
 
 
 
     //& DType Template
-    struct StatusFile;
-    struct DateFile;
-    struct PullRequestType;
     struct AccountChz;
-    struct CommitChz;
-    struct LightTag;
-    struct HeavyTag;
     struct RepositoryChz;
-    struct BranchChz;
-    struct RepositoryLogEntry;
-    struct RepoFork;
     struct PullRequest;
 
-    typedef enum FileStatus FileStatus;
-    typedef enum AuthenticationMethod AuthenticationMethod;
-    typedef enum ActionType ActionType;
     typedef enum PullRequestCategory PullRequestCategory;
     typedef enum PullRequestStatus PullRequestStatus;
 
-    typedef struct StatusFile StatusFile;
-    typedef struct DateFile DateFile;
-    typedef struct PullRequestType PullRequestType;
     typedef struct AccountChz AccountChz;
-    typedef struct CommitChz CommitChz;
-    typedef struct LightTag LightTag;
-    typedef struct HeavyTag HeavyTag;
     typedef struct RepositoryChz RepositoryChz;
-    typedef struct BranchChz BranchChz;
-    typedef struct RepositoryLogEntry RepositoryLogEntry;
-    typedef struct RepoFork RepoFork;
     typedef struct PullRequest PullRequest;
 
-    enum FileStatus
-    {
-        MODIFIED, 
-        UNMODIFIED, 
-        REMOVED, 
-        ADDED
-    };
-
-    enum AuthenticationMethod
-    {
-        SECONDARY_EMAIL, 
-        PHONE_NUMBER, 
-        AUTHENTICATOR_APP
-    };
-
-    enum ActionType
-    {
-        CREATE, 
-        DELETE, 
-        VIEW
-    };
-
+    
     enum PullRequestCategory
     {
         OPEN, 
@@ -173,101 +148,27 @@ F: is Faust
         NUL
     };
 
-    //~ A file with a status attached
-    struct StatusFile
-    {
-        FileStatus status;
-        char* FileName;
-    };
-
-    //~ A file with a date attached
-    struct DateFile
-    {
-        time_t date;
-        long* fileObj;
-    };
-
-    //~ Tracks the category and status of a PullRequest
-    struct PullRequestType
-    {
-        PullRequestCategory pullReqCat;
-        PullRequestStatus pullReqStatus;
-    };
-
     //~ Account settings data type
     struct AccountChz
     {
         char* email;
-        long password;      //? should be a hashed ref
+        long password;
         char* username;
-        bool twoFactorAuth;
-        AuthenticationMethod method;
-    };
-
-    //~ General data type for a Commit
-    struct CommitChz
-    {
-        char* commitName;
-        char* commitMsg;
-        time_t commitDate;
-        BranchChz* commitBranch;
-        BranchChz* mergeBranch;
-        StatusFile* commitedChanges;
-    };
-
-    //~ Defines a name and points to some commit
-    struct LightTag
-    {
-        char* label;
-        CommitChz* commitPtr;
-    };
-
-    //~ Expansion on light tag that additionally track date and user which created this tag
-    struct HeavyTag
-    {
-        char* label;
-        CommitChz* commitPtr;
-        AccountChz* creater;
-        time_t HTagDate;
-        char* HTagMsg;
+        char* phone;
     };
 
     //~ General data type for a Repository
     struct RepositoryChz
     {
+        long long id;               //& O: long long aligns best with PostgreSQL's BIGINT
         char* repoName;
         time_t repoDate;
         char* repoURL;
-        long icon;
-        //RepositoryLogEntry* repoLog;      //# array of log entries (i think we defined this to make git log easier to code? maybe)
-        LightTag* ptrMap;                   //# array of light tags
-        HeavyTag* tagMap;                   //# array of heavy tags
-        BranchChz** branches;               //# array of branch pointers
-    };
-
-    //~ General data type for a Branch
-    struct BranchChz
-    {
-        char* branchName;
-        time_t branchDate;
-        DateFile* branchData;
-        RepositoryChz* parentRepo;
-        CommitChz* latestCommit;
-    };
-
-    //~ Used as one entry in a repositories history log
-    struct RepositoryLogEntry
-    {
-        time_t logEntrydate;
-        CommitChz* RepLogData;
-    };
-
-    //~ Defines the extra data needed by a forked repository
-    struct RepoFork
-    {
-        char* originalURL;
-        time_t forkDate;
-        long vNum;
+        long long followers;
+        long long stars;
+        unsigned char* data;
+        long long* contributors;
+        size_t contributorCount;
     };
 
     //~ General data type for a PullRequest
@@ -278,7 +179,8 @@ F: is Faust
         time_t createDate;
         time_t submitDate;
         time_t resolveDate;
-        PullRequestType status;
+        PullRequestCategory pullReqCat;
+        PullRequestStatus pullReqStatus;
     };
 
 
@@ -301,24 +203,12 @@ F: is Faust
         {OBJECTS_PATH,          NULL},
         {OBJECTS_INFO_PATH,     NULL},
         {INFO_PATH,             NULL},
-        {HEAD_PATH,             "ref: refs/heads/main\n"},
+        {HEAD_PATH,             "refs/heads/main\n"},
         {INDEX_PATH,            ""},
         {CONFIG_PATH,           "[core]\n\trepositoryformatversion = 0\n"},
         {DESC_PATH,             "Unnamed repository\n"}
     };
 
     static const size_t REPO_TEMPLATE_SIZE = sizeof(REPO_TEMPLATE) / sizeof(REPO_TEMPLATE[0]);
-
-
-    //& LCS Algorithm
-    typedef struct
-    {
-        char** content;
-        size_t capacity;
-        size_t size;
-    } Lines;
-
-    int lcs(Lines s1, Lines s2);
     
-
 #endif

@@ -1,0 +1,45 @@
+>> Tools:
+  1. C
+  2. PostgresSQL
+  3. Supabase
+  4. Typescript
+  5. ReactJs
+  6. NodeJS
+  7. Git
+
+>> Order of Priorities:
+  1. Software Diagrams (All members)
+  2. Git Commands Allocation And Shell Exec (All members)
+  3. Control Scripts (Charbel & Omar)
+  4. File Cleanup Scripts (Patrick & Bilal)
+  5. NodeJS Backend + Mongo (All)
+  6. Website UI (All)
+  7. Extras + Cherry Picking (All)
+
+>> Git Commands:
+  1. Commands To Be Worked On By The Whole Group:
+     - Merge
+     - Branch
+  2. Commands To Be Worked On By Patrick:
+     - Status
+     - Checkout
+     - Describe
+  3. Commands To Be Worked On By Charbel:
+     - Init
+     - Commit
+     - Grep
+  4. Commands To Be Worked On By Omar:
+     - Push
+     - Pull
+     - Log
+  5. Commands To Be Worked On By Bilal:
+     - Clone
+     - Add
+     - Fetch
+
+>> Work Hours
+   Monday   : min 6 Hours
+   Thursday : min 2 Hours
+   Friday   : min 2 Hours
+
+>> UML is in B1_UML_Diagrams.vpp file
