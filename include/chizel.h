@@ -63,6 +63,23 @@ F: is Faust
     #define ORIGIN_FILE  ".chz/origin"
     #define IGNORE_FILE "../.gitignore"
 
+    #define dynamic_append(d_arr, val)\
+        do{\
+            if(d_arr.size >= d_arr.capacity)\
+            {\
+                if(d_arr.size == 0) d_arr.capacity = 256;\
+                else d_arr.capacity *= 2;\
+                void *temp = realloc(d_arr.content, d_arr.capacity * sizeof(*d_arr.content));\
+                if(!temp)\
+                {\
+                    perror("realloc failed");\
+                    exit(1);\
+                }\
+                d_arr.content = temp;\
+            }\
+            d_arr.content[d_arr.size++] = val;\
+        }while(0)
+
     //~ Offsets
     #define ARG_BASE -1
 
@@ -119,6 +136,7 @@ F: is Faust
     void whatIsTheError();
     bool checkIgnore(char* file, const char* relative_path);
     const char* makeRelativePath(const char* fullpath, const char* root_path);
+    Lines read_file(FILE* f);
     void reverseString(char* s);
     int addLogEntry();
     char* newlineFake(char* msg);
