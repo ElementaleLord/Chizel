@@ -58,6 +58,7 @@ F: is Faust
     #define DESC_PATH ".chz/description"
     #define STAGING_AREA_PATH ".chz/index"
     #define LOGS_PATH ".chz/logs/"
+    #define DATA_PATH ".chz/data"
     #define PACK_PUSH_PATH ".chz/objects/compressed"
     #define PACK_PULL_PATH ".chz/objects/restored"
     #define ORIGIN_FILE  ".chz/origin"
@@ -223,12 +224,14 @@ F: is Faust
         {PACK_PUSH_PATH,          NULL},
         {PACK_PULL_PATH,          NULL},
         {LOGS_PATH,               NULL},
+        {DATA_PATH,               NULL},
         {HEAD_PATH,               "refs/heads/main\n"},
         {INDEX_PATH,              ""},
         {CONFIG_PATH,             "[core]\n\trepositoryformatversion = 0\n"},
         {DESC_PATH,               "Unnamed repository\n"},
         {".chz/refs/heads/main",  "0000000000000000000000000000000000000000\n"},
-        {".chz/logs/main.log",    NULL}
+        {".chz/logs/main.log",    ""},
+        {".chz/data/main",        NULL}
     };
 
     static const size_t REPO_TEMPLATE_SIZE = sizeof(REPO_TEMPLATE) / sizeof(REPO_TEMPLATE[0]);
@@ -251,5 +254,20 @@ F: is Faust
     int load_commit_object(FILE* obj_ptr, CommitObject* out_commit);
     void walk_history(const char* start_hash);
 
+
+
+    //& Packed Files
+    #define CHZ_PUSH 0
+    #define STORE_DATA 1
+
+    typedef struct{
+        unsigned int pathLen;
+        unsigned long long blobLen;
+        unsigned int isDir;
+    }Blob;
+
+    int zipDirectory(int mode);
+    int restorePack(const char* pack_path, const char* output_path);
+    int removeDir(const char* dirPath);
     
 #endif
