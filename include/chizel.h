@@ -47,18 +47,19 @@ F: is Faust
 
     //~ Paths
     #define CHZ_PATH ".chz"
-    #define BRANCHES_PATH ".chz/branches"
+    #define BRANCHES_PATH ".chz/refs/heads/"
     #define REFS_PATH ".chz/refs"
     #define REFS_HEADS_PATH ".chz/refs/heads"
     #define REFS_TAGS_PATH ".chz/refs/tags"
     #define OBJECTS_PATH ".chz/objects"
-    #define OBJECTS_INFO_PATH ".chz/objects/info"
-    #define INFO_PATH ".chz/info"
     #define HEAD_PATH ".chz/HEAD"
     #define INDEX_PATH ".chz/index"
     #define CONFIG_PATH ".chz/config"
     #define DESC_PATH ".chz/description"
     #define STAGING_AREA_PATH ".chz/index"
+    #define LOGS_PATH ".chz/logs/"
+    #define PACK_PUSH_PATH ".chz/objects/compressed"
+    #define PACK_PULL_PATH ".chz/objects/restored"
     #define ORIGIN_FILE  ".chz/origin"
     #define IGNORE_FILE "../.gitignore"
 
@@ -127,6 +128,7 @@ F: is Faust
     //~ Functions
     bool checkForFile(char *file);
     int checkChz();
+    char* getHead();
     int checkStagingArea();
     FILE* getStagingArea();
     Lines readStagingArea();
@@ -135,6 +137,11 @@ F: is Faust
     bool checkIgnore(char* file, const char* relative_path);
     const char* makeRelativePath(const char* fullpath, const char* root_path);
     Lines read_file(FILE* f);
+    void reverseString(char* s);
+    int addLogEntry();
+    char* newlineFake(char* msg);
+    char* newlineRestoreShort(char* message);
+    char* newlineRestore(char* message);
 
 
 
@@ -177,15 +184,10 @@ F: is Faust
     //~ General data type for a Repository
     struct RepositoryChz
     {
-        long long id;               //& O: long long aligns best with PostgreSQL's BIGINT
-        char* repoName;
-        time_t repoDate;
-        char* repoURL;
-        long long followers;
-        long long stars;
+        char repoName[64];
+        char repoURL[512];
         unsigned char* data;
-        long long* contributors;
-        size_t contributorCount;
+        size_t dataLen;
     };
 
     //~ General data type for a PullRequest
@@ -213,19 +215,41 @@ F: is Faust
     //~ .chz dir template
     static const TemplateValue REPO_TEMPLATE[] =
     {
-        {CHZ_PATH,              NULL},
-        {REFS_PATH,             NULL},
-        {REFS_HEADS_PATH,       NULL},
-        {REFS_TAGS_PATH,        NULL},
-        {OBJECTS_PATH,          NULL},
-        {OBJECTS_INFO_PATH,     NULL},
-        {INFO_PATH,             NULL},
-        {HEAD_PATH,             "refs/heads/main\n"},
-        {INDEX_PATH,            ""},
-        {CONFIG_PATH,           "[core]\n\trepositoryformatversion = 0\n"},
-        {DESC_PATH,             "Unnamed repository\n"}
+        {CHZ_PATH,                NULL},
+        {REFS_PATH,               NULL},
+        {REFS_HEADS_PATH,         NULL},
+        {REFS_TAGS_PATH,          NULL},
+        {OBJECTS_PATH,            NULL},
+        {PACK_PUSH_PATH,          NULL},
+        {PACK_PULL_PATH,          NULL},
+        {LOGS_PATH,               NULL},
+        {HEAD_PATH,               "refs/heads/main\n"},
+        {INDEX_PATH,              ""},
+        {CONFIG_PATH,             "[core]\n\trepositoryformatversion = 0\n"},
+        {DESC_PATH,               "Unnamed repository\n"},
+        {".chz/refs/heads/main",  "0000000000000000000000000000000000000000\n"},
+        {".chz/logs/main.log",    NULL}
     };
 
     static const size_t REPO_TEMPLATE_SIZE = sizeof(REPO_TEMPLATE) / sizeof(REPO_TEMPLATE[0]);
+
+
+
+    //& Commit Methods
+    //Struct to read the content of a commit
+    typedef struct
+    {
+        char tree_hash[65];
+        char parent_hash[65];
+        void* data;
+        char* author;       // username & email
+        char* message;
+        time_t commit_date;
+    }CommitObject;
+
+    int get_object_path(char* out_path);
+    int load_commit_object(FILE* obj_ptr, CommitObject* out_commit);
+    void walk_history(const char* start_hash);
+
     
 #endif
