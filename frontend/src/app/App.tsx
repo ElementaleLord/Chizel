@@ -76,15 +76,6 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <div>
-        <button onClick={fetchHello}>Call Api</button>
-        <br/>
-        <button onClick={chzInit}>Make Repo</button>
-        <br/>
-        <button onClick={dbTest}>Call db</button>
-        <br/>
-        <div>{msg}</div>
-      </div>
       <AppStateProvider>
         <AuthProvider>
           <BrowserRouter>
