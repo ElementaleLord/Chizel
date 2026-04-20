@@ -209,16 +209,8 @@ void callBranch(char* branchName)
 
 }
 
-//~ function used to delete the current repo and load the current branch data
-void loadData()
-{//# delete current repo files (excluding .chz)
-
-    //#then uncompresses the data of the current branch head commit and write that data to the repo dir
-
-}
-
 //~ function used to overwrite HEAD with the given branch path to make it the Current Branch
-void alterHEAD(char* branchName)
+bool alterHEAD(char* branchName)
 {
     char path[1024];
 
@@ -228,7 +220,7 @@ void alterHEAD(char* branchName)
         printf(CHECKOUT_REPORT_MSG_START"Failed To Open HEAD File To Alter Path"MSG_END);
         // whatIsTheError();
         //! P: make sure to add to header a prototype for whatIsTheError()
-        return;
+        return false;
     }
     sprintf(path, "refs/heads/%s",branchName);
 
@@ -236,7 +228,7 @@ void alterHEAD(char* branchName)
     fclose(head_ptr);
     printf(CHECKOUT_REPORT_MSG_START"Successfully Switched To %s Branch"MSG_END, branchName);
 
-    loadData();
+    return true;
 }
 
 //~ function used as interface to call needed functions
@@ -245,22 +237,46 @@ void preCheckout(char* branchName)
     if (checkChz())
         if (checkBranch(branchName))
             if (!checkCurBranch(branchName))
-                if (!checkForChanges()) alterHEAD(branchName);
+                if (!checkForChanges()) 
+                    if (alterHEAD(branchName)) 
+                    {
+                        char comPath[1024], dirPath[1024];
+                        get_object_path(comPath);
+                        
+                        FILE* obj_ptr = fopen(comPath, "rw");
+                        if (!obj_ptr)
+                        {
+                            printf(CHECKOUT_ERROR_MSG_START"Failed To Open Commit File"MSG_END);
+                            whatIsTheError();
+                            return;
+                        }
+                        CommitObject* out_commit = {0};
+
+                        load_commit_object(obj_ptr, out_commit);
+                        getcwd(dirPath, sizeof(dirPath));
+                        DIR* repo_ptr = opendir(dirPath);
+                        
+                    }
+                    else
+                    {
+                        printf(CHECKOUT_ERROR_MSG_START"Failed To ReWrite Head"MSG_END);
+                        whatIsTheError();
+                    }
                 else
                 {
                     printf(CHECKOUT_ERROR_MSG_START"There Is Uncommitted Changes"MSG_END);
-                    // whatIsTheError();
+                    whatIsTheError();
                     printf(CHECKOUT_REPORT_MSG_START"Use: chz commit"MSG_END);
                 }
             else
             {
                 printf(CHECKOUT_ERROR_MSG_START"Your Already On %s Branch"MSG_END, branchName);
-                // whatIsTheError();
+                whatIsTheError();
             }
         else
         {
             printf(CHECKOUT_ERROR_MSG_START"Branch %s Does Not Exist"MSG_END, branchName);
-            // whatIsTheError();
+            whatIsTheError();
             printf(CHECKOUT_REPORT_MSG_START"Use: chz checkout -b %s or chz branch %s"MSG_END, branchName);
         }
 }
