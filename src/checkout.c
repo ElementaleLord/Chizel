@@ -242,17 +242,17 @@ void preCheckout(char* branchName, bool needsIgnore)
                     zipDirectory(STORE_DATA);
                     if (alterHEAD(branchName))
                     {
-                        // repo dir delete func
+                        removeDir('.');
                         char dataPath[1024];
                         sprintf(dataPath, ".chz/data/%s/data.pack", branchName);
                         restorePack(dataPath, ".");
+
                         if (needsIgnore)
-                        { 
+                        {
                             char ignorePath[1024];
                             sprintf(ignorePath, ".chz/data/%s/ignore.pack", branchName);
                             restorePack(ignorePath, ".");
                         }
-                        
                     }
                     else
                     {
@@ -282,7 +282,7 @@ void preCheckout(char* branchName, bool needsIgnore)
 //~ helper used to display help menu
 void checkoutHelp()
 {
-    printf(CHECKOUT_REPORT_MSG_START"Usage: chz checkout <branch-name> | chz checkout -h | chz checkout -b <branch-name> | chz checkout -i <branch-name> | chz checkout -b -i <branch-name>."MSG_END);
+    printf(CHECKOUT_REPORT_MSG_START"Usage: chz checkout <branch-name> | chz checkout -h | chz checkout -b <branch-name> | chz checkout -i <branch-name>."MSG_END);
 }
 
 void checkout(int argc, char* argv[])
@@ -312,7 +312,7 @@ void checkout(int argc, char* argv[])
             {//% chz checkout -b <branch-name>
                 if (checkChz())
                 {
-                    callBranch(argv[ARG_BASE + 3]);
+                    callBranch(argv[ARG_BASE + 3]);//! replace with proper func
                     preCheckout(argv[ARG_BASE + 3], false);
                 }
             }
@@ -320,18 +320,6 @@ void checkout(int argc, char* argv[])
             {//% chz checkout -i <branch-name>
                 if (checkChz())
                 {
-                    callBranch(argv[ARG_BASE + 3]);
-                    preCheckout(argv[ARG_BASE + 3], true);
-                }
-            }
-            break;
-        //@ chz checkout <arg> <arg> <arg>
-        case ARG_BASE + 5:
-            if(strcmp(argv[ARG_BASE + 1], "-b") == 0 && strcmp(argv[ARG_BASE + 2], "-i") == 0)
-            {//% chz checkout -b -i <branch-name>
-                if (checkChz())
-                {
-                    callBranch(argv[ARG_BASE + 3]);
                     preCheckout(argv[ARG_BASE + 3], true);
                 }
             }
