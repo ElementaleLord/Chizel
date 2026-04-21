@@ -1159,16 +1159,21 @@ int removeDir(const char *path)
     if (strcmp(path, "/") == 0) return -1;
     char base[2048];
 
-    if (realpath(path, base) == NULL)
-    {
-        perror("realpath");
-        return -1;
-    }
+    #ifdef _WIN32
+        if (_fullpath(base, path, sizeof(base)) == NULL)
+        {
+            return -1;
+        }
+    #else
+        if (realpath(path, base) == NULL)
+        {
+            return -1;
+        }
+    #endif
 
     DIR *dir = opendir(base);
     if (!dir)
     {
-        perror("opendir");
         return -1;
     }
 
@@ -1192,7 +1197,6 @@ int removeDir(const char *path)
         struct stat st;
         if (stat(full_path, &st) != 0)
         {
-            perror("stat");
             closedir(dir);
             return -1;
         }
@@ -1207,7 +1211,6 @@ int removeDir(const char *path)
 
             if (rmdir(full_path) != 0)
             {
-                perror("rmdir");
                 closedir(dir);
                 return -1;
             }
@@ -1216,7 +1219,6 @@ int removeDir(const char *path)
         {
             if (remove(full_path) != 0)
             {
-                perror("remove");
                 closedir(dir);
                 return -1;
             }
