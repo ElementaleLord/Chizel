@@ -271,13 +271,16 @@ bool logs(int argc, char* argv[]){
 
         //@ chz log <arg>
         case (ARG_BASE + 3):
-            if(strcmp(argv[ARG_BASE + 2], "-h") == 0){//% chz log -h
+            if(strcmp(argv[ARG_BASE + 2], "-h") == 0){
+                //% chz log -h
                 logHelp();
 
-            }else if(strcmp(argv[ARG_BASE + 2], "-o") == 0){//% chz log -o
+            }else if(strcmp(argv[ARG_BASE + 2], "-o") == 0){
+                //% chz log -o
                 readLogs(LOG_SHORT, NULL);      // 6 letter hashes + message
 
-            }else if(strcmp(argv[ARG_BASE + 2], "-r") == 0){//% chz log -r
+            }else if(strcmp(argv[ARG_BASE + 2], "-r") == 0){
+                //% chz log -r
                 readLogsReverse();
 
             }
@@ -285,10 +288,12 @@ bool logs(int argc, char* argv[]){
 
         //@ chz log <arg> <arg>
         case (ARG_BASE + 4):
-            if(strcmp(argv[ARG_BASE + 2], "-n") == 0){//% chz branch -n <int>       
+            if(strcmp(argv[ARG_BASE + 2], "-n") == 0){
+                //% chz branch -n <int>       
                 readAmountLogs(atoi(argv[ARG_BASE + 3]));
 
-            }else if(strcmp(argv[ARG_BASE + 2], "-b") == 0){//% chz log -b <branch>
+            }else if(strcmp(argv[ARG_BASE + 2], "-b") == 0){
+                //% chz log -b <branch>
                 readLogs(LOG_NORMAL, argv[ARG_BASE + 3]);
             }
             break;
@@ -297,9 +302,4 @@ bool logs(int argc, char* argv[]){
             printf(CHZ_ERROR_MSG_START"Invalid Command"MSG_END);
             break;
     }
-}
-
-
-int main(int argc, char* argv[]){
-    logs(argc, argv);
 }
