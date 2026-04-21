@@ -282,7 +282,7 @@ void preCheckout(char* branchName, bool needsIgnore)
 //~ helper used to display help menu
 void checkoutHelp()
 {
-    printf(CHECKOUT_REPORT_MSG_START"Usage: chz status | chz status -h."MSG_END);
+    printf(CHECKOUT_REPORT_MSG_START"Usage: chz checkout <branch-name> | chz checkout -h | chz checkout -b <branch-name> | chz checkout -i <branch-name> | chz checkout -b -i <branch-name>."MSG_END);
 }
 
 void checkout(int argc, char* argv[])
@@ -302,7 +302,7 @@ void checkout(int argc, char* argv[])
             {//% chz checkout <branch-name>
                 if (checkChz())
                 {
-                    preCheckout(argv[ARG_BASE + 2]);
+                    preCheckout(argv[ARG_BASE + 2], false);
                 }
             }
             break;
@@ -313,7 +313,26 @@ void checkout(int argc, char* argv[])
                 if (checkChz())
                 {
                     callBranch(argv[ARG_BASE + 3]);
-                    preCheckout(argv[ARG_BASE + 3]);
+                    preCheckout(argv[ARG_BASE + 3], false);
+                }
+            }
+            else if(strcmp(argv[ARG_BASE + 1], "-i") == 0)
+            {//% chz checkout -i <branch-name>
+                if (checkChz())
+                {
+                    callBranch(argv[ARG_BASE + 3]);
+                    preCheckout(argv[ARG_BASE + 3], true);
+                }
+            }
+            break;
+        //@ chz checkout <arg> <arg> <arg>
+        case ARG_BASE + 5:
+            if(strcmp(argv[ARG_BASE + 1], "-b") == 0 && strcmp(argv[ARG_BASE + 2], "-i") == 0)
+            {//% chz checkout -b -i <branch-name>
+                if (checkChz())
+                {
+                    callBranch(argv[ARG_BASE + 3]);
+                    preCheckout(argv[ARG_BASE + 3], true);
                 }
             }
             break;
