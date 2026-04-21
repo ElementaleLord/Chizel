@@ -232,29 +232,26 @@ bool alterHEAD(char* branchName)
 }
 
 //~ function used as interface to call needed functions
-void preCheckout(char* branchName)
+void preCheckout(char* branchName, bool needsIgnore)
 {
     if (checkChz())
         if (checkBranch(branchName))
             if (!checkCurBranch(branchName))
-                if (!checkForChanges()) 
-                    if (alterHEAD(branchName)) 
+                if (!checkForChanges())
+                {
+                    zipDirectory(STORE_DATA);
+                    if (alterHEAD(branchName))
                     {
-                        char comPath[1024], dirPath[1024];
-                        get_object_path(comPath);
-                        
-                        FILE* obj_ptr = fopen(comPath, "rw");
-                        if (!obj_ptr)
-                        {
-                            printf(CHECKOUT_ERROR_MSG_START"Failed To Open Commit File"MSG_END);
-                            whatIsTheError();
-                            return;
+                        // repo dir delete func
+                        char dataPath[1024];
+                        sprintf(dataPath, ".chz/data/%s/data.pack", branchName);
+                        restorePack(dataPath, ".");
+                        if (needsIgnore)
+                        { 
+                            char ignorePath[1024];
+                            sprintf(ignorePath, ".chz/data/%s/ignore.pack", branchName);
+                            restorePack(ignorePath, ".");
                         }
-                        CommitObject* out_commit = {0};
-
-                        load_commit_object(obj_ptr, out_commit);
-                        getcwd(dirPath, sizeof(dirPath));
-                        DIR* repo_ptr = opendir(dirPath);
                         
                     }
                     else
@@ -262,6 +259,7 @@ void preCheckout(char* branchName)
                         printf(CHECKOUT_ERROR_MSG_START"Failed To ReWrite Head"MSG_END);
                         whatIsTheError();
                     }
+                }
                 else
                 {
                     printf(CHECKOUT_ERROR_MSG_START"There Is Uncommitted Changes"MSG_END);
