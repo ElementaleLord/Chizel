@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import axios from 'axios';
 
 interface AuthSession {
   user: User;
@@ -22,7 +23,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const AUTH_STORAGE_KEY = 'chizel_auth_session';
 const LEGACY_USER_STORAGE_KEY = 'chizel_user';
-const API_URL = import.meta.env.VITE_API_URL?.trim();
+const API_URL = import.meta.env.VITE_API_URL.trim() || 'http://localhost:3000';
 
 function readStoredSession(): AuthSession | null {
   const storedSession = localStorage.getItem(AUTH_STORAGE_KEY);

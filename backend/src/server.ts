@@ -1,25 +1,25 @@
 import express from "express";
-const cors = require("cors");
+import cors from "cors";
 import cEngine from "./routes/c_engine";
+import authRoutes from "./routes/auth";
+import authGuard from "./middleware/authGuard";
 import { getRepoData, getRepoId, getRepoPullRequests, getUserPasswordEmail, getUserPasswordName, getUserRepos} from "./routes/database";
 
 
 const app = express();
 const PORT = 3000;
 
-app.use(cors());
+app.use(cors({origin: process.env.VITE_API_URL, credentials: true}));
 app.use(express.json());
 app.use("/api", cEngine);
+app.use("/auth", authRoutes);
 
 console.log("C engine router mounted correctly");
 
-app.get("/", (req, res) => {
-    res.send("Hello World!");
-});
-
-app.get("/api/hello", (req, res) => {
-    res.json({ message: "Backend says hi " });
-});
+//git command sanitzation, WIP
+//app.post('/git-command', authGuard, (req, res) => {
+//    res.json({ message: `Executing command for ${req.user?.username}` });
+//});
 
 app.get("/api/password/username/:username", async (req, res) =>{
     try{

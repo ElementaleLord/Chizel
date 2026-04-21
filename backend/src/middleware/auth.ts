@@ -15,9 +15,10 @@ export const authGuard = (req: AuthRequest, res: Response, next: NextFunction) :
 
     if(!authHeader || !authHeader.startsWith('Bearer ')){
         res.status(401).json({ message: 'Access Denied: No token provided' });
+        return;
     }
 
-    const token = authHeader.split(' ')[1];
+    const token = authHeader?.split(' ')[1];
     try{
         const verified = jwt.verify(token, process.env.JWT_SECRET as string);
         req.user = verified as AuthPayload;
