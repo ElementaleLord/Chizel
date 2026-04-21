@@ -140,7 +140,7 @@ bool fillRepoData(RepositoryChz* repo){
     fclose(f);
     repo->repoName[strcspn(repo->repoName, "\r\n")] = '\0';
     
-    snprintf(path, 1024, "%s/blobs.pack", PACK_PUSH_PATH);
+    snprintf(path, 1024, "%s/compacted.pack", PACK_PUSH_PATH);
     FILE* pack = fopen(path, "rb");
     if(!pack){
         return false;
