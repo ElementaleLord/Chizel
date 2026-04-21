@@ -17,14 +17,13 @@ void getCurrentBranchHeadCommitId(char* commitId)
     if (!head_ptr)
     {
         printf(STATUS_ERROR_MSG_START"Failed To Open HEAD File"MSG_END);
-        // whatIsTheError();
-        //! P: make sure to add to header a prototype for whatIsTheError()
+        whatIsTheError();
         return;
     }
     if (!fgets(headPath, 1024, head_ptr))
     {
         printf(STATUS_ERROR_MSG_START"Failed To Read HEAD File"MSG_END);
-        // whatIsTheError();
+        whatIsTheError();
         return;
     }
     fclose(head_ptr);
@@ -36,13 +35,13 @@ void getCurrentBranchHeadCommitId(char* commitId)
     if (!branch_ptr)
     {
         printf(STATUS_ERROR_MSG_START"Failed To Open Branch File"MSG_END);
-        // whatIsTheError();
+        whatIsTheError();
         return;
     }
     if (!fgets(commitId, 1024, branch_ptr))
     {
         printf(STATUS_ERROR_MSG_START"Failed To Read Branch File"MSG_END);
-        // whatIsTheError();
+        whatIsTheError();
         return;
     }
     fclose(branch_ptr);
@@ -56,7 +55,7 @@ void lightTag(char* tagName, char* commitId)
     char tagPath[1024];
 
     sprintf(tagPath, REFS_TAGS_PATH"/%s", tagName);
-    printf("tagPath= %s\n", tagPath);
+    // printf("tagPath= %s\n", tagPath);
 
     FILE* tag_ptr = fopen(tagPath, "w");
     
@@ -94,7 +93,7 @@ void readTag(char* tagName){
     FILE* tag_ptr = fopen(tagPath, "r");
     if (!tag_ptr){
         printf(TAG_ERROR_MSG_START"%s Does Not Exist"MSG_END, tagPath);
-        // whatIsTheError();
+        whatIsTheError();
         return;
     }
     printf("Name: %s\n", tagName);
@@ -131,7 +130,11 @@ void preLightTag(char* tagName)
             getCurrentBranchHeadCommitId(commitId);
             lightTag(tagName, commitId);
         }
-        else printf(TAG_ERROR_MSG_START"Tag %s Already Exists, Use Another Name"MSG_END, tagName);
+        else
+        {
+            printf(TAG_ERROR_MSG_START"Tag %s Already Exists, Use Another Name"MSG_END, tagName);
+            whatIsTheError();
+        }
 }
 
 //~ function used as interface to call needed functions to make a heavy tag
@@ -147,7 +150,7 @@ void preHeavyTag(char* tagName, char* tagDescription)
         else 
         {
             printf(TAG_ERROR_MSG_START"Tag %s Already Exists, Use Another Name"MSG_END, tagName);
-            // whatIsTheError();
+            whatIsTheError();
         }
 }
 
@@ -165,7 +168,7 @@ void preDeleteTag(char* tagName)
         else 
         {
             printf(TAG_ERROR_MSG_START"Tag %s Does Not Exist"MSG_END, tagName);
-            // whatIsTheError();
+            whatIsTheError();
         }
 }
 
@@ -177,14 +180,14 @@ void preReadTag(char* tagName)
         else 
         {
             printf(TAG_ERROR_MSG_START"Tag %s Does Not Exist"MSG_END, tagName);
-            // whatIsTheError();
+            whatIsTheError();
         }
 }
 
 //~ helper used to display help menu
 void tagHelp()
 {
-    printf(TAG_REPORT_MSG_START"Usage: chz status, chz status -h."MSG_END);
+    printf(TAG_REPORT_MSG_START"Usage: chz tag <tag-name> | chz tag -h | chz tag -d <tag-name> | chz tag -r <tag-name> | chz tag -a <tag-name> <description>."MSG_END);
 }
 
 void tag(int argc, char* argv[])

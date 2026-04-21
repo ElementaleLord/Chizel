@@ -11,58 +11,43 @@
 
 //* P: taken from checkout.c in chz-checkout could be added to the header
 time_t getHeadCommitTime(){
-    char path[1024], headPath[1024], commitPath[1024], fullPath[1024];
+    char path[1024], commitPath[1024], fullPath[1024];
     struct dirent *file;
     struct stat st;
 
-    FILE* head_ptr = fopen(HEAD_PATH, "r");
-    if (!head_ptr)
-    {
-        printf(STATUS_ERROR_MSG_START"Failed To Open HEAD File"MSG_END);
-        // whatIsTheError();
-        //! P: make sure to add to header a prototype for whatIsTheError()
-        return -1;
-    }
-    if (!fgets(headPath, 1024, head_ptr))
-    {
-        printf(STATUS_ERROR_MSG_START"Failed To Read HEAD File"MSG_END);
-        // whatIsTheError();
-        return -1;
-    }
-    fclose(head_ptr);
+    char* head;
+    head= getHead();
 
-    // headPath[strlen(headPath)-1] = '\0';//# used to remove the \n from the line
+    sprintf(path, REFS_HEADS_PATH"/%s", head);
 
-    sprintf(path, CHZ_PATH"/%s", headPath);
-
-    printf("head= %s\n", headPath);
-    printf("path= %s\n", path);
+    // printf("head= %s\n", head);
+    // printf("path= %s\n", path);
     
     FILE* branch_ptr = fopen(path, "r");
     if (!branch_ptr)
     {
         printf(STATUS_ERROR_MSG_START"Failed To Open Branch File"MSG_END);
-        // whatIsTheError();
+        whatIsTheError();
         return -1;
     }
     if (!fgets(path, 1024, branch_ptr))
     {
         printf(STATUS_ERROR_MSG_START"Failed To Read Branch File"MSG_END);
-        // whatIsTheError();
+        whatIsTheError();
         return -1;
     }
     fclose(branch_ptr);
 
     sprintf(commitPath, OBJECTS_PATH"/%c%c",path[0], path[1]);
 
-    printf("id= %s\n", path);
-    printf("commit= %s\n", commitPath);
+    // printf("id= %s\n", path);
+    // printf("commit= %s\n", commitPath);
 
     DIR* commit_ptr = opendir(commitPath);
     if (!commit_ptr)
     {
         printf(STATUS_ERROR_MSG_START"Failed To Open Commit File"MSG_END);
-        // whatIsTheError();
+        whatIsTheError();
         return 0;
     }
 
@@ -71,7 +56,7 @@ time_t getHeadCommitTime(){
         if(strcmp(file->d_name, ".") == 0 || strcmp(file->d_name, "..") == 0) continue;
         
         snprintf(fullPath, sizeof(fullPath), "%s/%s", commitPath, file->d_name);
-        printf("fullPath= %s\n", fullPath);
+        // printf("fullPath= %s\n", fullPath);
         
         stat(fullPath, &st);
     }
@@ -242,7 +227,7 @@ void preCheckout(char* branchName, bool needsIgnore)
                     zipDirectory(STORE_DATA);
                     if (alterHEAD(branchName))
                     {
-                        removeDir('.');
+                        removeDir(".");
                         char dataPath[1024];
                         sprintf(dataPath, ".chz/data/%s/data.pack", branchName);
                         restorePack(dataPath, ".");
