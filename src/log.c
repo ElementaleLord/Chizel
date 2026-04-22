@@ -289,7 +289,7 @@ bool logs(int argc, char* argv[]){
         //@ chz log <arg> <arg>
         case (ARG_BASE + 4):
             if(strcmp(argv[ARG_BASE + 2], "-n") == 0){
-                //% chz branch -n <int>       
+                //% chz log -n <int>       
                 readAmountLogs(atoi(argv[ARG_BASE + 3]));
 
             }else if(strcmp(argv[ARG_BASE + 2], "-b") == 0){
