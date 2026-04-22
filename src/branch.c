@@ -25,6 +25,66 @@ void listBranches()
     }
 }
 
+//~ clones the latest log entry from head to branch's log
+void cloneLatestCommit(char* branch){
+    char log[1024];
+    snprintf(log, sizeof(log), "%s%s.log", LOGS_PATH, branch);
+
+    FILE* flog = fopen(log, "w");
+    if(!flog){
+        return;
+    }
+    
+    char headLog[1024];
+    snprintf(headLog, sizeof(headLog), "%s%s.log", LOGS_PATH, getHead());
+
+    FILE* f = fopen(headLog, "r");
+    if(!f){
+        return;
+    }
+
+    fseek(f, 0, SEEK_END);
+    long pos = ftell(f);
+
+    char line[4096];
+    bool cont = true;
+    size_t len = 0;
+    int c;
+
+    while(pos >= 0 && cont){
+        pos--;
+
+        if(pos == 0){
+            c = '\n';  // force flush last line
+        } else {
+            fseek(f, pos, SEEK_SET);
+            c = fgetc(f);
+        }
+
+        if(c == '\n'){
+            if(len > 0){
+                line[len] = '\0';
+                reverseString(line);
+                len = 0;
+                cont = false;
+                fputs(line, flog);
+            }
+        }else if (len < sizeof(line) - 1){
+            line[len++] = (char)c;
+        }    
+    }
+
+    if(len>0 && cont){
+        line[len] = '\0';
+        reverseString(line);
+        cont = false;
+        fputs(line, flog);
+    }
+
+    fclose(f);
+    fclose(flog);
+}
+
 //~ Creates the branch's head reference file
 bool createBranch(char* branchName)
 {
@@ -33,21 +93,10 @@ bool createBranch(char* branchName)
         return false;
     }
 
-    struct dirent *curDir;
-    struct stat st;
-    DIR* branches = opendir(BRANCHES_PATH);
-
-    while((curDir = readdir(branches)) != NULL)
-    {
-        if(strcmp(curDir->d_name, ".") != 0 && strcmp(curDir->d_name, "..") != 0)
-        {
-            if(strcmp(curDir->d_name, branchName) == 0){
-                printf(BRANCH_ERROR_MSG_START"Branch %s already exists"MSG_END, branchName);
-                return false;
-            }
-        }
+    if(branchExists(branchName)){
+        printf(BRANCH_ERROR_MSG_START"Branch %s already exists"MSG_END, branchName);
+        return false;
     }
-
 
     char path[1024];
     snprintf(path, sizeof(path), "%s/%s", REFS_HEADS_PATH, branchName);
@@ -70,6 +119,7 @@ bool createBranch(char* branchName)
 
     FILE* l = fopen(log, "w");
     if(!l){ return false; }
+    cloneLatestCommit(branchName);
 
     char data[1024];
     snprintf(data, sizeof(data), "%s/%s", DATA_PATH, branchName);
@@ -310,4 +360,8 @@ bool branch(int argc, char* argv[])
             printf(CHZ_ERROR_MSG_START"Invalid Command"MSG_END);
             break;
     }
+}
+
+int main(int argc, char* argv[]){
+    branch(argc, argv);
 }

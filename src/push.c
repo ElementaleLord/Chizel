@@ -41,9 +41,6 @@ int push(int argc, char *argv[])
             int count = 3;
 
             commit(count, args);
-            if(addLogEntry() < 0){
-                return -1;
-            }
 
             int zip = zipDirectory(CHZ_PUSH);
             if(zip == -1){
