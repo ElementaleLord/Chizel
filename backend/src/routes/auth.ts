@@ -39,6 +39,7 @@ router.post('/signup', async (req: Request, res: Response): Promise<void> => {
       username,
       passwordHash
     };
+    //db
     mockDatabase.push(newUser);
 
     const token = jwt.sign(
@@ -72,6 +73,7 @@ router.post('/signin', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    //db
     const user = mockDatabase.find(u => u.email === email);
     if (!user) {
       res.status(401).json({ message: 'Invalid email or password.' });

@@ -1,66 +1,64 @@
 import { spawn } from "child_process";
-import { Router } from "express";
-import path = require("path");
+import { Router, Response } from "express";
+import path from "path";
 import fs from "fs";
+import { authGuard, AuthenticatedRequest } from "../middleware/authGuard";
 
 const router = Router();
-const cwd = path.resolve("tmp/test_repo");
 
-const buildDir = path.resolve(__dirname, "../../binaries");
+const CHZ_BINARY_PATH = path.resolve(__dirname, "../../binaries/chz"); 
+const WORKSPACE_BASE = path.resolve(__dirname, "../../tmp/workspaces");
 
-const getCommands = () => {
+router.post("/execute", authGuard, (req: AuthenticatedRequest, res: Response): void => {
+    
+    const { command, args = [] } : { command: string, args: string[] } = req.body;
+    const userId = req.user?.id;
 
-    const commands: Record<string, string> = {};
-    if(fs.existsSync(buildDir))
-    {
-        const files = fs.readdirSync(buildDir);
-        files.forEach( file => {
-            const fullpath = path.join(buildDir, file);
-            if(fs.lstatSync(fullpath).isFile())
-            {
-                commands[file] = fullpath;
-            }
-        });
+    if (!command) {
+        res.status(400).json({ error: "No command provided" });
+        return;
     }
 
-    return commands;
-}
-
-console.log("Does CWD exist?", fs.existsSync(cwd));
-console.log(cwd);
-if(!fs.existsSync(cwd)) fs.mkdirSync(cwd, { recursive: true });
-
-router.post("/execute", (req, res) => {
-
-    const commandName = req.body.message;
-    const commands = getCommands();
-    const binaryPath = commands[commandName];
-
-    if(!binaryPath){
-        return res.status(404).json({ error: "Command not recognized" });
+    if (!fs.existsSync(CHZ_BINARY_PATH)) {
+        res.status(500).json({ error: "Core binary 'chz' is missing from the server." });
+        return;
     }
 
-
-    if(!fs.existsSync(binaryPath)){
-        return res.status(500).json({ error: "Binary file missing from build folder" });
+    const userWorkspace = path.join(WORKSPACE_BASE, `user_${userId}`);
+    
+    if (!fs.existsSync(userWorkspace)) {
+        fs.mkdirSync(userWorkspace, { recursive: true });
     }
 
-
+    const spawnArgs = [command, ...args]; 
     let output = "";
-    const child = spawn(binaryPath, [], { cwd: cwd});   
+    let errorOutput = "";
 
+    console.log(`[User ${userId}] Executing: chz ${spawnArgs.join(" ")} in ${userWorkspace}`);
+
+    const child = spawn(CHZ_BINARY_PATH, spawnArgs, { cwd: userWorkspace });   
 
     child.stdout.on("data", (data) => {
         output += data.toString();
     });
 
     child.stderr.on("data", (data) => {
-        console.error(data.toString());
+        errorOutput += data.toString();
+        console.error(`[User ${userId} Error]:`, data.toString());
     });
 
-    child.on("close", () => {
+    child.on("close", (code) => {
+        if (code !== 0) {
+            res.status(500).json({ 
+                error: "Command failed", 
+                details: errorOutput || output 
+            });
+            return;
+        }
+
         res.json({
-            result: output
+            result: output,
+            workspace: userWorkspace 
         });
     }); 
 });

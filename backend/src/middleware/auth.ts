@@ -9,7 +9,7 @@ export interface AuthRequest extends Request {
     user?: AuthPayload;
 }
 
-export const authGuard = (req: AuthRequest, res: Response, next: NextFunction) : void => {
+export const AuthenticatedRequest = (req: AuthRequest, res: Response, next: NextFunction) : void => {
 
     const authHeader = req.header('Authorization');
 
