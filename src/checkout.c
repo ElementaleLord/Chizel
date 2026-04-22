@@ -1,7 +1,9 @@
 #include <dirent.h>
 #include "../include/chizel.h"
+#include "branch.c"
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #ifdef _WIN32
 #include <direct.h>
@@ -9,9 +11,12 @@
 #define mkdir(dir) _mkdir(dir)
 #endif
 
+#define GET_IGNORED 0
+#define NO_IGNORED 1
+
 //* P: taken from checkout.c in chz-checkout could be added to the header
 time_t getHeadCommitTime(){
-    char path[1024], commitPath[1024], fullPath[1024];
+    char path[2048], headPath[1024], commitPath[1024], fullPath[2048];
     struct dirent *file;
     struct stat st;
 
@@ -85,7 +90,7 @@ bool checkBranch(char* branchName)
 //~ helper used to check if the given branch is the same as current branch
 bool checkCurBranch(char* branchName)
 {
-    char curBranchPath[1024], path[1024], givenBranchPath[1024];
+    char curBranchPath[2048], path[1024], givenBranchPath[1024];
 
     FILE* head_ptr = fopen(HEAD_PATH, "r");
     if (!head_ptr)
@@ -190,8 +195,8 @@ bool checkForChanges()
 
 //~ helper used to create a branch with given branchName
 void callBranch(char* branchName)
-{//# calls branch.c with given branch name
-
+{
+    createBranch(branchName);
 }
 
 //~ function used to overwrite HEAD with the given branch path to make it the Current Branch
@@ -217,7 +222,7 @@ bool alterHEAD(char* branchName)
 }
 
 //~ function used as interface to call needed functions
-void preCheckout(char* branchName, bool needsIgnore)
+void preCheckout(char* branchName, int needsIgnore)
 {
     if (checkChz())
         if (checkBranch(branchName))
@@ -232,10 +237,10 @@ void preCheckout(char* branchName, bool needsIgnore)
                         sprintf(dataPath, ".chz/data/%s/data.pack", branchName);
                         restorePack(dataPath, ".");
 
-                        if (needsIgnore)
+                        if (needsIgnore == GET_IGNORED)
                         {
                             char ignorePath[1024];
-                            sprintf(ignorePath, ".chz/data/%s/ignore.pack", branchName);
+                            sprintf(ignorePath, ".chz/data/%s/ignored.pack", branchName);
                             restorePack(ignorePath, ".");
                         }
                     }
@@ -260,7 +265,7 @@ void preCheckout(char* branchName, bool needsIgnore)
         {
             printf(CHECKOUT_ERROR_MSG_START"Branch %s Does Not Exist"MSG_END, branchName);
             whatIsTheError();
-            printf(CHECKOUT_REPORT_MSG_START"Use: chz checkout -b %s or chz branch %s"MSG_END, branchName);
+            printf(CHECKOUT_REPORT_MSG_START"Use: chz checkout -b %s or chz branch %s"MSG_END, branchName, branchName);
         }
 }
 
@@ -279,7 +284,7 @@ void checkout(int argc, char* argv[])
             break;
         //@ chz checkout <arg>
         case ARG_BASE + 3:
-            if(strcmp(argv[ARG_BASE + 1], "-h") == 0)
+            if(strcmp(argv[ARG_BASE + 2], "-h") == 0)
             {//% chz checkout -h
                 checkoutHelp();
             }
@@ -287,25 +292,25 @@ void checkout(int argc, char* argv[])
             {//% chz checkout <branch-name>
                 if (checkChz())
                 {
-                    preCheckout(argv[ARG_BASE + 2], false);
+                    preCheckout(argv[ARG_BASE + 2], NO_IGNORED);
                 }
             }
             break;
         //@ chz checkout <arg> <arg>
         case ARG_BASE + 4:
-            if(strcmp(argv[ARG_BASE + 1], "-b") == 0)
+            if(strcmp(argv[ARG_BASE + 2], "-b") == 0)
             {//% chz checkout -b <branch-name>
                 if (checkChz())
                 {
                     callBranch(argv[ARG_BASE + 3]);//! replace with proper func
-                    preCheckout(argv[ARG_BASE + 3], false);
+                    preCheckout(argv[ARG_BASE + 3], NO_IGNORED);
                 }
             }
-            else if(strcmp(argv[ARG_BASE + 1], "-i") == 0)
+            else if(strcmp(argv[ARG_BASE + 2], "-i") == 0)
             {//% chz checkout -i <branch-name>
                 if (checkChz())
                 {
-                    preCheckout(argv[ARG_BASE + 3], true);
+                    preCheckout(argv[ARG_BASE + 3], GET_IGNORED);
                 }
             }
             break;

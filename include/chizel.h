@@ -59,8 +59,10 @@ F: is Faust
     #define STAGING_AREA_PATH ".chz/index"
     #define LOGS_PATH ".chz/logs/"
     #define DATA_PATH ".chz/data"
+    #define TAGS_DATA_PATH ".chz/data/tags"
     #define PACK_PUSH_PATH ".chz/objects/compressed"
     #define PACK_PULL_PATH ".chz/objects/restored"
+    #define TAG_NAME_FILE ".chz/tag"
     #define ORIGIN_FILE  ".chz/origin"
     #define IGNORE_FILE "../.gitignore"
 
@@ -225,6 +227,7 @@ F: is Faust
         {PACK_PULL_PATH,          NULL},
         {LOGS_PATH,               NULL},
         {DATA_PATH,               NULL},
+        {TAGS_DATA_PATH,          NULL},
         {HEAD_PATH,               "refs/heads/main\n"},
         {INDEX_PATH,              ""},
         {CONFIG_PATH,             "[core]\n\trepositoryformatversion = 0\n"},
@@ -258,7 +261,8 @@ F: is Faust
 
     //& Packed Files
     #define CHZ_PUSH 0
-    #define STORE_DATA 1
+    #define CHZ_TAG 1
+    #define STORE_DATA 2
 
     typedef struct{
         unsigned int pathLen;
@@ -266,6 +270,8 @@ F: is Faust
         unsigned int isDir;
     }Blob;
 
+    int setTag(char* tagName);
+    char* getTag();
     int zipDirectory(int mode);
     int restorePack(const char* pack_path, const char* output_path);
     int removeDir(const char* dirPath);
