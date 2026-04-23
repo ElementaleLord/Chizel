@@ -23,7 +23,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const AUTH_STORAGE_KEY = 'chizel_auth_session';
 const LEGACY_USER_STORAGE_KEY = 'chizel_user';
-const API_URL = import.meta.env.VITE_API_URL.trim() || 'http://localhost:3000';
+const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:3000").trim();
 
 function readStoredSession(): AuthSession | null {
   const storedSession = localStorage.getItem(AUTH_STORAGE_KEY);
@@ -89,7 +89,7 @@ export async function requestAuthSession(
     }
 
     try{
-        const response  = axios.post(`${API_URL}/auth/${endpoint}`, payload);
+        const response  = await axios.post(`${API_URL}/auth/${endpoint}`, payload);
         const data = response.data;
 
         if(!data.user || !data.token){

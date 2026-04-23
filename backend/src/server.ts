@@ -2,12 +2,10 @@ import express from "express";
 import cors from "cors";
 import cEngine from "./routes/c_engine";
 import authRoutes from "./routes/auth";
-import authGuard from "./middleware/authGuard";
 import { getRepoData, getRepoId, getRepoPullRequests, getUserPasswordEmail, getUserPasswordName, getUserRepos} from "./routes/database";
 
 
 const app = express();
-const PORT = 3000;
 
 app.use(cors({origin: process.env.VITE_API_URL, credentials: true}));
 app.use(express.json());
@@ -23,7 +21,7 @@ console.log("C engine router mounted correctly");
 
 app.get("/api/password/username/:username", async (req, res) =>{
     try{
-        const pass = await getUserPasswordName([req.params.username]);
+        const pass = await getUserPasswordName(req.params.username);
         res.json(pass);
         console.log(pass);
     }catch (err){
