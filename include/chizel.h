@@ -58,10 +58,28 @@ F: is Faust
     #define DESC_PATH ".chz/description"
     #define STAGING_AREA_PATH ".chz/index"
     #define LOGS_PATH ".chz/logs/"
+    #define DATA_PATH ".chz/data"
     #define PACK_PUSH_PATH ".chz/objects/compressed"
     #define PACK_PULL_PATH ".chz/objects/restored"
     #define ORIGIN_FILE  ".chz/origin"
     #define IGNORE_FILE "../.gitignore"
+
+    #define dynamic_append(d_arr, val)\
+        do{\
+            if(d_arr.size >= d_arr.capacity)\
+            {\
+                if(d_arr.size == 0) d_arr.capacity = 256;\
+                else d_arr.capacity *= 2;\
+                void *temp = realloc(d_arr.content, d_arr.capacity * sizeof(*d_arr.content));\
+                if(!temp)\
+                {\
+                    perror("realloc failed");\
+                    exit(1);\
+                }\
+                d_arr.content = temp;\
+            }\
+            d_arr.content[d_arr.size++] = val;\
+        }while(0)
 
     //~ Offsets
     #define ARG_BASE -1
@@ -119,6 +137,7 @@ F: is Faust
     void whatIsTheError();
     bool checkIgnore(char* file, const char* relative_path);
     const char* makeRelativePath(const char* fullpath, const char* root_path);
+    Lines read_file(FILE* f);
     void reverseString(char* s);
     int addLogEntry();
     char* newlineFake(char* msg);
@@ -205,12 +224,14 @@ F: is Faust
         {PACK_PUSH_PATH,          NULL},
         {PACK_PULL_PATH,          NULL},
         {LOGS_PATH,               NULL},
+        {DATA_PATH,               NULL},
         {HEAD_PATH,               "refs/heads/main\n"},
         {INDEX_PATH,              ""},
         {CONFIG_PATH,             "[core]\n\trepositoryformatversion = 0\n"},
         {DESC_PATH,               "Unnamed repository\n"},
         {".chz/refs/heads/main",  "0000000000000000000000000000000000000000\n"},
-        {".chz/logs/main.log",    NULL}
+        {".chz/logs/main.log",    ""},
+        {".chz/data/main",        NULL}
     };
 
     static const size_t REPO_TEMPLATE_SIZE = sizeof(REPO_TEMPLATE) / sizeof(REPO_TEMPLATE[0]);
@@ -233,5 +254,20 @@ F: is Faust
     int load_commit_object(FILE* obj_ptr, CommitObject* out_commit);
     void walk_history(const char* start_hash);
 
+
+
+    //& Packed Files
+    #define CHZ_PUSH 0
+    #define STORE_DATA 1
+
+    typedef struct{
+        unsigned int pathLen;
+        unsigned long long blobLen;
+        unsigned int isDir;
+    }Blob;
+
+    int zipDirectory(int mode);
+    int restorePack(const char* pack_path, const char* output_path);
+    int removeDir(const char* dirPath);
     
 #endif

@@ -10,11 +10,10 @@
 >> Order of Priorities:
   1. Software Diagrams (All members)
   2. Git Commands Allocation And Shell Exec (All members)
-  3. Control Scripts (Charbel & Omar)
-  4. File Cleanup Scripts (Patrick & Bilal)
-  5. NodeJS Backend + Mongo (All)
-  6. Website UI (All)
-  7. Extras + Cherry Picking (All)
+  3. Database (Omar)
+  4. NodeJS Backend (All)
+  5. Frontend (Patrick & Bilal)
+  6. Extras + Cherry Picking (All)
 
 >> Git Commands:
   1. Commands To Be Worked On By The Whole Group:

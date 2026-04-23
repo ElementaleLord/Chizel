@@ -29,6 +29,7 @@ import { RepositoryFile } from './pages/RepositoryFile';
 import { Profile } from './pages/Profile';
 import { Settings } from './pages/Settings';
 import axios from 'axios';
+import apiClient from './lib/apiClient';
 
 function RootRoute() {
   const { user, isLoading } = useAuth();
@@ -61,7 +62,6 @@ export default function App() {
   };
 
   const chzInit = () => {
-    setMsg("running binary...");
     axios.post("http://localhost:3000/api/execute", { message: 'init' })
       .then((response) => setMsg(response.data.result))
       .catch((err) => console.error(err));

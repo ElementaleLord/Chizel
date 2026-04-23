@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import axios from 'axios';
 
 interface AuthSession {
   user: User;
@@ -22,7 +23,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const AUTH_STORAGE_KEY = 'chizel_auth_session';
 const LEGACY_USER_STORAGE_KEY = 'chizel_user';
-const API_URL = import.meta.env.VITE_API_URL?.trim();
+const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:3000").trim();
 
 function readStoredSession(): AuthSession | null {
   const storedSession = localStorage.getItem(AUTH_STORAGE_KEY);
@@ -68,58 +69,52 @@ function createMockSession(email: string, username?: string): AuthSession {
   };
 }
 
-async function requestAuthSession(
-  endpoint: 'signin' | 'signup',
-  payload: { email: string; password: string; username?: string },
+export async function requestAuthSession(
+    endpoint: 'signin' | 'signup',
+    payload: { email: string; password: string; username?: string }
 ): Promise<AuthSession> {
-  if (API_URL) {
-    const response = await fetch(`${API_URL}/auth/${endpoint}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify(payload),
-    });
 
-    const responseBody = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      throw new Error(responseBody?.message ?? 'Authentication failed.');
+    if(!payload.email.trim() || !payload.password.trim()){
+        throw new Error("email and password are required.");
     }
 
-    const user = responseBody.user ?? responseBody.account ?? responseBody.data?.user;
-    const token = responseBody.token ?? responseBody.accessToken ?? responseBody.jwt ?? null;
+    if(endpoint === 'signup'){
+        if(!payload.username?.trim()){
+            throw new Error("Username is required.");
+        }
 
-    if (!user?.email || !user?.username) {
-      throw new Error('Authentication succeeded, but the user payload was incomplete.');
+        if(payload.password.length < 8){
+            throw new Error("Password needs to be at least 8 characters.");
+        }
     }
 
-    return {
-      user: {
-        id: String(user.id ?? user._id ?? user.username ?? user.email),
-        email: user.email,
-        username: user.username,
-      },
-      token,
-    };
-  }
+    try{
+        const response  = await axios.post(`${API_URL}/auth/${endpoint}`, payload);
+        const data = response.data;
 
-  if (!payload.email.trim() || !payload.password.trim()) {
-    throw new Error('Email and password are required.');
-  }
+        if(!data.user || !data.token){
+            throw new Error('Authentication succeeded but the server response was malformed');
+        }
 
-  if (endpoint === 'signup') {
-    if (!payload.username?.trim()) {
-      throw new Error('Username is required.');
+        return {
+            user: {
+                id: String(data.user.id),
+                email: data.user.email,
+                username: data.user.username,
+            },
+            token: data.token,
+        };
+
+    } catch(error: any) {
+
+        if(error.response && error.response.data && error.response.data.message){
+            throw new Error(error.response.data.message);
+        }
+
+        throw new Error('Authentication failed. Please check your connection and try again.');
     }
-    if (payload.password.length < 8) {
-      throw new Error('Password must be at least 8 characters.');
-    }
-  }
-
-  return createMockSession(payload.email, payload.username);
 }
+
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);

@@ -1,6 +1,6 @@
+#include "../include/chizel.h"
 #include <dirent.h>
 #include <sys/stat.h>
-#include "../include/chizel.h"
 
 #ifdef _WIN32
 #include <direct.h>
@@ -51,6 +51,14 @@ bool createBranch(char* branchName)
     FILE* l = fopen(log, "w");
     if(!l){ return false; }
 
+    char data[1024];
+    snprintf(data, sizeof(data), "%s/%s", DATA_PATH, branchName);
+    #ifdef _WIN32
+        mkdir(data);
+    #else
+        mkdir(data, DEF_PERM);
+    #endif
+
     fclose(f);
     fclose(head);
     fclose(l);
@@ -90,6 +98,11 @@ void deleteBranch(const char* branch)
     char branchLog[1024];
     snprintf(branchLog, sizeof(branchLog), "%s%s.log", LOGS_PATH, branch);
     remove(branchLog);
+
+    char branchData[1024];
+    snprintf(branchData, sizeof(branchData), "%s/%s", DATA_PATH, branch);
+    removeDir(branchData);
+    remove(branchData);
 
     //& O: IF the head was the deleted branch (ie: chz branch -D)
     if(strcmp(branch, getHead()) == 0){
@@ -159,6 +172,11 @@ void renameBranch(char* oldName, char* newName)
     snprintf(oldLog, 1024, "%s%s.log", LOGS_PATH, oldName);
     snprintf(newLog, 1024, "%s%s.log", LOGS_PATH, newName);
     rename(oldLog, newLog);
+
+    char oldData[1024], newData[1024];
+    snprintf(oldData, 1024, "%s/%s", DATA_PATH, oldName);
+    snprintf(newData, 1024, "%s/%s", DATA_PATH, newName);
+    rename(oldData, newData);
 
     //& O: IF the head was the renamed branch
     if(strcmp(oldName, getHead()) == 0){
