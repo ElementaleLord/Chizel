@@ -1,6 +1,7 @@
 import { Header } from '../components/layout/Header';
 import { Link } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
+import { BrandLogo } from '../components/layout/BrandLogo';
 
 export function ForgotPassword() {
   return (
@@ -11,10 +12,10 @@ export function ForgotPassword() {
         <div className="max-w-md mx-auto">
           <div className="bg-card border border-border rounded-lg p-8 space-y-6">
             <div className="text-center space-y-2">
-              <div className="w-12 h-12 mx-auto rounded bg-gradient-to-br from-[#e38c05] to-[#fda410] flex items-center justify-center">
-                <span className="text-white text-xl font-bold">C</span>
+              <div >
+                  <BrandLogo className="mx-auto w-fit" imageClassName="h-12 w-12" showLabel={false} />
               </div>
-              <h1 className="text-2xl text-foreground">Reset your password</h1>
+              <h1 className="text-2xl text-foreground">Reset Your Password</h1>
               <p className="text-sm text-[#c9d1d9]">
                 Enter your email address and we'll send you a link to reset your password
               </p>

@@ -25,7 +25,7 @@
 .repo-sidebar-new-btn {
   padding: 0.25rem 0.5rem;
   font-size: 0.75rem;
-  background-color: #ff8c42;
+  background-color: #fda410;
   color: white;
   border: none;
   border-radius: 0.375rem;
@@ -34,7 +34,7 @@
 }
 
 .repo-sidebar-new-btn:hover {
-  background-color: #ff6b35;
+  background-color: #e38c05;
 }
 
 /* Search Input */

@@ -2,22 +2,34 @@ import { Menu, Search, Plus, Bell, GitPullRequest, Inbox } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import { Link } from 'react-router';
 import { useState } from 'react';
+import { BrandLogo } from '../layout/BrandLogo';
 import './ChzHeader.css';
 
 export function ChzHeader(){
     const [showUserMenu, setShowUserMenu] = useState(false);
+    const [showSideMenu, setShowSideMenu] = useState(false);
     const { user, signOut } = useAuth();
 
     return (
         <header className="chz-header">
           <div className="chz-header-inner">
             <div className="chz-header-left">
-              <button className="chz-menu-btn">
+              <button className="chz-menu-btn" onClick={() => setShowSideMenu(!showSideMenu)}>
                 <Menu />
               </button>
+              {showSideMenu && (
+                  <div className="chz-side-menu">
+                    <Link to="/profile" className="chz-side-link">
+                      Your profile
+                    </Link>
+                    <Link to="/settings" className="chz-side-link">
+                      Settings
+                    </Link>
+                  </div>
+                )}              
               <Link to="/home" className="chz-logo-link">
                 <div className="chz-logo">
-                  <span className="chz-logo-text">C</span>
+                  <BrandLogo className="mx-auto w-fit" imageClassName="h-12 w-12" showLabel={false} />
                 </div>
                 <span className="chz-dashboard-text">Dashboard</span>
               </Link>
