@@ -311,3 +311,8 @@ bool branch(int argc, char* argv[])
             break;
     }
 }
+
+int main(int argc, char* argv[]){
+    branch(argc, argv);
+    return 0;
+}

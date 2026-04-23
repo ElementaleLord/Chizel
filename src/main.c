@@ -1,4 +1,15 @@
+#include "add.c"
+#include "branch.c"
+#include "checkout.c"
+#include "clone.c"
+#include "fetch.c"
 #include "init.c"
+#include "log.c"
+#include "merge.c"
+#include "pull.c"
+#include "push.c"
+#include "status.c"
+#include "tag.c"
 
 int main(int argc, char *argv[]){
     if(argc<2)
