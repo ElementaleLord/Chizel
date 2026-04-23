@@ -1,7 +1,7 @@
 
 import { Link } from 'react-router';
 
-export function RepoSideBar(topRepos : []){
+export function RepoSideBar({ topRepos }: { topRepos: Array<{name: string, avatar: string, color: string}> }){
 
     return (
         <aside className="w-64 border-r border-[#30363d] bg-[#0d1117] min-h-[calc(100vh-3.5rem)] p-4">
@@ -17,7 +17,7 @@ export function RepoSideBar(topRepos : []){
             className="w-full px-3 py-1.5 mb-3 text-sm bg-[#161b22] text-[#f0f6fc] placeholder:text-[#7d8590] border border-[#30363d] rounded-md focus:outline-none focus:ring-1 focus:ring-[#58a6ff]"
           />
           <div className="space-y-1">
-            {topRepos.map((repo : {name : String, avatar : String, color : String}) => (
+            {topRepos.map((repo : {name : string, avatar : string, color : string}) => (
               <Link
                 key={repo.avatar}
                 to={`/repository/sarahdev/${repo.name}`}
