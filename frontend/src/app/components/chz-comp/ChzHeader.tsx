@@ -14,19 +14,21 @@ export function ChzHeader(){
         <header className="chz-header">
           <div className="chz-header-inner">
             <div className="chz-header-left">
-              <button className="chz-menu-btn" onClick={() => setShowSideMenu(!showSideMenu)}>
-                <Menu />
-              </button>
-              {showSideMenu && (
-                  <div className="chz-side-menu">
-                    <Link to="/profile" className="chz-side-link">
-                      Your profile
-                    </Link>
-                    <Link to="/settings" className="chz-side-link">
-                      Settings
-                    </Link>
-                  </div>
-                )}              
+              <div className="chz-side-menu-container">
+                <button className="chz-menu-btn" onClick={() => setShowSideMenu(!showSideMenu)}>
+                  <Menu />
+                </button>
+                {showSideMenu && (
+                    <div className="chz-side-menu">
+                      <Link to="/profile" className="chz-side-link">
+                        Your profile
+                      </Link>
+                      <Link to="/settings" className="chz-side-link">
+                        Settings
+                      </Link>
+                    </div>
+                  )}
+              </div>
               <Link to="/home" className="chz-logo-link">
                 <div className="chz-logo">
                   <BrandLogo className="mx-auto w-fit" imageClassName="h-12 w-12" showLabel={false} />

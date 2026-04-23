@@ -22,6 +22,10 @@
   gap: 1rem;
 }
 
+.chz-side-menu-container {
+  position: relative;
+}
+
 .chz-menu-btn {
   padding: 0.5rem;
   border-radius: 0.375rem;
@@ -234,14 +238,15 @@
 
 .chz-side-menu {
   position: absolute;
-  left: 0;
-  margin-top: 0.5rem;
+  left: 11rem;
+  top: calc(100% + 0.5rem);
   width: 12rem;
   background-color: #161b22;
   border: 1px solid #30363d;
   border-radius: 0.375rem;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
   padding: 0.25rem 0;
+  z-index: 51;
 }
 
 .chz-side-link {
