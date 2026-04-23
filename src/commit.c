@@ -36,6 +36,10 @@ void update_branch_ref(const char* new_commit_hash);
 void commitHelp();
 void commit(int argc, char* argv[]);
 
+int main(int argc, char* argv[]){
+    commit(argc, argv);
+}
+
 int compare_paths(const void* a, const void* b)
 {
     const char* path_a = *(const char**) a;

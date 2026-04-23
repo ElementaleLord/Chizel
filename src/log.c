@@ -170,12 +170,18 @@ void readAmountLogs(int count){
     char line[4096];
     int n = 0;
     size_t len = 0;
+    int c;
 
-    while(pos > 0 && n < count){
+    while(pos >= 0 && n < count){
         pos--;
-        fseek(f, pos, SEEK_SET);
-
-        int c = fgetc(f);
+        
+        if(pos == 0){
+            c = '\n';  // force flush last line
+        } else {
+            fseek(f, pos, SEEK_SET);
+            c = fgetc(f);
+        }
+        
         if(c == '\n'){
             if(len > 0){
                 line[len] = '\0';
@@ -227,12 +233,17 @@ void readLogs(int mode, char* branch){
     char conf[16];
     bool cont = true;
     size_t len = 0;
+    int c;
 
-    while(pos > 0 && cont){
+    while(pos >= 0 && cont){
         pos--;
-        fseek(f, pos, SEEK_SET);
+        if(pos == 0){
+            c = '\n';  // force flush last line
+        } else {
+            fseek(f, pos, SEEK_SET);
+            c = fgetc(f);
+        }
 
-        int c = fgetc(f);
         if(c == '\n'){
             if(len > 0){
                 line[len] = '\0';

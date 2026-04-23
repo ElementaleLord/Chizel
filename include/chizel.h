@@ -131,7 +131,10 @@ F: is Faust
     //~ Functions
     bool checkForFile(char *file);
     int checkChz();
+    bool dirExists(const char* path);
+    bool branchExists(char* branch);
     char* getHead();
+    char* getLatestHash(char* branch);
     int checkStagingArea();
     FILE* getStagingArea();
     Lines readStagingArea();
@@ -275,5 +278,22 @@ F: is Faust
     int zipDirectory(int mode);
     int restorePack(const char* pack_path, const char* output_path);
     int removeDir(const char* dirPath);
+
+
+
+    //& Stack Implementation
+    typedef struct Node {
+        char* value;
+        struct Node* next;
+    } Node;
+
+    typedef struct {
+        Node* top;
+    } Stack;
+
+    void push(Stack* s, char* value);
+    char* pop(Stack* s);
+    void clearStack(Stack* s);
+    void initStack(Stack* s);
     
 #endif

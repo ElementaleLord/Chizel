@@ -26,6 +26,37 @@ void whatIsTheError()
     printf("Error String: %s.\n", strerror(errno));
 }
 
+//~ used to check the existance of a directory
+bool dirExists(const char* path){
+    DIR* p_dir = opendir(path);
+
+    if(!p_dir){
+        return false;
+    }
+
+    closedir(p_dir);
+    return true;
+}
+
+//~ Checks if a branch exists
+bool branchExists(char* branch){
+    struct dirent *curDir;
+    struct stat st;
+    DIR* branches = opendir(BRANCHES_PATH);
+
+    while((curDir = readdir(branches)) != NULL)
+    {
+        if(strcmp(curDir->d_name, ".") != 0 && strcmp(curDir->d_name, "..") != 0)
+        {
+            if(strcmp(curDir->d_name, branch) == 0){
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 //~ Returns the head
 char* getHead(){
     static char head[256];
@@ -49,6 +80,29 @@ char* getHead(){
     }
 
     return head;
+}
+
+//~ Returns the hash pointed to by specified branch
+char* getLatestHash(char* branch){
+    char path[1024];
+    static char hash[64];
+    snprintf(path, sizeof(path), "%s/%s", REFS_HEADS_PATH, branch);
+
+    FILE* f = fopen(path, "r");
+    if(!f){
+        printf(CHZ_ERROR_MSG_START"Error opening reference head"MSG_END);
+        return NULL;
+    }
+
+    if(fgets(hash, sizeof(hash), f) == NULL){
+        printf(CHZ_ERROR_MSG_START"Error reading hash"MSG_END);
+        return NULL;
+    }
+    fclose(f);
+
+    hash[strcspn(hash, "\n")] = '\0';  // replace newline
+
+    return hash;
 }
 
 //~ helper used to check if .chz exists
@@ -592,7 +646,7 @@ int addLogEntry(){
 
     commit.message = newlineFake(commit.message);
 
-    snprintf(content, sizeof(content), "%s  %s  %s  %ld  \"%s\"\n", commit.tree_hash, commit.parent_hash, commit.author, commit.commit_date, commit.message);
+    snprintf(content, sizeof(content), "%s  %s  %s  %ld  \"%s\"\n", commit.parent_hash, commit.tree_hash, commit.author, commit.commit_date, commit.message);
     int r = fputs(content, logs);
     fclose(logs);
 
@@ -1264,3 +1318,46 @@ char* getTag(){
 
     return tag;
 }
+//& Packed Files
+
+//& Stack Implementation
+//~ Adds value to the top of stack
+void push(Stack* s, char* value){
+    Node* n = malloc(sizeof(Node));
+    n->value = value;
+    n->next = s->top;
+    s->top = n;
+}
+
+//~ Removes the top value
+char* pop(Stack* s){
+    if (!s->top) return NULL;
+
+    Node* temp = s->top;
+    char* value = temp->value;
+
+    s->top = temp->next;
+    free(temp);
+
+    return value;
+}
+
+//~ Fully clears the stack
+void clearStack(Stack* s){
+    Node* current = s->top;
+
+    while (current != NULL){
+        Node* next = current->next;
+        free(current->value);   //! REQUIRED
+        free(current);
+        current = next;
+    }
+
+    s->top = NULL;
+}
+
+//~ Initializes a stack for use
+void initStack(Stack* s){
+    s->top = NULL;
+}
+//& Stack Implementation
