@@ -1,0 +1,234 @@
+/* Header Container */
+.chz-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid #30363d;
+  background-color: #161b22;
+}
+
+.chz-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  height: 3.5rem;
+}
+
+/* Left Section - Logo and Menu */
+.chz-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.chz-menu-btn {
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.chz-menu-btn:hover {
+  background-color: #21262d;
+}
+
+.chz-menu-btn svg {
+  height: 1.25rem;
+  width: 1.25rem;
+  color: #f0f6fc;
+}
+
+.chz-logo-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.chz-logo {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.25rem;
+  background-image: linear-gradient(to bottom right, #e38c05, #fda410);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chz-logo-text {
+  color: white;
+  font-weight: bold;
+}
+
+.chz-dashboard-text {
+  font-weight: 600;
+  color: #f0f6fc;
+}
+
+/* Middle Section - Search */
+.chz-search-container {
+  flex: 1;
+  max-width: 43.75rem;
+  margin: 0 2rem;
+}
+
+.chz-search-wrapper {
+  position: relative;
+}
+
+.chz-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 1rem;
+  width: 1rem;
+  color: #7d8590;
+}
+
+.chz-search-input {
+  width: 100%;
+  padding-left: 2.25rem;
+  padding-right: 5rem;
+  padding-top: 0.375rem;
+  padding-bottom: 0.375rem;
+  font-size: 0.875rem;
+  background-color: #0d1117;
+  color: #f0f6fc;
+  border: 1px solid #30363d;
+  border-radius: 0.375rem;
+  transition: all 0.2s;
+}
+
+.chz-search-input::placeholder {
+  color: #7d8590;
+}
+
+.chz-search-input:focus {
+  outline: none;
+  ring: 2px solid #58a6ff;
+  border-color: transparent;
+}
+
+.chz-search-kbd {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0.375rem 0.375rem;
+  font-size: 0.75rem;
+  background-color: #21262d;
+  color: #7d8590;
+  border: 1px solid #30363d;
+  border-radius: 0.25rem;
+}
+
+/* Right Section - Icons and User Menu */
+.chz-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chz-icon-btn {
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.chz-icon-btn:hover {
+  background-color: #21262d;
+}
+
+.chz-icon-btn svg {
+  height: 1.25rem;
+  width: 1.25rem;
+  color: #f0f6fc;
+}
+
+.chz-notification-btn {
+  position: relative;
+}
+
+.chz-notification-dot {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  background-color: #fda410;
+  border-radius: 50%;
+}
+
+/* User Menu */
+.chz-user-menu-container {
+  position: relative;
+}
+
+.chz-user-avatar-btn {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  background-image: linear-gradient(to bottom right, #e38c05, #fda410);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chz-user-avatar-btn:hover {
+  ring: 2px solid #fda410;
+  box-shadow: 0 0 0 2px #fda410;
+}
+
+.chz-user-menu {
+  position: absolute;
+  right: 0;
+  margin-top: 0.5rem;
+  width: 12rem;
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 0.375rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+  padding: 0.25rem 0;
+}
+
+.chz-menu-link {
+  display: block;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: #f0f6fc;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.chz-menu-link:hover {
+  background-color: #21262d;
+}
+
+.chz-menu-signout {
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: #f0f6fc;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  border-top: 1px solid #30363d;
+  transition: background-color 0.2s;
+}
+
+.chz-menu-signout:hover {
+  background-color: #21262d;
+}

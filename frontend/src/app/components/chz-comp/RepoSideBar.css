@@ -1,0 +1,111 @@
+/* RepoSideBar Container */
+.repo-sidebar {
+  width: 16rem; /* w-64 */
+  border-right: 1px solid #30363d;
+  background-color: #0d1117;
+  min-height: calc(100vh - 3.5rem);
+  padding: 1rem;
+}
+
+/* Header Section */
+.repo-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.repo-sidebar-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #f0f6fc;
+}
+
+/* New Repository Button */
+.repo-sidebar-new-btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  background-color: #ff8c42;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.repo-sidebar-new-btn:hover {
+  background-color: #ff6b35;
+}
+
+/* Search Input */
+.repo-sidebar-search {
+  width: 100%;
+  padding: 0.375rem 0.75rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+  background-color: #161b22;
+  color: #f0f6fc;
+  border: 1px solid #30363d;
+  border-radius: 0.375rem;
+  transition: ring 0.2s;
+}
+
+.repo-sidebar-search::placeholder {
+  color: #7d8590;
+}
+
+.repo-sidebar-search:focus {
+  outline: none;
+  ring: 1px solid #58a6ff;
+  box-shadow: 0 0 0 1px #58a6ff;
+}
+
+/* Repository List */
+.repo-sidebar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Repository Item Link */
+.repo-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.5rem;
+  border-radius: 0.375rem;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.repo-sidebar-item:hover {
+  background-color: #21262d;
+}
+
+/* Repository Avatar */
+.repo-sidebar-avatar {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  background-image: linear-gradient(to bottom right, var(--avatar-color-1), var(--avatar-color-2));
+}
+
+/* Repository Name */
+.repo-sidebar-name {
+  font-size: 0.875rem;
+  color: #c9d1d9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s;
+}
+
+.repo-sidebar-item:hover .repo-sidebar-name {
+  color: #f0f6fc;
+}

@@ -32,7 +32,7 @@ app.get("/api/password/username/:username", async (req, res) =>{
 
 app.get("/api/repo/id/:url", async (req, res) =>{
     try{
-        const pass = await getRepoId([req.params.url]);
+        const pass = await getRepoId(req.params.url);
         res.json(pass);
         console.log(pass);
     }catch (err){
@@ -44,7 +44,7 @@ app.get("/api/repo/id/:url", async (req, res) =>{
 app.get("/api/repo/data/:id", async (req, res) =>{
     try{
         const repoId = BigInt(req.params.id);
-        const pass = await getRepoData([repoId]);
+        const pass = await getRepoData(repoId);
         res.json(pass);
         console.log(pass);
     }catch (err){
@@ -56,7 +56,7 @@ app.get("/api/repo/data/:id", async (req, res) =>{
 app.get("/api/repo/pr/:id", async (req, res) =>{
     try{
         const repoId = BigInt(req.params.id);
-        const pass = await getRepoPullRequests([repoId]);
+        const pass = await getRepoPullRequests(repoId);
         res.json(pass);
         console.log(pass);
     }catch (err){
@@ -67,7 +67,7 @@ app.get("/api/repo/pr/:id", async (req, res) =>{
 
 app.get("/api/user/repos/:username", async (req, res) =>{
     try{
-        const pass = await getUserRepos([req.params.username]);
+        const pass = await getUserRepos(req.params.username);
         res.json(pass);
         console.log(pass);
     }catch (err){
