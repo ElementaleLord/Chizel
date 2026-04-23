@@ -12,8 +12,6 @@ import { SignIn } from './pages/SignIn';
 import { SignUp } from './pages/SignUp';
 import { ForgotPassword } from './pages/ForgotPassword';
 import { Home } from './pages/Home';
-import { Activity } from './pages/Activity';
-import { Contributions } from './pages/Contributions';
 import { Notifications } from './pages/Notifications';
 import { Repositories } from './pages/Repositories';
 import { PullRequests } from './pages/PullRequests';
@@ -85,9 +83,7 @@ export default function App() {
               <Route path="/signup" element={withPublicOnlyRoute(<SignUp />)} />
               <Route path="/forgot-password" element={withPublicOnlyRoute(<ForgotPassword />)} />
               <Route path="/home" element={<Navigate to="/" replace />} />
-              <Route path="/activity" element={withProtectedRoute(<Activity />)} />
               <Route path="/notifications" element={withProtectedRoute(<Notifications />)} />
-              <Route path="/contributions" element={withProtectedRoute(<Contributions />)} />
               <Route path="/pull-requests" element={withProtectedRoute(<PullRequests />)} />
               <Route path="/repositories" element={withProtectedRoute(<Repositories />)} />
               <Route path="/stars" element={withProtectedRoute(<Stars />)} />
