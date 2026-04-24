@@ -1,139 +1,93 @@
-import { GitPullRequest, Sparkles, FileCode, GitBranch, Code, MoreVertical } from 'lucide-react';
+import { GitPullRequest, FileCode, GitBranch, Code, MoreVertical } from 'lucide-react';
 import { useAuth } from '../components/auth/AuthContext';
 import { Link } from 'react-router';
-import { ChzHeader }  from '../components/chz-comp/ChzHeader';
-import { RepoSideBar }  from '../components/chz-comp/RepoSideBar';
-
-const TopRepos = [
-  { name: 'web-app', avatar: 'W', color: 'from-blue-500 to-blue-600' },
-  { name: 'design-system', avatar: 'D', color: 'from-purple-500 to-purple-600' },
-  { name: 'api-server', avatar: 'A', color: 'from-green-500 to-green-600' },
-  { name: 'mobile-app', avatar: 'M', color: 'from-orange-500 to-orange-600' },
-];
-
-const feedItems = [
-  {
-    user: 'Sarah Developer',
-    avatar: 'S',
-    action: 'merged pull request in',
-    repo: 'sarahdev/web-app',
-    title: 'Add dark mode support',
-    status: 'Merged',
-    statusColor: 'bg-purple-500',
-    time: '2 hours ago',
-    preview: 'Implemented dark mode theming across all components with CSS variables and context provider.',
-  },
-  {
-    user: 'Mike Chen',
-    avatar: 'M',
-    action: 'opened pull request in',
-    repo: 'team/api-server',
-    title: 'Add rate limiting middleware',
-    status: 'Open',
-    statusColor: 'bg-green-500',
-    time: '4 hours ago',
-    preview: 'Added rate limiting middleware to prevent API abuse and improve security.',
-  },
-  {
-    user: 'Alex Kim',
-    avatar: 'A',
-    action: 'pushed commits to',
-    repo: 'chizel/design-system',
-    title: '3 commits to main',
-    time: '6 hours ago',
-    preview: 'Updated button component styles and fixed accessibility issues.',
-  },
-];
+import { ChzHeader } from '../components/chz-comp/ChzHeader';
+import { RepoSideBar } from '../components/chz-comp/RepoSideBar';
+import { TopRepos } from '../data/topRepos.ts';
+import { feedItems } from '../data/feedItems.ts';
+import './Home.css';
 
 export function Home() {
   const { user, signOut } = useAuth();
 
   return (
-    <div className="min-h-screen bg-[#0d1117] dark">
+    <div className="home-container">
       {/* Top Navigation */}
-      <ChzHeader/>
+      <ChzHeader pageTitle="Dashboard"/>
       
-      <div className="flex">
+      <div className="home-layout">
         {/* Left Sidebar */}
-        <RepoSideBar topRepos= {TopRepos}/>
+        <RepoSideBar topRepos={TopRepos} />
 
         {/* Main Content */}
-        <main className="flex-1 p-6">
-          <h1 className="text-3xl font-semibold text-[#f0f6fc] mb-6">Home</h1>
+        <main className="home-main">
+          <h1 className="home-title">Home</h1>
 
           {/* Composer Card */}
-          <div className="mb-6 bg-[#161b22] border border-[#30363d] rounded-lg p-4">
-            <div className="flex items-start gap-3 mb-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#e38c05] to-[#fda410] flex items-center justify-center text-white text-sm flex-shrink-0">
+          <div className="composer-card">
+            <div className="composer-header">
+              <div className="composer-avatar">
                 {user?.username?.charAt(0).toUpperCase() || 'U'}
               </div>
               <input
                 type="text"
                 placeholder="Ask anything or type @ to add context"
-                className="flex-1 px-3 py-2 bg-[#0d1117] text-[#f0f6fc] placeholder:text-[#7d8590] border border-[#30363d] rounded-md focus:outline-none focus:ring-2 focus:ring-[#58a6ff]"
+                className="composer-input"
               />
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <button className="px-3 py-1.5 text-sm bg-[#238636] text-white rounded-md hover:bg-[#2ea043] transition-colors flex items-center gap-1">
-                <Sparkles className="h-3 w-3" />
-                Ask
-              </button>
-              <button className="px-3 py-1.5 text-sm bg-[#21262d] text-[#f0f6fc] border border-[#30363d] rounded-md hover:bg-[#30363d] transition-colors">
+            <div className="composer-actions">
+              <button className="composer-btn composer-btn-secondary">
                 All repositories
               </button>
-              <button className="px-3 py-1.5 text-sm bg-[#21262d] text-[#f0f6fc] border border-[#30363d] rounded-md hover:bg-[#30363d] transition-colors flex items-center gap-1">
-                <Sparkles className="h-3 w-3" />
-                Agent
-              </button>
-              <button className="px-3 py-1.5 text-sm bg-[#21262d] text-[#f0f6fc] border border-[#30363d] rounded-md hover:bg-[#30363d] transition-colors flex items-center gap-1">
-                <FileCode className="h-3 w-3" />
+              <button className="composer-btn composer-btn-secondary">
+                <FileCode />
                 Create issue
               </button>
-              <button className="px-3 py-1.5 text-sm bg-[#21262d] text-[#f0f6fc] border border-[#30363d] rounded-md hover:bg-[#30363d] transition-colors flex items-center gap-1">
-                <Code className="h-3 w-3" />
+              <button className="composer-btn composer-btn-secondary">
+                <Code />
                 Write code
               </button>
-              <button className="px-3 py-1.5 text-sm bg-[#21262d] text-[#f0f6fc] border border-[#30363d] rounded-md hover:bg-[#30363d] transition-colors flex items-center gap-1">
-                <GitBranch className="h-3 w-3" />
+              <button className="composer-btn composer-btn-secondary">
+                <GitBranch />
                 Git
               </button>
-              <button className="px-3 py-1.5 text-sm bg-[#21262d] text-[#f0f6fc] border border-[#30363d] rounded-md hover:bg-[#30363d] transition-colors flex items-center gap-1">
-                <GitPullRequest className="h-3 w-3" />
+              <button className="composer-btn composer-btn-secondary">
+                <GitPullRequest />
                 Pull requests
               </button>
             </div>
           </div>
 
           {/* Feed Section */}
-          <div>
-            <h2 className="text-lg font-semibold text-[#f0f6fc] mb-4">Feed</h2>
-            <div className="space-y-4">
+          <div className="feed-section">
+            <h2 className="feed-title">Feed</h2>
+            <div className="feed-list">
               {feedItems.map((item, i) => (
-                <div key={i} className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 hover:border-[#58a6ff]/30 transition-colors">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#e38c05] to-[#fda410] flex items-center justify-center text-white flex-shrink-0">
+                <div key={i} className="feed-item">
+                  <div className="feed-item-inner">
+                    <div className="feed-avatar">
                       {item.avatar}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="font-medium text-[#f0f6fc]">{item.user}</span>
-                        <span className="text-sm text-[#7d8590]">{item.action}</span>
-                        <Link to="#" className="text-sm text-[#58a6ff] hover:underline">
+                    <div className="feed-content">
+                      <div className="feed-meta">
+                        <span className="feed-user">{item.user}</span>
+                        <span className="feed-action">{item.action}</span>
+                        <Link to="#" className="feed-repo-link">
                           {item.repo}
                         </Link>
-                        <span className="text-sm text-[#7d8590]">·</span>
-                        <span className="text-sm text-[#7d8590]">{item.time}</span>
+                        <span className="feed-separator">·</span>
+                        <span className="feed-time">{item.time}</span>
                       </div>
-                      <h3 className="text-[#f0f6fc] font-medium mb-2">{item.title}</h3>
+                      <h3 className="feed-title-item">{item.title}</h3>
                       {item.status && (
-                        <span className={`inline-block px-2 py-0.5 text-xs ${item.statusColor} text-white rounded-full mb-2`}>
+                        <span className={`feed-status ${item.statusColor}`}>
                           {item.status}
                         </span>
                       )}
-                      <p className="text-sm text-[#c9d1d9]">{item.preview}</p>
+                      <p className="feed-preview">{item.preview}</p>
                     </div>
-                    <button className="p-1 hover:bg-[#21262d] rounded transition-colors">
-                      <MoreVertical className="h-4 w-4 text-[#7d8590]" />
+                    <button className="feed-menu-btn">
+                      <MoreVertical />
                     </button>
                   </div>
                 </div>

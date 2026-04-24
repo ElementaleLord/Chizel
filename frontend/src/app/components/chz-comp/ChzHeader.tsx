@@ -1,11 +1,11 @@
-import { Menu, Search, Plus, Bell, GitPullRequest, CircleDot, X , Star, House, BookMarked, DoorOpen , Map} from 'lucide-react';
+import { Menu, Search, Plus, Bell, GitPullRequest, CircleDot, X , Star, House, BookMarked, DoorOpen } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import { Link } from 'react-router';
 import { useEffect, useState } from 'react';
 import { BrandLogo } from '../layout/BrandLogo';
 import './ChzHeader.css';
 
-export function ChzHeader(){
+export function ChzHeader({ pageTitle }: { pageTitle: string }){
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const { user, signOut } = useAuth();
@@ -48,7 +48,7 @@ export function ChzHeader(){
                   <div className="chz-logo">
                     <BrandLogo className="mx-auto w-fit" imageClassName="h-12 w-12" showLabel={false} />
                   </div>
-                  <span className="chz-dashboard-text">Dashboard</span>
+                  <span className="chz-dashboard-text">{pageTitle}</span>
                 </Link>
               </div>
 
