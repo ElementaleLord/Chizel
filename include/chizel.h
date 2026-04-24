@@ -39,8 +39,9 @@ F: is Faust
         size_t size;
     } Lines;
 
-    int lcs(Lines s1, Lines s2);
-
+    int lcs(Lines new_file, Lines old_file, Lines* output);
+    Lines read_file(FILE* f);
+    void dynamic_append(Lines *arr, char *line);
 
 
     //& General
@@ -65,23 +66,6 @@ F: is Faust
     #define TAG_NAME_FILE ".chz/tag"
     #define ORIGIN_FILE  ".chz/origin"
     #define IGNORE_FILE "../.gitignore"
-
-    #define dynamic_append(d_arr, val)\
-        do{\
-            if(d_arr.size >= d_arr.capacity)\
-            {\
-                if(d_arr.size == 0) d_arr.capacity = 256;\
-                else d_arr.capacity *= 2;\
-                void *temp = realloc(d_arr.content, d_arr.capacity * sizeof(*d_arr.content));\
-                if(!temp)\
-                {\
-                    perror("realloc failed");\
-                    exit(1);\
-                }\
-                d_arr.content = temp;\
-            }\
-            d_arr.content[d_arr.size++] = val;\
-        }while(0)
 
     //~ Offsets
     #define ARG_BASE -1
@@ -132,6 +116,8 @@ F: is Faust
     bool checkForFile(char *file);
     int checkChz();
     bool dirExists(const char* path);
+    int is_dir(const char *path);
+    int is_binary_file(const char *path);
     bool branchExists(char* branch);
     char* getHead();
     char* getLatestHash(char* branch);
@@ -142,7 +128,6 @@ F: is Faust
     void whatIsTheError();
     bool checkIgnore(char* file, const char* relative_path);
     const char* makeRelativePath(const char* fullpath, const char* root_path);
-    Lines read_file(FILE* f);
     void reverseString(char* s);
     int addLogEntry();
     char* newlineFake(char* msg);
@@ -279,21 +264,5 @@ F: is Faust
     int restorePack(const char* pack_path, const char* output_path);
     int removeDir(const char* dirPath);
 
-
-
-    //& Stack Implementation
-    typedef struct Node {
-        char* value;
-        struct Node* next;
-    } Node;
-
-    typedef struct {
-        Node* top;
-    } Stack;
-
-    void push(Stack* s, char* value);
-    char* pop(Stack* s);
-    void clearStack(Stack* s);
-    void initStack(Stack* s);
     
 #endif
