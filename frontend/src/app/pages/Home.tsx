@@ -1,10 +1,14 @@
-import { GitPullRequest, FileCode, GitBranch, Code, MoreVertical } from 'lucide-react';
+import { GitPullRequest, FileCode, GitBranch, Code } from 'lucide-react';
+// USEFULL
 import { useAuth } from '../components/auth/AuthContext';
-import { Link } from 'react-router';
+// COMPONENTS
 import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { RepoSideBar } from '../components/chz-comp/RepoSideBar';
+import { FeedItem } from '../components/chz-comp/FeedItem';
+// DATA
 import { TopRepos } from '../data/topRepos.ts';
 import { feedItems } from '../data/feedItems.ts';
+
 import './Home.css';
 
 export function Home() {
@@ -40,19 +44,15 @@ export function Home() {
                 All repositories
               </button>
               <button className="composer-btn composer-btn-secondary">
-                <FileCode />
+                <FileCode /> {/* FileCode is just an icon */}
                 Create issue
               </button>
               <button className="composer-btn composer-btn-secondary">
-                <Code />
-                Write code
-              </button>
-              <button className="composer-btn composer-btn-secondary">
-                <GitBranch />
+                <GitBranch /> {/* GitBranch is just an icon */}
                 Git
               </button>
               <button className="composer-btn composer-btn-secondary">
-                <GitPullRequest />
+                <GitPullRequest /> {/* GitPullRequest is just an icon */}
                 Pull requests
               </button>
             </div>
@@ -63,34 +63,7 @@ export function Home() {
             <h2 className="feed-title">Feed</h2>
             <div className="feed-list">
               {feedItems.map((item, i) => (
-                <div key={i} className="feed-item">
-                  <div className="feed-item-inner">
-                    <div className="feed-avatar">
-                      {item.avatar}
-                    </div>
-                    <div className="feed-content">
-                      <div className="feed-meta">
-                        <span className="feed-user">{item.user}</span>
-                        <span className="feed-action">{item.action}</span>
-                        <Link to="#" className="feed-repo-link">
-                          {item.repo}
-                        </Link>
-                        <span className="feed-separator">·</span>
-                        <span className="feed-time">{item.time}</span>
-                      </div>
-                      <h3 className="feed-title-item">{item.title}</h3>
-                      {item.status && (
-                        <span className={`feed-status ${item.statusColor}`}>
-                          {item.status}
-                        </span>
-                      )}
-                      <p className="feed-preview">{item.preview}</p>
-                    </div>
-                    <button className="feed-menu-btn">
-                      <MoreVertical />
-                    </button>
-                  </div>
-                </div>
+                <FeedItem item= {item} index= {i} />
               ))}
             </div>
           </div>

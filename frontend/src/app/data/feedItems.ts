@@ -1,6 +1,6 @@
 export const feedItems = [
   {
-    user: 'Sarah Developer',
+    user: 'Sarah Dev',
     avatar: 'S',
     action: 'merged pull request in',
     repo: 'sarahdev/web-app',
@@ -39,6 +39,17 @@ export const feedItems = [
     status: 'Pushed',
     statusColor: 'bg-blue-500',
     time: '24 hours ago',
+    preview: 'Updated page header and fixed broken drop menus.',
+  },
+  {
+    user: 'Omar Chammoun',
+    avatar: 'O',
+    action: 'pulled commits to',
+    repo: 'chizel/design-system',
+    title: '5 commits to main',
+    status: 'Pulled',
+    statusColor: 'bg-yellow-500',
+    time: '12 hours ago',
     preview: 'Updated page header and fixed broken drop menus.',
   },
 ];

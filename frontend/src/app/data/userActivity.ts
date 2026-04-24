@@ -84,6 +84,16 @@ export const notificationSeed: NotificationItem[] = [
     unread: false,
     icon: MessageSquare,
   },
+  {
+    id: 4,
+    type: 'comment',
+    title: 'Comment on issue #19',
+    description: 'A teammate replied to your deployment bug report.',
+    time: '9h ago',
+    href: '/contributions',
+    unread: true,
+    icon: MessageSquare,
+  },
 ];
 
 export const contributionFeed: ContributionItem[] = [

@@ -27,23 +27,24 @@ export function ChzHeader({ pageTitle }: { pageTitle: string }){
             window.removeEventListener('keydown', handleEscape);
         };
     }, [isSidebarOpen]);
-    if(user){
-      return (
+    return (
         <>
           <header className="chz-header">
             <div className="chz-header-inner">
               <div className="chz-header-left">
-                <div className="chz-side-menu-container">
-                  <button
-                    className="chz-menu-btn"
-                    onClick={() => setIsSidebarOpen((prev) => !prev)}
-                    aria-expanded={isSidebarOpen}
-                    aria-controls="chz-sidebar-drawer"
-                    aria-label={isSidebarOpen ? 'Close side menu' : 'Open side menu'}
-                  >
-                    <Menu />
-                  </button>
-                </div>
+                { user && 
+                  <div className="chz-side-menu-container">
+                    <button
+                      className="chz-menu-btn"
+                      onClick={() => setIsSidebarOpen((prev) => !prev)}
+                      aria-expanded={isSidebarOpen}
+                      aria-controls="chz-sidebar-drawer"
+                      aria-label={isSidebarOpen ? 'Close side menu' : 'Open side menu'}
+                    >
+                      <Menu />
+                    </button>
+                  </div> 
+                }
                 <Link to="/home" className="chz-logo-link">
                   <div className="chz-logo">
                     <BrandLogo className="mx-auto w-fit" imageClassName="h-12 w-12" showLabel={false} />
@@ -51,20 +52,21 @@ export function ChzHeader({ pageTitle }: { pageTitle: string }){
                   <span className="chz-dashboard-text">{pageTitle}</span>
                 </Link>
               </div>
-
-              <div className="chz-search-container">
-                <div className="chz-search-wrapper">
-                  <Search className="chz-search-icon" />
-                  <input
-                    type="text"
-                    placeholder="Search or jump to..."
-                    className="chz-search-input"
-                  />
-                  <kbd className="chz-search-kbd">/</kbd>
+              { user &&
+                <div className="chz-search-container">
+                  <div className="chz-search-wrapper">
+                    <Search className="chz-search-icon" />
+                    <input
+                      type="text"
+                      placeholder="Search or jump to..."
+                      className="chz-search-input"
+                    />
+                    <kbd className="chz-search-kbd">/</kbd>
+                  </div>
                 </div>
-              </div>
-
+              }
               <div className="chz-header-right">
+                { user && <>
                 <button className="chz-icon-btn">
                   <Plus />
                 </button>
@@ -102,9 +104,20 @@ export function ChzHeader({ pageTitle }: { pageTitle: string }){
                     </div>
                   )}
                 </div>
+                </>}
+                { !user &&
+                <div className="chz-header-land">
+                  <Link to="/signin" className="chz-sign-in">
+                    Sign In
+                  </Link>
+                  <Link to="/signup" className="chz-sign-up">
+                    Sign Up
+                  </Link>
+                </div>}
               </div>
             </div>
           </header>
+          {/* SIDE MENU */}
           <div
             className={`chz-sidebar-overlay ${isSidebarOpen ? 'is-open' : ''}`}
             onClick={() => setIsSidebarOpen(false)}
@@ -174,31 +187,4 @@ export function ChzHeader({ pageTitle }: { pageTitle: string }){
           </aside>
         </>
       )
-    }
-  else{
-    return (
-        <>
-          <header className="chz-header">
-            <div className="chz-header-inner">
-              <div className="chz-header-left">
-                <Link to="/home" className="chz-logo-link">
-                  <div className="chz-logo">
-                    <BrandLogo className="mx-auto w-fit" imageClassName="h-12 w-12" showLabel={false} />
-                  </div>
-                  <span className="chz-dashboard-text">{pageTitle}</span>
-                </Link>
-              </div>
-              <div className="chz-header-land">
-                <Link to="/signin" className="chz-sign-in">
-                  Sign In
-                </Link>
-                <Link to="/signup" className="chz-sign-up">
-                  Sign Up
-                </Link>
-              </div>
-            </div>
-          </header>
-        </>
-    )
-  }  
 }

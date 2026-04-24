@@ -1,0 +1,121 @@
+
+/* Feed Item */
+.feed-item {
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  transition: border-color 0.2s;
+}
+
+.feed-item:hover {
+  border-color: rgba(88, 166, 255, 0.3);
+}
+
+.feed-item-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.feed-avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background-image: linear-gradient(to bottom right, #e38c05, #fda410);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.feed-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.feed-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.feed-user {
+  font-weight: 500;
+  color: #f0f6fc;
+}
+
+.feed-action {
+  font-size: 0.875rem;
+  color: #7d8590;
+}
+
+.feed-repo-link {
+  font-size: 0.875rem;
+  color: #58a6ff;
+  text-decoration: none;
+  transition: text-decoration 0.2s;
+}
+
+.feed-repo-link:hover {
+  text-decoration: underline;
+}
+
+.feed-time {
+  font-size: 0.875rem;
+  color: #7d8590;
+}
+
+.feed-separator {
+  color: #7d8590;
+}
+
+.feed-title-item {
+  color: #f0f6fc;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.feed-status {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  color: white;
+  border-radius: 9999px;
+  margin-bottom: 0.5rem;
+}
+
+.feed-status-merged {
+  background-color: #a371f7;
+}
+
+.feed-status-open {
+  background-color: #3fb950;
+}
+
+.feed-preview {
+  font-size: 0.875rem;
+  color: #c9d1d9;
+}
+
+.feed-menu-btn {
+  padding: 0.25rem;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s;
+}
+
+.feed-menu-btn:hover {
+  background-color: #21262d;
+}
+
+.feed-menu-btn svg {
+  height: 1rem;
+  width: 1rem;
+  color: #7d8590;
+}

@@ -1,19 +1,12 @@
+// COMPONENETS
 import { ChzHeader } from '../components/chz-comp/ChzHeader';
-import { MapPin, Link as LinkIcon, Calendar, GitFork, Star } from 'lucide-react';
+import { RepositoryEntry } from '../components/chz-comp/RepositoryEntry';
+import { ProfileSideBar } from '../components/chz-comp/ProfileSideBar';
+// DATA
 import { repositories } from '../data/userRepositories';
 import { profileUser, profileStats } from '../data/profileData';
-import './Profile.css';
 
-const getLanguageColor = (language: string) => {
-  switch (language) {
-    case 'TypeScript':
-      return 'profile-language-dot-typescript';
-    case 'JavaScript':
-      return 'profile-language-dot-javascript';
-    default:
-      return 'profile-language-dot-default';
-  }
-};
+import './Profile.css';
 
 export function Profile() {
   return (
@@ -24,49 +17,8 @@ export function Profile() {
         <div className="profile-wrapper">
           <div className="profile-layout">
             {/* Sidebar */}
-            <aside className="profile-sidebar">
-              <div className="profile-header">
-                <div className="profile-avatar">
-                  {profileUser.avatar}
-                </div>
-                <h1 className="profile-name">{profileUser.name}</h1>
-                <p className="profile-username">{profileUser.username}</p>
-                <button className="profile-edit-btn">
-                  Edit profile
-                </button>
-              </div>
-
-              <div className="profile-bio-section">
-                <p className="profile-bio">
-                  {profileUser.bio}
-                </p>
-                <div className="profile-meta-item">
-                  <MapPin className="profile-meta-icon" />
-                  <span>{profileUser.location}</span>
-                </div>
-                <div className="profile-meta-item">
-                  <LinkIcon className="profile-meta-icon" />
-                  <a href="#" className="profile-meta-link">
-                    {profileUser.website}
-                  </a>
-                </div>
-                <div className="profile-meta-item">
-                  <Calendar className="profile-meta-icon" />
-                  <span>Joined {profileUser.joined}</span>
-                </div>
-              </div>
-
-              <div className="profile-stats">
-                <div className="profile-stat">
-                  <span className="profile-stat-number">{profileUser.followers}</span>
-                  <span className="profile-stat-label">followers</span>
-                </div>
-                <div className="profile-stat">
-                  <span className="profile-stat-number">{profileUser.following}</span>
-                  <span className="profile-stat-label">following</span>
-                </div>
-              </div>
-            </aside>
+            <ProfileSideBar profileUser={profileUser}/>
+            
 
             {/* Main Content */}
             <div className="profile-content">
@@ -99,31 +51,7 @@ export function Profile() {
 
                 <div className="profile-repos-list">
                   {repositories.map((repo) => (
-                    <div key={repo.name} className="profile-repo-card">
-                      <div className="profile-repo-header">
-                        <div>
-                          <h3 className="profile-repo-name">
-                            {repo.name}
-                          </h3>
-                          <p className="profile-repo-description">{repo.description}</p>
-                        </div>
-                      </div>
-                      <div className="profile-repo-meta">
-                        <div className="profile-repo-meta-item">
-                          <div className={`profile-language-dot ${getLanguageColor(repo.language)}`}></div>
-                          <span>{repo.language}</span>
-                        </div>
-                        <div className="profile-repo-meta-item">
-                          <Star className="profile-repo-meta-icon" />
-                          <span>{repo.stars}</span>
-                        </div>
-                        <div className="profile-repo-meta-item">
-                          <GitFork className="profile-repo-meta-icon" />
-                          <span>{repo.forks}</span>
-                        </div>
-                        <span>Updated {repo.updated}</span>
-                      </div>
-                    </div>
+                    <RepositoryEntry repo= {repo}/>
                   ))}
                 </div>
               </div>
