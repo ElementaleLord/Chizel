@@ -27,8 +27,8 @@ export function ChzHeader({ pageTitle }: { pageTitle: string }){
             window.removeEventListener('keydown', handleEscape);
         };
     }, [isSidebarOpen]);
-
-    return (
+    if(user){
+      return (
         <>
           <header className="chz-header">
             <div className="chz-header-inner">
@@ -105,18 +105,15 @@ export function ChzHeader({ pageTitle }: { pageTitle: string }){
               </div>
             </div>
           </header>
-
           <div
             className={`chz-sidebar-overlay ${isSidebarOpen ? 'is-open' : ''}`}
             onClick={() => setIsSidebarOpen(false)}
             aria-hidden={!isSidebarOpen}
           />
-
           <aside
             id="chz-sidebar-drawer"
             className={`chz-sidebar-drawer ${isSidebarOpen ? 'is-open' : ''}`}
-            aria-hidden={!isSidebarOpen}
-          >
+            aria-hidden={!isSidebarOpen} >
             <div className="chz-sidebar-header">
               <div>
                 <h2 className="chz-sidebar-title">Navigation</h2>
@@ -124,53 +121,45 @@ export function ChzHeader({ pageTitle }: { pageTitle: string }){
               <button
                 className="chz-sidebar-close-btn"
                 onClick={() => setIsSidebarOpen(false)}
-                aria-label="Close side menu"
-              >
+                aria-label="Close side menu">
                 <X />
               </button>
             </div>
-
             <nav className="chz-sidebar-nav" aria-label="Sidebar">
               <Link
                 to="/"
                 className="chz-side-link"
-                onClick={() => setIsSidebarOpen(false)}
-              >
+                onClick={() => setIsSidebarOpen(false)}>
                 <House />‎ Home
               </Link>
               <Link
                 to="/notifications"
                 className="chz-side-link"
-                onClick={() => setIsSidebarOpen(false)}
-              >
+                onClick={() => setIsSidebarOpen(false)}>
                 <Bell />‎ Notifications
               </Link>
               <Link
                 to="/pull-requests"
                 className="chz-side-link"
-                onClick={() => setIsSidebarOpen(false)}
-              >
+                onClick={() => setIsSidebarOpen(false)}>
                 <GitPullRequest />‎ Pull Requests
               </Link>
               <Link
                 to="/repositories"
                 className="chz-side-link"
-                onClick={() => setIsSidebarOpen(false)}
-              >
+                onClick={() => setIsSidebarOpen(false)}>
                 <BookMarked />‎ Repositories
               </Link>
               <Link
                 to="/issues"
                 className="chz-side-link"
-                onClick={() => setIsSidebarOpen(false)}
-              >
+                onClick={() => setIsSidebarOpen(false)}>
                 <CircleDot />‎ Issues
               </Link>
               <Link
                 to="/stars"
                 className="chz-side-link"
-                onClick={() => setIsSidebarOpen(false)}
-              >
+                onClick={() => setIsSidebarOpen(false)}>
                 <Star />‎ Stars
               </Link>
               <button
@@ -178,12 +167,38 @@ export function ChzHeader({ pageTitle }: { pageTitle: string }){
                     signOut();
                     setIsSidebarOpen(false);
                 }}
-                className="chz-side-action"
-              >
+                className="chz-side-action">
                 <DoorOpen />‎ Sign out
               </button>
             </nav>
           </aside>
         </>
+      )
+    }
+  else{
+    return (
+        <>
+          <header className="chz-header">
+            <div className="chz-header-inner">
+              <div className="chz-header-left">
+                <Link to="/home" className="chz-logo-link">
+                  <div className="chz-logo">
+                    <BrandLogo className="mx-auto w-fit" imageClassName="h-12 w-12" showLabel={false} />
+                  </div>
+                  <span className="chz-dashboard-text">{pageTitle}</span>
+                </Link>
+              </div>
+              <div className="chz-header-land">
+                <Link to="/signin" className="chz-sign-in">
+                  Sign In
+                </Link>
+                <Link to="/signup" className="chz-sign-up">
+                  Sign Up
+                </Link>
+              </div>
+            </div>
+          </header>
+        </>
     )
+  }  
 }
