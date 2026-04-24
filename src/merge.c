@@ -178,7 +178,11 @@ void ensure_parent_dir(const char *path)
     for (char *p = tmp + 1; *p; p++) {
         if (*p == '/') {
             *p = '\0';
-            mkdir(tmp, 0755);
+            #ifdef _WIN32
+                mkdir(tmp);
+            #else
+                mkdir(tmp, 0755);
+            #endif
             *p = '/';
         }
     }

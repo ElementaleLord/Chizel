@@ -65,7 +65,7 @@ F: is Faust
     #define PACK_PULL_PATH ".chz/objects/restored"
     #define TAG_NAME_FILE ".chz/tag"
     #define ORIGIN_FILE  ".chz/origin"
-    #define IGNORE_FILE "../.gitignore"
+    #define IGNORE_FILE ".chzignore"
 
     //~ Offsets
     #define ARG_BASE -1
