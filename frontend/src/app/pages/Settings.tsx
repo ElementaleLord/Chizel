@@ -1,7 +1,6 @@
 import type { FormEvent } from 'react';
 import { useState } from 'react';
-import { Header } from '../components/layout/Header';
-import { Sidebar } from '../components/layout/Sidebar';
+import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { User, Bell, Shield, Palette, Key, Trash2, Sun, Moon } from 'lucide-react';
 import { useTheme } from '../components/layout/ThemeProvider';
 import { useAppState } from '../components/state/AppStateContext';
@@ -51,8 +50,7 @@ export function Settings() {
 
   return (
     <div className="min-h-screen bg-background dark">
-      <Header isLoggedIn={true} />
-      <Sidebar />
+      <ChzHeader pageTitle="Settings" /*isLoggedIn={false}*/ />
 
       <main className="lg:pl-64 pt-14">
         <div className="container max-w-5xl px-4 py-8">

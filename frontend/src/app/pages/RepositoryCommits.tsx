@@ -1,5 +1,4 @@
-import { Header } from '../components/layout/Header';
-import { Sidebar } from '../components/layout/Sidebar';
+import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { Link, useParams } from 'react-router';
 import { GitCommit, ChevronRight } from 'lucide-react';
 
@@ -46,8 +45,7 @@ export function RepositoryCommits() {
 
   return (
     <div className="min-h-screen bg-background dark">
-      <Header isLoggedIn={true} />
-      <Sidebar />
+      <ChzHeader pageTitle= {`${owner} / ${repo}`} /*isLoggedIn={true}*/ />
 
       <main className="lg:pl-64 pt-14">
         <div className="container max-w-6xl px-4 py-8">

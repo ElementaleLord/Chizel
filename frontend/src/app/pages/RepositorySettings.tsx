@@ -1,3 +1,4 @@
+import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { useParams, Link } from 'react-router';
 import { ChevronRight, AlertTriangle, Trash2 } from 'lucide-react';
 import { RepositoryLayout } from '../components/repository/RepositoryLayout';
@@ -6,6 +7,8 @@ export function RepositorySettings() {
   const { owner, repo } = useParams();
 
   return (
+    <>
+    <ChzHeader pageTitle= {`${owner} / ${repo}`} /*isLoggedIn={true}*/ />
     <RepositoryLayout>
       <div className="container max-w-4xl px-4 py-8">
         <div className="mb-6">
@@ -113,5 +116,6 @@ export function RepositorySettings() {
         </div>
       </div>
     </RepositoryLayout>
+    </>
   );
 }

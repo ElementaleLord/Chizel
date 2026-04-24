@@ -1,5 +1,6 @@
 import { Link, useParams, useNavigate } from 'react-router';
 import { ChevronDown } from 'lucide-react';
+import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { RepositoryLayout } from '../components/repository/RepositoryLayout';
 
 const files = [
@@ -25,6 +26,8 @@ export function Repository() {
   };
 
   return (
+    <>
+    <ChzHeader pageTitle={`${owner} / ${repo}`} />
     <RepositoryLayout>
       <main>
         <div className="container max-w-6xl px-4 py-6">
@@ -110,5 +113,6 @@ export function Repository() {
         </div>
       </main>
     </RepositoryLayout>
+    </>
   );
 }

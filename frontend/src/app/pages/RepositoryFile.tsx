@@ -1,3 +1,4 @@
+import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { useParams, Link } from 'react-router';
 import { ChevronRight, Copy, Download } from 'lucide-react';
 import { RepositoryLayout } from '../components/repository/RepositoryLayout';
@@ -24,6 +25,8 @@ export function ExampleComponent() {
   const pathParts = filePath?.split('/') || [];
 
   return (
+    <>
+    <ChzHeader pageTitle= {`${owner} / ${repo}`} /*isLoggedIn={true}*/ />
     <RepositoryLayout>
       <div className="container max-w-6xl px-4 py-6">
         <div className="mb-4">
@@ -85,5 +88,6 @@ export function ExampleComponent() {
         </div>
       </div>
     </RepositoryLayout>
+    </>
   );
 }

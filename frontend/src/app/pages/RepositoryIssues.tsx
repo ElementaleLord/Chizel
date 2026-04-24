@@ -1,3 +1,4 @@
+import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { useParams, Link } from 'react-router';
 import { CircleDot, MessageSquare, Check, Plus, Search, ChevronRight } from 'lucide-react';
 import { RepositoryLayout } from '../components/repository/RepositoryLayout';
@@ -36,6 +37,8 @@ export function RepositoryIssues() {
   const { owner, repo } = useParams();
 
   return (
+    <>
+    <ChzHeader pageTitle= {`${owner} / ${repo}`} /*isLoggedIn={true}*/ />
     <RepositoryLayout>
       <div className="container max-w-6xl px-4 py-8">
         <div className="mb-6">
@@ -77,6 +80,7 @@ export function RepositoryIssues() {
 
         <div className="bg-card border border-border rounded-lg overflow-hidden">
           {issues.map((issue, i) => (
+            //$ CHANGE THIS TO USE A COMPONENT INSTEAD
             <div
               key={i}
               className="flex items-start gap-4 p-4 border-b border-border last:border-b-0 hover:bg-secondary/50 transition-colors"
@@ -124,5 +128,6 @@ export function RepositoryIssues() {
         </div>
       </div>
     </RepositoryLayout>
+    </>
   );
 }

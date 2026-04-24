@@ -1,5 +1,4 @@
-import { Header } from '../components/layout/Header';
-import { Sidebar } from '../components/layout/Sidebar';
+import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { Star, GitFork, Search, Plus } from 'lucide-react';
 import { Link } from 'react-router';
 import { useMemo, useState } from 'react';
@@ -26,8 +25,7 @@ export function Repositories() {
 
   return (
     <div className="min-h-screen bg-background dark">
-      <Header isLoggedIn={true} />
-      <Sidebar />
+      <ChzHeader pageTitle="Repositories" /*isLoggedIn={false}*/ />
 
       <main className="lg:pl-64 pt-14">
         <div className="container max-w-6xl px-4 py-8">

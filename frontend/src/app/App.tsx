@@ -19,7 +19,7 @@ import { Stars } from './pages/Stars';
 import { Repository } from './pages/Repository';
 import { RepositoryCommits } from './pages/RepositoryCommits';
 import { RepositoryBranches } from './pages/RepositoryBranches';
-import { RepositoryPullRequests } from './pages/RepositoryPullRequests';
+import { RepositoryPullRequests } from './pages/UserPullRequests';
 import { RepositoryIssues } from './pages/RepositoryIssues';
 import { RepositoryInsights } from './pages/RepositoryInsights';
 import { RepositorySettings } from './pages/RepositorySettings';

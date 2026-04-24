@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { Github } from 'lucide-react';
-import { Header } from '../components/layout/Header';
+import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { BrandLogo } from '../components/layout/BrandLogo';
 import { useAuth } from '../components/auth/AuthContext';
 
@@ -32,7 +31,7 @@ export function SignUp() {
 
   return (
     <div className="min-h-screen bg-background dark">
-      <Header isLoggedIn={false} />
+      <ChzHeader pageTitle="Sign-Up" /*isLoggedIn={false}*/ />
 
       <main className="container px-4 py-16">
         <div className="mx-auto max-w-md">

@@ -1,154 +1,124 @@
-import { Header } from '../components/layout/Header';
-import { Sidebar } from '../components/layout/Sidebar';
+import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { MapPin, Link as LinkIcon, Calendar, GitFork, Star } from 'lucide-react';
-
-const repositories = [
-  {
-    name: 'web-app',
-    description: 'A modern web application built with React and TypeScript',
-    language: 'TypeScript',
-    stars: 248,
-    forks: 45,
-    updated: '2 hours ago',
-  },
-  {
-    name: 'api-server',
-    description: 'RESTful API server with Node.js and Express',
-    language: 'JavaScript',
-    stars: 156,
-    forks: 32,
-    updated: '1 day ago',
-  },
-  {
-    name: 'design-system',
-    description: 'Component library for building consistent UIs',
-    language: 'TypeScript',
-    stars: 892,
-    forks: 124,
-    updated: '3 days ago',
-  },
-  {
-    name: 'mobile-app',
-    description: 'Cross-platform mobile app with React Native',
-    language: 'TypeScript',
-    stars: 421,
-    forks: 78,
-    updated: '5 days ago',
-  },
-];
+import { repositories } from '../data/userRepositories';
+import { profileUser, profileStats } from '../data/profileData';
+import './Profile.css';
 
 const getLanguageColor = (language: string) => {
   switch (language) {
     case 'TypeScript':
-      return 'bg-blue-500';
+      return 'profile-language-dot-typescript';
     case 'JavaScript':
-      return 'bg-yellow-500';
+      return 'profile-language-dot-javascript';
     default:
-      return 'bg-gray-500';
+      return 'profile-language-dot-default';
   }
 };
 
 export function Profile() {
   return (
-    <div className="min-h-screen bg-background dark">
-      <Header isLoggedIn={true} />
-      <Sidebar />
+    <div className="profile-container">
+      <ChzHeader pageTitle="Profile" /*isLoggedIn={true}*/ />
 
-      <main className="lg:pl-64 pt-14">
-        <div className="container max-w-6xl px-4 py-8">
-          <div className="grid md:grid-cols-[280px,1fr] gap-6">
-            <aside className="space-y-6">
-              <div className="flex flex-col items-center md:items-start">
-                <div className="w-64 h-64 rounded-full bg-gradient-to-br from-[#e38c05] to-[#fda410] flex items-center justify-center text-white text-6xl mb-4">
-                  S
+      <main className="profile-main">
+        <div className="profile-wrapper">
+          <div className="profile-layout">
+            {/* Sidebar */}
+            <aside className="profile-sidebar">
+              <div className="profile-header">
+                <div className="profile-avatar">
+                  {profileUser.avatar}
                 </div>
-                <h1 className="text-2xl text-foreground mb-1">Sarah Developer</h1>
-                <p className="text-xl text-[#c9d1d9] mb-4">sarahdev</p>
-                <button className="w-full px-4 py-2 bg-secondary text-foreground hover:bg-secondary/80 rounded-md transition-colors mb-4">
+                <h1 className="profile-name">{profileUser.name}</h1>
+                <p className="profile-username">{profileUser.username}</p>
+                <button className="profile-edit-btn">
                   Edit profile
                 </button>
               </div>
 
-              <div className="space-y-3 text-sm">
-                <p className="text-[#c9d1d9]">
-                  Full-stack developer passionate about building great user experiences
+              <div className="profile-bio-section">
+                <p className="profile-bio">
+                  {profileUser.bio}
                 </p>
-                <div className="flex items-center gap-2 text-[#c9d1d9]">
-                  <MapPin className="h-4 w-4" />
-                  <span>San Francisco, CA</span>
+                <div className="profile-meta-item">
+                  <MapPin className="profile-meta-icon" />
+                  <span>{profileUser.location}</span>
                 </div>
-                <div className="flex items-center gap-2 text-[#c9d1d9]">
-                  <LinkIcon className="h-4 w-4" />
-                  <a href="#" className="text-[#fda410] hover:underline">
-                    sarahdev.com
+                <div className="profile-meta-item">
+                  <LinkIcon className="profile-meta-icon" />
+                  <a href="#" className="profile-meta-link">
+                    {profileUser.website}
                   </a>
                 </div>
-                <div className="flex items-center gap-2 text-[#c9d1d9]">
-                  <Calendar className="h-4 w-4" />
-                  <span>Joined March 2022</span>
+                <div className="profile-meta-item">
+                  <Calendar className="profile-meta-icon" />
+                  <span>Joined {profileUser.joined}</span>
                 </div>
               </div>
 
-              <div className="flex gap-4 text-sm">
-                <div>
-                  <span className="font-medium text-foreground">128</span>{' '}
-                  <span className="text-[#c9d1d9]">followers</span>
+              <div className="profile-stats">
+                <div className="profile-stat">
+                  <span className="profile-stat-number">{profileUser.followers}</span>
+                  <span className="profile-stat-label">followers</span>
                 </div>
-                <div>
-                  <span className="font-medium text-foreground">84</span>{' '}
-                  <span className="text-[#c9d1d9]">following</span>
+                <div className="profile-stat">
+                  <span className="profile-stat-number">{profileUser.following}</span>
+                  <span className="profile-stat-label">following</span>
                 </div>
               </div>
             </aside>
 
-            <div className="space-y-6">
-              <div className="grid grid-cols-3 gap-4">
-                <div className="p-4 bg-card border border-border rounded-lg">
-                  <div className="text-2xl font-medium text-foreground mb-1">24</div>
-                  <div className="text-sm text-[#c9d1d9]">Repositories</div>
+            {/* Main Content */}
+            <div className="profile-content">
+              {/* Stats Grid */}
+              <div className="profile-stats-grid">
+                <div className="profile-stat-card">
+                  <div className="profile-stat-card-number">{profileStats.repositories}</div>
+                  <div className="profile-stat-card-label">Repositories</div>
                 </div>
-                <div className="p-4 bg-card border border-border rounded-lg">
-                  <div className="text-2xl font-medium text-foreground mb-1">1.8k</div>
-                  <div className="text-sm text-[#c9d1d9]">Contributions</div>
+                <div className="profile-stat-card">
+                  <div className="profile-stat-card-number">{(profileStats.contributions / 1000).toFixed(1)}k</div>
+                  <div className="profile-stat-card-label">Contributions</div>
                 </div>
-                <div className="p-4 bg-card border border-border rounded-lg">
-                  <div className="text-2xl font-medium text-foreground mb-1">342</div>
-                  <div className="text-sm text-[#c9d1d9]">Stars</div>
+                <div className="profile-stat-card">
+                  <div className="profile-stat-card-number">{profileStats.stars}</div>
+                  <div className="profile-stat-card-label">Stars</div>
                 </div>
               </div>
 
+              {/* Repositories */}
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-foreground">Popular repositories</h2>
+                <div className="profile-repos-header">
+                  <h2 className="profile-repos-title">Popular repositories</h2>
                   <input
                     type="text"
                     placeholder="Find a repository..."
-                    className="px-3 py-1.5 text-sm text-foreground placeholder:text-[#7d8590] bg-secondary border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="profile-search-input"
                   />
                 </div>
 
-                <div className="space-y-4">
+                <div className="profile-repos-list">
                   {repositories.map((repo) => (
-                    <div key={repo.name} className="p-4 bg-card border border-border rounded-lg hover:border-border/60 transition-colors">
-                      <div className="flex items-start justify-between mb-2">
+                    <div key={repo.name} className="profile-repo-card">
+                      <div className="profile-repo-header">
                         <div>
-                          <h3 className="text-[#fda410] hover:underline cursor-pointer mb-1">
+                          <h3 className="profile-repo-name">
                             {repo.name}
                           </h3>
-                          <p className="text-sm text-[#c9d1d9]">{repo.description}</p>
+                          <p className="profile-repo-description">{repo.description}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-[#c9d1d9]">
-                        <div className="flex items-center gap-1">
-                          <div className={`w-3 h-3 rounded-full ${getLanguageColor(repo.language)}`}></div>
+                      <div className="profile-repo-meta">
+                        <div className="profile-repo-meta-item">
+                          <div className={`profile-language-dot ${getLanguageColor(repo.language)}`}></div>
                           <span>{repo.language}</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Star className="h-4 w-4" />
+                        <div className="profile-repo-meta-item">
+                          <Star className="profile-repo-meta-icon" />
                           <span>{repo.stars}</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <GitFork className="h-4 w-4" />
+                        <div className="profile-repo-meta-item">
+                          <GitFork className="profile-repo-meta-icon" />
                           <span>{repo.forks}</span>
                         </div>
                         <span>Updated {repo.updated}</span>
@@ -158,39 +128,40 @@ export function Profile() {
                 </div>
               </div>
 
+              {/* Activity */}
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-foreground">Contribution activity</h2>
-                  <div className="text-sm text-[#c9d1d9]">
-                    <span className="text-foreground font-medium">1,847</span> contributions in the last year
+                <div className="profile-activity-header">
+                  <h2 className="profile-activity-title">Contribution activity</h2>
+                  <div className="profile-activity-stats">
+                    <span className="profile-activity-stats-number">{profileStats.totalContributions}</span> contributions in the last year
                   </div>
                 </div>
-                <div className="bg-card border border-border rounded-lg p-6">
-                  <div className="mb-4">
-                    <div className="grid grid-cols-[auto,1fr] gap-2">
-                      <div className="flex flex-col justify-around text-xs text-[#c9d1d9] pr-2">
+                <div className="profile-activity-card">
+                  <div className="profile-heatmap-container">
+                    <div className="profile-heatmap-grid">
+                      <div className="profile-heatmap-days">
                         <span>Mon</span>
                         <span>Wed</span>
                         <span>Fri</span>
                       </div>
-                      <div className="overflow-x-auto">
-                        <div className="inline-grid grid-rows-7 grid-flow-col gap-1">
+                      <div className="profile-heatmap-cells">
+                        <div className="profile-heatmap-grid-cells">
                           {Array.from({ length: 371 }).map((_, i) => {
                             const intensity = Math.random();
-                            const bgClass =
-                              intensity > 0.75
-                                ? 'bg-[#fda410]'
-                                : intensity > 0.5
-                                ? 'bg-[#fda410]/70'
-                                : intensity > 0.25
-                                ? 'bg-[#fda410]/40'
-                                : intensity > 0.1
-                                ? 'bg-[#fda410]/20'
-                                : 'bg-secondary';
+                            let cellClass = 'profile-heatmap-cell-empty';
+                            if (intensity > 0.75) {
+                              cellClass = 'profile-heatmap-cell-highest';
+                            } else if (intensity > 0.5) {
+                              cellClass = 'profile-heatmap-cell-high';
+                            } else if (intensity > 0.25) {
+                              cellClass = 'profile-heatmap-cell-medium';
+                            } else if (intensity > 0.1) {
+                              cellClass = 'profile-heatmap-cell-low';
+                            }
                             return (
                               <div
                                 key={i}
-                                className={`w-[10px] h-[10px] rounded-sm ${bgClass} hover:ring-2 hover:ring-[#fda410] cursor-pointer transition-all`}
+                                className={`profile-heatmap-cell ${cellClass}`}
                                 title={`${Math.floor(intensity * 15)} contributions`}
                               ></div>
                             );
@@ -199,29 +170,29 @@ export function Profile() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between text-xs text-[#c9d1d9]">
+                  <div className="profile-heatmap-legend">
                     <span>Less</span>
-                    <div className="flex items-center gap-1">
-                      <div className="w-[10px] h-[10px] rounded-sm bg-secondary"></div>
-                      <div className="w-[10px] h-[10px] rounded-sm bg-[#fda410]/20"></div>
-                      <div className="w-[10px] h-[10px] rounded-sm bg-[#fda410]/40"></div>
-                      <div className="w-[10px] h-[10px] rounded-sm bg-[#fda410]/70"></div>
-                      <div className="w-[10px] h-[10px] rounded-sm bg-[#fda410]"></div>
+                    <div className="profile-heatmap-legend-scale">
+                      <div className="profile-heatmap-legend-item profile-heatmap-cell-empty"></div>
+                      <div className="profile-heatmap-legend-item profile-heatmap-cell-low"></div>
+                      <div className="profile-heatmap-legend-item profile-heatmap-cell-medium"></div>
+                      <div className="profile-heatmap-legend-item profile-heatmap-cell-high"></div>
+                      <div className="profile-heatmap-legend-item profile-heatmap-cell-highest"></div>
                     </div>
                     <span>More</span>
                   </div>
-                  <div className="mt-6 grid grid-cols-3 gap-4 pt-4 border-t border-border">
-                    <div>
-                      <div className="text-2xl font-medium text-foreground">1,847</div>
-                      <div className="text-sm text-[#c9d1d9]">Total contributions</div>
+                  <div className="profile-activity-stats-grid">
+                    <div className="profile-activity-stat">
+                      <div className="profile-activity-stat-number">{profileStats.totalContributions}</div>
+                      <div className="profile-activity-stat-label">Total contributions</div>
                     </div>
-                    <div>
-                      <div className="text-2xl font-medium text-foreground">142</div>
-                      <div className="text-sm text-[#c9d1d9]">Longest streak</div>
+                    <div className="profile-activity-stat">
+                      <div className="profile-activity-stat-number">{profileStats.longestStreak}</div>
+                      <div className="profile-activity-stat-label">Longest streak</div>
                     </div>
-                    <div>
-                      <div className="text-2xl font-medium text-foreground">28</div>
-                      <div className="text-sm text-[#c9d1d9]">Current streak</div>
+                    <div className="profile-activity-stat">
+                      <div className="profile-activity-stat-number">{profileStats.currentStreak}</div>
+                      <div className="profile-activity-stat-label">Current streak</div>
                     </div>
                   </div>
                 </div>

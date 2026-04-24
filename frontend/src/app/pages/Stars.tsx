@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Header } from '../components/layout/Header';
-import { Sidebar } from '../components/layout/Sidebar';
+import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { Star, GitFork, Search } from 'lucide-react';
 import { Link } from 'react-router';
 import { RepositoryStarButton } from '../components/repository/RepositoryStarButton';
@@ -21,8 +20,7 @@ export function Stars() {
 
   return (
     <div className="min-h-screen bg-background dark">
-      <Header isLoggedIn={true} />
-      <Sidebar />
+      <ChzHeader pageTitle="Stars" /*isLoggedIn={false}*/ />
 
       <main className="lg:pl-64 pt-14">
         <div className="container max-w-6xl px-4 py-8">

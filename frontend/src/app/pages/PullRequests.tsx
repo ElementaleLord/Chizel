@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { Check, ChevronDown, GitPullRequest, MessageSquare, X } from 'lucide-react';
-import { Header } from '../components/layout/Header';
-import { Sidebar } from '../components/layout/Sidebar';
+import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { assignedPullRequests, submittedPullRequests, type PullRequestStatus, type UserPullRequestItem } from '../data/userActivity';
 
 function getPullRequestStatusStyles(status: PullRequestStatus) {
@@ -119,8 +118,7 @@ export function PullRequests() {
 
   return (
     <div className="min-h-screen bg-background dark">
-      <Header isLoggedIn={true} />
-      <Sidebar />
+      <ChzHeader pageTitle="Pull Requests" /*isLoggedIn={false}*/ />
 
       <main className="lg:pl-64 pt-14">
         <div className="container max-w-6xl px-4 py-8">
