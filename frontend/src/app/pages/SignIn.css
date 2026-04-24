@@ -1,0 +1,148 @@
+/* SignIn Page Container */
+.signin-container {
+  min-height: 100vh;
+  background-color: #0d1117;
+}
+
+.signin-main {
+  padding: 4rem 1rem;
+}
+
+.signin-wrapper {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 28rem;
+}
+
+/* SignIn Card */
+.signin-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #30363d;
+  background-color: #161b22;
+  padding: 2rem;
+}
+
+/* Header */
+.signin-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.signin-logo {
+  margin-left: auto;
+  margin-right: auto;
+  width: fit-content;
+}
+
+.signin-title {
+  font-size: 1.5rem;
+  color: #f0f6fc;
+}
+
+/* Form */
+.signin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.signin-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.signin-label-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.signin-label {
+  font-size: 0.875rem;
+  color: #f0f6fc;
+}
+
+.signin-forgot-link {
+  font-size: 0.75rem;
+  color: #fda410;
+  text-decoration: none;
+  transition: text-decoration 0.2s;
+}
+
+.signin-forgot-link:hover {
+  text-decoration: underline;
+}
+
+.signin-input {
+  width: 100%;
+  border-radius: 0.375rem;
+  border: 1px solid #30363d;
+  background-color: #0d1117;
+  padding: 0.5rem 0.75rem;
+  color: #f0f6fc;
+  transition: all 0.2s;
+}
+
+.signin-input::placeholder {
+  color: #7d8590;
+}
+
+.signin-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #58a6ff;
+}
+
+/* Error Message */
+.signin-error {
+  border-radius: 0.375rem;
+  border: 1px solid rgba(241, 81, 81, 0.4);
+  background-color: rgba(241, 81, 81, 0.1);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: #f15151;
+}
+
+/* Submit Button */
+.signin-submit-btn {
+  width: 100%;
+  border-radius: 0.375rem;
+  background-color: #fda410;
+  padding: 0.625rem 1rem;
+  font-weight: 500;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.signin-submit-btn:hover:not(:disabled) {
+  background-color: #e38c05;
+}
+
+.signin-submit-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Footer Text */
+.signin-footer {
+  text-align: center;
+  font-size: 0.875rem;
+  color: #c9d1d9;
+}
+
+.signin-signup-link {
+  color: #fda410;
+  text-decoration: none;
+  transition: text-decoration 0.2s;
+}
+
+.signin-signup-link:hover {
+  text-decoration: underline;
+}

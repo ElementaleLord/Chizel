@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
+import { useAuth } from '../components/auth/AuthContext';
+// COMPONENT
 import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { BrandLogo } from '../components/layout/BrandLogo';
-import { useAuth } from '../components/auth/AuthContext';
+
+import './SignIn.css';
 
 export function SignIn() {
   const navigate = useNavigate();
@@ -29,36 +32,38 @@ export function SignIn() {
   }
 
   return (
-    <div className="min-h-screen bg-background dark">
-      <ChzHeader pageTitle="Sign-In" /*isLoggedIn={false}*/ />
+    <div className="signin-container">
+      <ChzHeader pageTitle="Sign-In" />
 
-      <main className="container px-4 py-16">
-        <div className="mx-auto max-w-md">
-          <div className="space-y-6 rounded-lg border border-border bg-card p-8">
-            <div className="space-y-2 text-center">
-              <BrandLogo
-                className="mx-auto w-fit"
-                imageClassName="h-12 w-12"
-                showLabel={false}
-              />
-              <h1 className="text-2xl text-foreground">Sign in to Chizel</h1>
+      <main className="signin-main">
+        <div className="signin-wrapper">
+          <div className="signin-card">
+            <div className="signin-header">
+              <div className="signin-logo">
+                <BrandLogo
+                  className="w-fit"
+                  imageClassName="h-12 w-12"
+                  showLabel={false}
+                />
+              </div>
+              <h1 className="signin-title">Sign in to Chizel</h1>
             </div> 
-            <form className="space-y-4" onSubmit={handleSubmit}>
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-sm text-foreground">Email address</label>
+            <form className="signin-form" onSubmit={handleSubmit}>
+              <div className="signin-form-group">
+                <label htmlFor="email" className="signin-label">Email address</label>
                 <input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   placeholder="you@example.com"
-                  className="w-full rounded-md border border-border bg-input px-3 py-2 text-foreground placeholder:text-[#7d8590] focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="signin-input"
                 />
               </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label htmlFor="password" className="text-sm text-foreground">Password</label>
-                  <Link to="/forgot-password" className="text-xs text-[#fda410] hover:underline">
+              <div className="signin-form-group">
+                <div className="signin-label-wrapper">
+                  <label htmlFor="password" className="signin-label">Password</label>
+                  <Link to="/forgot-password" className="signin-forgot-link">
                     Forgot password?
                   </Link>
                 </div>
@@ -68,26 +73,26 @@ export function SignIn() {
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="Enter your password"
-                  className="w-full rounded-md border border-border bg-input px-3 py-2 text-foreground placeholder:text-[#7d8590] focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="signin-input"
                 />
               </div>
               {error && (
-                <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                <div className="signin-error">
                   {error}
                 </div>
               )}
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full rounded-md bg-[#fda410] px-4 py-2.5 font-medium text-white transition-colors hover:bg-[#e38c05] disabled:cursor-not-allowed disabled:opacity-70"
+                className="signin-submit-btn"
               >
                 {isSubmitting ? 'Signing in...' : 'Sign in'}
               </button>
             </form>
 
-            <p className="text-center text-sm text-[#c9d1d9]">
+            <p className="signin-footer">
               Don&apos;t have an account?{' '}
-              <Link to="/signup" className="text-[#fda410] hover:underline">
+              <Link to="/signup" className="signin-signup-link">
                 Sign up
               </Link>
             </p>

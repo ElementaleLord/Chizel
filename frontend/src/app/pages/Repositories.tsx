@@ -1,8 +1,12 @@
-import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { Star, GitFork, Search, Plus } from 'lucide-react';
 import { Link } from 'react-router';
 import { useMemo, useState } from 'react';
+// COMPONENTS
+import { ChzHeader } from '../components/chz-comp/ChzHeader';
+// DATA
 import { formatStarCount, getLanguageColor, getRepositoriesByIds, userRepositoryIds } from '../data/repositories';
+
+import './Repositories.css';
 
 export function Repositories() {
   const [visibilityFilter, setVisibilityFilter] = useState<'all' | 'public' | 'private'>('all');
@@ -24,61 +28,63 @@ export function Repositories() {
   });
 
   return (
-    <div className="min-h-screen bg-background dark">
-      <ChzHeader pageTitle="Repositories" /*isLoggedIn={false}*/ />
+    <div className="repos-container">
+      <ChzHeader pageTitle="Repositories" />
 
-      <main className="lg:pl-64 pt-14">
-        <div className="container max-w-6xl px-4 py-8">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-foreground">Repositories</h1>
+      <main className="repos-main">
+        <div className="repos-wrapper">
+          {/* Header */}
+          <div className="repos-header">
+            <h1 className="repos-title">Repositories</h1>
             <button
               type="button"
-              className="flex cursor-not-allowed items-center gap-2 rounded-md bg-[#fda410]/70 px-4 py-2 text-white"
+              className="repos-new-btn"
               title="New repository flow is not wired up yet."
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="repos-new-btn-icon" />
               New repository
             </button>
           </div>
 
-          <div className="flex items-center gap-4 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#c9d1d9]" />
+          {/* Search and Filters */}
+          <div className="repos-controls">
+            <div className="repos-search-container">
+              <Search className="repos-search-icon" />
               <input
                 type="text"
                 placeholder="Find a repository..."
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
-                className="w-full pl-9 pr-4 py-2 text-foreground placeholder:text-[#7d8590] bg-secondary border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+                className="repos-search-input"
               />
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="repos-filter-buttons">
               <button
                 onClick={() => setVisibilityFilter('all')}
-                className={`px-3 py-2 text-sm rounded-md transition-colors ${
+                className={`repos-filter-btn ${
                   visibilityFilter === 'all'
-                    ? 'bg-[#fda410] text-white'
-                    : 'bg-secondary text-foreground hover:bg-secondary/80'
+                    ? 'repos-filter-btn-active'
+                    : 'repos-filter-btn-inactive'
                 }`}
               >
                 All
               </button>
               <button
                 onClick={() => setVisibilityFilter('public')}
-                className={`px-3 py-2 text-sm rounded-md transition-colors ${
+                className={`repos-filter-btn ${
                   visibilityFilter === 'public'
-                    ? 'bg-[#fda410] text-white'
-                    : 'bg-secondary text-foreground hover:bg-secondary/80'
+                    ? 'repos-filter-btn-active'
+                    : 'repos-filter-btn-inactive'
                 }`}
               >
                 Public
               </button>
               <button
                 onClick={() => setVisibilityFilter('private')}
-                className={`px-3 py-2 text-sm rounded-md transition-colors ${
+                className={`repos-filter-btn ${
                   visibilityFilter === 'private'
-                    ? 'bg-[#fda410] text-white'
-                    : 'bg-secondary text-foreground hover:bg-secondary/80'
+                    ? 'repos-filter-btn-active'
+                    : 'repos-filter-btn-inactive'
                 }`}
               >
                 Private
@@ -86,7 +92,7 @@ export function Repositories() {
               <select
                 value={languageFilter}
                 onChange={(event) => setLanguageFilter(event.target.value)}
-                className="rounded-md border border-border bg-secondary px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                className="repos-language-select"
               >
                 {languageOptions.map((option) => (
                   <option key={option} value={option}>
@@ -97,44 +103,45 @@ export function Repositories() {
             </div>
           </div>
 
-          <div className="space-y-4">
+          {/* Repository List */}
+          <div className="repos-list">
             {filteredRepositories.map((repo) => (
-              <div key={repo.id} className="p-5 bg-card border border-border rounded-lg hover:border-border/60 transition-colors">
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
+              <div key={repo.id} className="repos-item">
+                <div className="repos-item-header">
+                  <div className="repos-item-title-section">
+                    <div className="repos-item-title-row">
                       <Link
                         to={`/repository/${repo.owner}/${repo.name}`}
-                        className="text-[#fda410] hover:underline font-medium"
+                        className="repos-item-name"
                       >
                         {repo.owner}/{repo.name}
                       </Link>
-                      <span className="px-2 py-0.5 text-xs border border-border text-foreground rounded-full">
+                      <span className="repos-visibility-badge">
                         {repo.visibility}
                       </span>
                     </div>
-                    <p className="text-sm text-[#c9d1d9]">{repo.description}</p>
+                    <p className="repos-item-description">{repo.description}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4 mt-4 text-sm text-[#c9d1d9]">
-                  <div className="flex items-center gap-1">
-                    <div className={`w-3 h-3 rounded-full ${getLanguageColor(repo.language)}`}></div>
+                <div className="repos-item-meta">
+                  <div className="repos-item-meta-item">
+                    <div className={`repos-language-dot ${getLanguageColor(repo.language)}`}></div>
                     <span>{repo.language}</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4" />
+                  <div className="repos-item-meta-item">
+                    <Star className="repos-meta-icon" />
                     <span>{formatStarCount(repo.stars)}</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <GitFork className="h-4 w-4" />
+                  <div className="repos-item-meta-item">
+                    <GitFork className="repos-meta-icon" />
                     <span>{repo.forks}</span>
                   </div>
-                  <span className="ml-auto">Updated {repo.updated}</span>
+                  <span className="repos-updated">Updated {repo.updated}</span>
                 </div>
               </div>
             ))}
             {filteredRepositories.length === 0 && (
-              <div className="rounded-lg border border-dashed border-border bg-card px-5 py-8 text-center text-sm text-muted-foreground">
+              <div className="repos-empty">
                 No repositories match the current filters.
               </div>
             )}

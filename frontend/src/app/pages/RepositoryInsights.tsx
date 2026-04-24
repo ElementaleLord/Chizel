@@ -1,133 +1,155 @@
-import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { useParams, Link } from 'react-router';
 import { ChevronRight, GitCommit, Users, Star, GitFork, TrendingUp } from 'lucide-react';
-import { RepositoryLayout } from '../components/repository/RepositoryLayout';
+// COMPONENTS
+import { ChzHeader } from '../components/chz-comp/ChzHeader';
+import { RepositoryLayout } from '../components/chz-comp/RepositoryLayout';
+// DATA
+import { insightsStats, commitActivity, topContributors, languageDistribution } from '../data/insightsData';
+
+import './RepositoryInsights.css';
 
 export function RepositoryInsights() {
   const { owner, repo } = useParams();
 
   return (
     <>
-    <ChzHeader pageTitle= {`${owner} / ${repo}`} /*isLoggedIn={true}*/ />
-    <RepositoryLayout>
-      <div className="container max-w-6xl px-4 py-8">
-        <div className="mb-6">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-            <Link to={`/repository/${owner}/${repo}`} className="text-ring hover:underline">
-              {owner}/{repo}
-            </Link>
-            <ChevronRight className="h-4 w-4" />
-            <span className="text-foreground">Insights</span>
-          </div>
-          <h1 className="text-foreground">Repository Insights</h1>
-        </div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="bg-card border border-border rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <GitCommit className="h-4 w-4 text-[#3fb950]" />
-              <span className="text-sm text-muted-foreground">Total Commits</span>
-            </div>
-            <div className="text-2xl font-semibold text-foreground">1,247</div>
-            <div className="text-xs text-[#3fb950] mt-1">+42 this week</div>
-          </div>
-
-          <div className="bg-card border border-border rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Users className="h-4 w-4 text-ring" />
-              <span className="text-sm text-muted-foreground">Contributors</span>
-            </div>
-            <div className="text-2xl font-semibold text-foreground">8</div>
-            <div className="text-xs text-muted-foreground mt-1">Active this month</div>
-          </div>
-
-          <div className="bg-card border border-border rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Star className="h-4 w-4 text-orange" />
-              <span className="text-sm text-muted-foreground">Stars</span>
-            </div>
-            <div className="text-2xl font-semibold text-foreground">248</div>
-            <div className="text-xs text-[#3fb950] mt-1">+12 this week</div>
-          </div>
-
-          <div className="bg-card border border-border rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <GitFork className="h-4 w-4 text-[#8957e5]" />
-              <span className="text-sm text-muted-foreground">Forks</span>
-            </div>
-            <div className="text-2xl font-semibold text-foreground">45</div>
-            <div className="text-xs text-muted-foreground mt-1">Total forks</div>
-          </div>
-        </div>
-
-        <div className="bg-card border border-border rounded-lg p-6 mb-6">
-          <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="h-5 w-5 text-[#3fb950]" />
-            <h2 className="text-lg font-semibold text-foreground">Commit Activity</h2>
-          </div>
-          <div className="space-y-2">
-            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-              <div key={day} className="flex items-center gap-4">
-                <span className="text-sm text-muted-foreground w-12">{day}</span>
-                <div className="flex-1 bg-secondary rounded-full h-6 overflow-hidden">
-                  <div
-                    className="bg-[#3fb950] h-full rounded-full"
-                    style={{ width: `${Math.random() * 100}%` }}
-                  ></div>
-                </div>
-                <span className="text-sm text-foreground w-12 text-right">
-                  {Math.floor(Math.random() * 50)}
-                </span>
+      <ChzHeader pageTitle={`${owner} / ${repo}`} />
+      <RepositoryLayout>
+        <div className="insights-wrapper">
+          <div className="insights-container">
+            {/* Header */}
+            <div className="insights-header">
+              <div className="insights-breadcrumb">
+                <Link to={`/repository/${owner}/${repo}`} className="insights-breadcrumb-link">
+                  {owner}/{repo}
+                </Link>
+                <ChevronRight className="insights-breadcrumb-icon" />
+                <span className="insights-breadcrumb-text">Insights</span>
               </div>
-            ))}
-          </div>
-        </div>
+              <h1 className="insights-title">Repository Insights</h1>
+            </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-card border border-border rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Top Contributors</h2>
-            <div className="space-y-3">
-              {[
-                { name: 'Sarah Developer', commits: 842, avatar: 'S' },
-                { name: 'Mike Chen', commits: 234, avatar: 'M' },
-                { name: 'Alex Kim', commits: 171, avatar: 'A' },
-              ].map((contributor) => (
-                <div key={contributor.name} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#e38c05] to-[#fda410] flex items-center justify-center text-white text-sm">
-                    {contributor.avatar}
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-sm text-foreground">{contributor.name}</div>
-                    <div className="text-xs text-muted-foreground">{contributor.commits} commits</div>
-                  </div>
+            {/* Stats Grid */}
+            <div className="insights-stats-grid">
+              <div className="insights-stat-card">
+                <div className="insights-stat-header">
+                  <GitCommit className="insights-stat-icon insights-stat-icon-commits" />
+                  <span className="insights-stat-label">Total Commits</span>
                 </div>
-              ))}
+                <div className="insights-stat-value">{insightsStats.commits.total}</div>
+                <div className="insights-stat-change insights-stat-change-positive">
+                  {insightsStats.commits.change}
+                </div>
+              </div>
+
+              <div className="insights-stat-card">
+                <div className="insights-stat-header">
+                  <Users className="insights-stat-icon insights-stat-icon-contributors" />
+                  <span className="insights-stat-label">Contributors</span>
+                </div>
+                <div className="insights-stat-value">{insightsStats.contributors.count}</div>
+                <div className="insights-stat-change insights-stat-change-neutral">
+                  {insightsStats.contributors.status}
+                </div>
+              </div>
+
+              <div className="insights-stat-card">
+                <div className="insights-stat-header">
+                  <Star className="insights-stat-icon insights-stat-icon-stars" />
+                  <span className="insights-stat-label">Stars</span>
+                </div>
+                <div className="insights-stat-value">{insightsStats.stars.count}</div>
+                <div className="insights-stat-change insights-stat-change-positive">
+                  {insightsStats.stars.change}
+                </div>
+              </div>
+
+              <div className="insights-stat-card">
+                <div className="insights-stat-header">
+                  <GitFork className="insights-stat-icon insights-stat-icon-forks" />
+                  <span className="insights-stat-label">Forks</span>
+                </div>
+                <div className="insights-stat-value">{insightsStats.forks.count}</div>
+                <div className="insights-stat-change insights-stat-change-neutral">
+                  {insightsStats.forks.status}
+                </div>
+              </div>
+            </div>
+
+            {/* Commit Activity */}
+            <div className="insights-activity-card">
+              <div className="insights-activity-header">
+                <TrendingUp className="insights-activity-icon" />
+                <h2 className="insights-activity-title">Commit Activity</h2>
+              </div>
+              <div className="insights-activity-list">
+                {commitActivity.map((activity) => {
+                  const maxCommits = Math.max(...commitActivity.map(a => a.commits));
+                  const barWidth = (activity.commits / maxCommits) * 100;
+                  return (
+                    <div key={activity.day} className="insights-activity-item">
+                      <span className="insights-activity-day">{activity.day}</span>
+                      <div className="insights-activity-bar-container">
+                        <div
+                          className="insights-activity-bar"
+                          style={{ width: `${barWidth}%` }}
+                        ></div>
+                      </div>
+                      <span className="insights-activity-count">
+                        {activity.commits}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Bottom Grid - Contributors and Languages */}
+            <div className="insights-bottom-grid">
+              {/* Top Contributors */}
+              <div className="insights-section-card">
+                <h2 className="insights-section-title">Top Contributors</h2>
+                <div className="insights-contributors-list">
+                  {topContributors.map((contributor) => (
+                    <div key={contributor.name} className="insights-contributor-item">
+                      <div className="insights-contributor-avatar">
+                        {contributor.avatar}
+                      </div>
+                      <div className="insights-contributor-content">
+                        <div className="insights-contributor-name">{contributor.name}</div>
+                        <div className="insights-contributor-commits">
+                          {contributor.commits} commits
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Language Distribution */}
+              <div className="insights-section-card">
+                <h2 className="insights-section-title">Language Distribution</h2>
+                <div className="insights-languages-list">
+                  {languageDistribution.map((lang) => (
+                    <div key={lang.lang} className="insights-language-item">
+                      <div className="insights-language-header">
+                        <span className="insights-language-name">{lang.lang}</span>
+                        <span className="insights-language-percent">{lang.percent}%</span>
+                      </div>
+                      <div className="insights-language-bar-container">
+                        <div
+                          className={`insights-language-bar ${lang.cssClass}`}
+                          style={{ width: `${lang.percent}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
-
-          <div className="bg-card border border-border rounded-lg p-6">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Language Distribution</h2>
-            <div className="space-y-3">
-              {[
-                { lang: 'TypeScript', percent: 68, color: 'bg-blue-500' },
-                { lang: 'JavaScript', percent: 22, color: 'bg-yellow-500' },
-                { lang: 'CSS', percent: 10, color: 'bg-purple-500' },
-              ].map((lang) => (
-                <div key={lang.lang}>
-                  <div className="flex items-center justify-between text-sm mb-1">
-                    <span className="text-foreground">{lang.lang}</span>
-                    <span className="text-muted-foreground">{lang.percent}%</span>
-                  </div>
-                  <div className="bg-secondary rounded-full h-2 overflow-hidden">
-                    <div className={`${lang.color} h-full rounded-full`} style={{ width: `${lang.percent}%` }}></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
-      </div>
-    </RepositoryLayout>
+      </RepositoryLayout>
     </>
   );
 }

@@ -1,0 +1,156 @@
+/* Repository Commits Page Container */
+.commits-container {
+  min-height: 100vh;
+  background-color: #0d1117;
+}
+
+.commits-main {
+  padding-left: 0;
+  padding-top: 3.5rem;
+}
+
+@media (min-width: 1024px) {
+  .commits-main {
+    padding-left: 16rem;
+  }
+}
+
+.commits-wrapper {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 90rem;
+  padding: 2rem 1rem;
+}
+
+/* Header */
+.commits-header {
+  margin-bottom: 1.5rem;
+}
+
+.commits-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #c9d1d9;
+  margin-bottom: 1rem;
+}
+
+.commits-breadcrumb-link {
+  color: #fda410;
+  text-decoration: none;
+  transition: text-decoration 0.2s;
+}
+
+.commits-breadcrumb-link:hover {
+  text-decoration: underline;
+}
+
+.commits-breadcrumb-text {
+  color: #f0f6fc;
+}
+
+.commits-breadcrumb-icon {
+  height: 1rem;
+  width: 1rem;
+}
+
+.commits-title {
+  color: #f0f6fc;
+}
+
+/* Commits List */
+.commits-card {
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.commits-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid #30363d;
+  transition: background-color 0.2s;
+}
+
+.commits-item:last-child {
+  border-bottom: none;
+}
+
+.commits-item:hover {
+  background-color: rgba(33, 38, 45, 0.5);
+}
+
+.commits-avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background-image: linear-gradient(to bottom right, #e38c05, #fda410);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.commits-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.commits-message {
+  color: #f0f6fc;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.commits-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: #c9d1d9;
+}
+
+.commits-meta-separator {
+  margin: 0 0.25rem;
+}
+
+.commits-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.commits-hash {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  background-color: #21262d;
+  color: #f0f6fc;
+  border-radius: 0.25rem;
+  font-family: monospace;
+}
+
+.commits-button {
+  padding: 0;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  color: #fda410;
+  transition: color 0.2s;
+}
+
+.commits-button:hover {
+  color: #e38c05;
+}
+
+.commits-button-icon {
+  height: 1.25rem;
+  width: 1.25rem;
+}

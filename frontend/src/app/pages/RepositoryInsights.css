@@ -1,0 +1,309 @@
+/* Repository Insights Page Container */
+.insights-wrapper {
+  padding: 2rem 1rem;
+}
+
+.insights-container {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 90rem;
+}
+
+/* Header */
+.insights-header {
+  margin-bottom: 1.5rem;
+}
+
+.insights-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #8b949e;
+  margin-bottom: 1rem;
+}
+
+.insights-breadcrumb-link {
+  color: #58a6ff;
+  text-decoration: none;
+  transition: text-decoration 0.2s;
+}
+
+.insights-breadcrumb-link:hover {
+  text-decoration: underline;
+}
+
+.insights-breadcrumb-text {
+  color: #f0f6fc;
+}
+
+.insights-breadcrumb-icon {
+  height: 1rem;
+  width: 1rem;
+}
+
+.insights-title {
+  color: #f0f6fc;
+}
+
+/* Stats Grid */
+.insights-stats-grid {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .insights-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .insights-stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.insights-stat-card {
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.insights-stat-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.insights-stat-icon {
+  height: 1rem;
+  width: 1rem;
+}
+
+.insights-stat-icon-commits {
+  color: #3fb950;
+}
+
+.insights-stat-icon-contributors {
+  color: #58a6ff;
+}
+
+.insights-stat-icon-stars {
+  color: #fda410;
+}
+
+.insights-stat-icon-forks {
+  color: #8957e5;
+}
+
+.insights-stat-label {
+  font-size: 0.875rem;
+  color: #8b949e;
+}
+
+.insights-stat-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #f0f6fc;
+}
+
+.insights-stat-change {
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.insights-stat-change-positive {
+  color: #3fb950;
+}
+
+.insights-stat-change-neutral {
+  color: #8b949e;
+}
+
+/* Commit Activity Section */
+.insights-activity-card {
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.insights-activity-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.insights-activity-icon {
+  height: 1.25rem;
+  width: 1.25rem;
+  color: #3fb950;
+}
+
+.insights-activity-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #f0f6fc;
+}
+
+.insights-activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.insights-activity-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.insights-activity-day {
+  font-size: 0.875rem;
+  color: #8b949e;
+  width: 3rem;
+}
+
+.insights-activity-bar-container {
+  flex: 1;
+  background-color: #21262d;
+  border-radius: 9999px;
+  height: 1.5rem;
+  overflow: hidden;
+}
+
+.insights-activity-bar {
+  background-color: #3fb950;
+  height: 100%;
+  border-radius: 9999px;
+}
+
+.insights-activity-count {
+  font-size: 0.875rem;
+  color: #f0f6fc;
+  width: 3rem;
+  text-align: right;
+}
+
+/* Contributors and Languages Grid */
+.insights-bottom-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .insights-bottom-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.insights-section-card {
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+}
+
+.insights-section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #f0f6fc;
+  margin-bottom: 1rem;
+}
+
+/* Contributors */
+.insights-contributors-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.insights-contributor-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.insights-contributor-avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  background-image: linear-gradient(to bottom right, #e38c05, #fda410);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.875rem;
+}
+
+.insights-contributor-content {
+  flex: 1;
+}
+
+.insights-contributor-name {
+  font-size: 0.875rem;
+  color: #f0f6fc;
+}
+
+.insights-contributor-commits {
+  font-size: 0.75rem;
+  color: #8b949e;
+}
+
+/* Languages */
+.insights-languages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.insights-language-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.insights-language-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.875rem;
+}
+
+.insights-language-name {
+  color: #f0f6fc;
+}
+
+.insights-language-percent {
+  color: #8b949e;
+}
+
+.insights-language-bar-container {
+  background-color: #21262d;
+  border-radius: 9999px;
+  height: 0.5rem;
+  overflow: hidden;
+}
+
+.insights-language-bar {
+  height: 100%;
+  border-radius: 9999px;
+}
+
+.insights-language-bar-typescript {
+  background-color: #3b82f6;
+}
+
+.insights-language-bar-javascript {
+  background-color: #eab308;
+}
+
+.insights-language-bar-css {
+  background-color: #a78bfa;
+}

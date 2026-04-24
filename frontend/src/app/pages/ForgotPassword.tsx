@@ -1,4 +1,4 @@
-import { Header } from '../components/layout/Header';
+import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { Link } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
 import { BrandLogo } from '../components/layout/BrandLogo';
@@ -6,7 +6,7 @@ import { BrandLogo } from '../components/layout/BrandLogo';
 export function ForgotPassword() {
   return (
     <div className="min-h-screen bg-background dark">
-      <Header isLoggedIn={false} />
+      <ChzHeader pageTitle="Chizel" />
 
       <main className="container px-4 py-16">
         <div className="max-w-md mx-auto">

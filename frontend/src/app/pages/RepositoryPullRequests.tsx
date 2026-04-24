@@ -1,133 +1,101 @@
-import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { useParams, Link } from 'react-router';
 import { CircleDot, MessageSquare, Check, Plus, Search, ChevronRight } from 'lucide-react';
-import { RepositoryLayout } from '../components/repository/RepositoryLayout';
+// COMPONENTS
+import { ChzHeader } from '../components/chz-comp/ChzHeader';
+import { RepositoryLayout } from '../components/chz-comp/RepositoryLayout';
+//DATA
+import { pullRequests } from '../data/pullRequests';
 
-const requests = [
-  {
-    number: 42,
-    title: 'App crashes on iOS 17 devices',
-    author: 'Sarah Developer',
-    status: 'open',
-    comments: 8,
-    time: '2 hours ago',
-    labels: ['bug', 'mobile'],
-  },
-  {
-    number: 41,
-    title: 'Add dark mode support to settings page',
-    author: 'Mike Chen',
-    status: 'open',
-    comments: 3,
-    time: '1 day ago',
-    labels: ['enhancement'],
-  },
-  {
-    number: 40,
-    title: 'Update dependencies to latest versions',
-    author: 'Alex Kim',
-    status: 'closed',
-    comments: 5,
-    time: '3 days ago',
-    labels: ['dependencies'],
-  },
-];
+import './RepositoryPullRequests.css';
 
 export function RepositoryPullRequests() {
   const { owner, repo } = useParams();
 
   return (
     <>
-    <ChzHeader pageTitle= {`${owner} / ${repo}`} /*isLoggedIn={true}*/ />
-    <RepositoryLayout>
-      <div className="container max-w-6xl px-4 py-8">
-        <div className="mb-6">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-            <Link to={`/repository/${owner}/${repo}`} className="text-ring hover:underline">
-              {owner}/{repo}
-            </Link>
-            <ChevronRight className="h-4 w-4" />
-            <span className="text-foreground">Pull Requests</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <h1 className="text-foreground">Pull Requests</h1>
-            <button className="flex items-center gap-2 px-4 py-2 bg-[#238636] text-white rounded-md hover:bg-[#2ea043] transition-colors">
-              <Plus className="h-4 w-4" />
-              New issue
-            </button>
-          </div>
-        </div>
-
-        <div className="mb-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search Pull Requests..."
-              className="w-full pl-9 pr-4 py-2 text-sm bg-input text-foreground placeholder:text-muted-foreground border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          </div>
-        </div>
-
-        <div className="flex gap-2 mb-6">
-          <button className="px-3 py-1.5 text-sm bg-[#238636] text-white rounded-md font-medium">
-            Open (2)
-          </button>
-          <button className="px-3 py-1.5 text-sm bg-secondary text-foreground rounded-md hover:bg-muted">
-            Closed (1)
-          </button>
-        </div>
-
-        <div className="bg-card border border-border rounded-lg overflow-hidden">
-          {requests.map((request, i) => (
-            //$ CHANGE THIS TO USE A COMPONENT INSTEAD
-            <div
-              key={i}
-              className="flex items-start gap-4 p-4 border-b border-border last:border-b-0 hover:bg-secondary/50 transition-colors"
-            >
-              <div className="mt-1">
-                {request.status === 'open' ? (
-                  <div className="w-8 h-8 rounded-full bg-[#238636]/10 flex items-center justify-center">
-                    <CircleDot className="h-4 w-4 text-[#3fb950]" />
-                  </div>
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-[#8957e5]/10 flex items-center justify-center">
-                    <Check className="h-4 w-4 text-[#8957e5]" />
-                  </div>
-                )}
+      <ChzHeader pageTitle={`${owner} / ${repo}`} />
+      <RepositoryLayout>
+        <div className="pullreq-wrapper">
+          <div className="pullreq-container">
+            <div className="pullreq-header">
+              <div className="pullreq-breadcrumb">
+                <Link to={`/repository/${owner}/${repo}`} className="pullreq-breadcrumb-link">
+                  {owner}/{repo}
+                </Link>
+                <ChevronRight className="pullreq-breadcrumb-icon" />
+                <span className="pullreq-breadcrumb-text">Pull Requests</span>
               </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-foreground font-medium hover:text-ring cursor-pointer mb-1">
-                  {request.title} <span className="text-muted-foreground">#{request.number}</span>
-                </h3>
-                <div className="flex items-center gap-2 flex-wrap text-sm text-muted-foreground">
-                  <span>opened {request.time} by {request.author}</span>
-                  {request.comments > 0 && (
-                    <>
-                      <span>•</span>
-                      <div className="flex items-center gap-1">
-                        <MessageSquare className="h-3 w-3" />
-                        <span>{request.comments}</span>
-                      </div>
-                    </>
-                  )}
-                </div>
-                <div className="flex gap-1 mt-2">
-                  {request.labels.map((label) => (
-                    <span
-                      key={label}
-                      className="px-2 py-0.5 text-xs bg-secondary text-foreground border border-border rounded-full"
-                    >
-                      {label}
-                    </span>
-                  ))}
-                </div>
+              <div className="pullreq-title-section">
+                <h1 className="pullreq-title">Pull Requests</h1>
+                <button className="pullreq-new-btn">
+                  <Plus className="pullreq-new-btn-icon" />
+                  New Pull Request
+                </button>
               </div>
             </div>
-          ))}
+
+            <div className="pullreq-search-section">
+              <div className="pullreq-search-wrapper">
+                <Search className="pullreq-search-icon" />
+                <input
+                  type="text"
+                  placeholder="Search Pull Requests..."
+                  className="pullreq-search-input"
+                />
+              </div>
+            </div>
+
+            <div className="pullreq-filters">
+              <button className="pullreq-filter-btn pullreq-filter-btn-active">
+                Open (2)
+              </button>
+              <button className="pullreq-filter-btn pullreq-filter-btn-inactive">
+                Closed (1)
+              </button>
+            </div>
+
+            <div className="pullreq-list">
+              {pullRequests.map((request, i) => (
+                <div key={i} className="pullreq-item">
+                  <div className="pullreq-status-icon">
+                    <div className={`pullreq-status-icon-container ${request.status === 'open' ? 'pullreq-status-open' : 'pullreq-status-closed'}`}>
+                      {request.status === 'open' ? (
+                        <CircleDot className="pullreq-status-open-icon" />
+                      ) : (
+                        <Check className="pullreq-status-closed-icon" />
+                      )}
+                    </div>
+                  </div>
+                  <div className="pullreq-content">
+                    <h3 className="pullreq-item-title">
+                      {request.title} <span className="pullreq-item-number">#{request.number}</span>
+                    </h3>
+                    <div className="pullreq-item-meta">
+                      <span>opened {request.time} by {request.author}</span>
+                      {request.comments > 0 && (
+                        <>
+                          <span>•</span>
+                          <div className="pullreq-item-comment">
+                            <MessageSquare className="pullreq-item-comment-icon" />
+                            <span>{request.comments}</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    <div className="pullreq-item-labels">
+                      {request.labels.map((label) => (
+                        <span key={label} className="pullreq-label">
+                          {label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
-    </RepositoryLayout>
+      </RepositoryLayout>
     </>
   );
 }

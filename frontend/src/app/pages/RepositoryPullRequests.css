@@ -1,0 +1,266 @@
+/* Pull Requests Page Container */
+.pullreq-wrapper {
+  padding: 2rem 1rem;
+}
+
+.pullreq-container {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 56rem;
+}
+
+/* Breadcrumb and Header */
+.pullreq-header {
+  margin-bottom: 1.5rem;
+}
+
+.pullreq-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #8b949e;
+  margin-bottom: 1rem;
+}
+
+.pullreq-breadcrumb-link {
+  color: #58a6ff;
+  text-decoration: none;
+  transition: text-decoration 0.2s;
+}
+
+.pullreq-breadcrumb-link:hover {
+  text-decoration: underline;
+}
+
+.pullreq-breadcrumb-text {
+  color: #f0f6fc;
+}
+
+.pullreq-breadcrumb-icon {
+  height: 1rem;
+  width: 1rem;
+}
+
+.pullreq-title-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pullreq-title {
+  color: #f0f6fc;
+}
+
+.pullreq-new-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #238636;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.pullreq-new-btn:hover {
+  background-color: #2ea043;
+}
+
+.pullreq-new-btn-icon {
+  height: 1rem;
+  width: 1rem;
+}
+
+/* Search and Filter Section */
+.pullreq-search-section {
+  margin-bottom: 1rem;
+}
+
+.pullreq-search-wrapper {
+  position: relative;
+}
+
+.pullreq-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 1rem;
+  width: 1rem;
+  color: #8b949e;
+}
+
+.pullreq-search-input {
+  width: 100%;
+  padding-left: 2.25rem;
+  padding-right: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  font-size: 0.875rem;
+  background-color: #0d1117;
+  color: #f0f6fc;
+  border: 1px solid #30363d;
+  border-radius: 0.375rem;
+  transition: all 0.2s;
+}
+
+.pullreq-search-input::placeholder {
+  color: #8b949e;
+}
+
+.pullreq-search-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #58a6ff;
+}
+
+/* Filter Buttons */
+.pullreq-filters {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.pullreq-filter-btn {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pullreq-filter-btn-active {
+  background-color: #238636;
+  color: white;
+}
+
+.pullreq-filter-btn-inactive {
+  background-color: #21262d;
+  color: #f0f6fc;
+}
+
+.pullreq-filter-btn-inactive:hover {
+  background-color: #30363d;
+}
+
+/* Pull Request List Card */
+.pullreq-list {
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.pullreq-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid #30363d;
+  transition: background-color 0.2s;
+}
+
+.pullreq-item:last-child {
+  border-bottom: none;
+}
+
+.pullreq-item:hover {
+  background-color: rgba(33, 38, 45, 0.5);
+}
+
+/* Status Icon */
+.pullreq-status-icon {
+  margin-top: 0.25rem;
+}
+
+.pullreq-status-icon-container {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pullreq-status-open {
+  background-color: rgba(63, 185, 80, 0.1);
+}
+
+.pullreq-status-open-icon {
+  height: 1rem;
+  width: 1rem;
+  color: #3fb950;
+}
+
+.pullreq-status-closed {
+  background-color: rgba(137, 87, 229, 0.1);
+}
+
+.pullreq-status-closed-icon {
+  height: 1rem;
+  width: 1rem;
+  color: #8957e5;
+}
+
+/* Pull Request Details */
+.pullreq-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.pullreq-item-title {
+  color: #f0f6fc;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  margin-bottom: 0.25rem;
+  transition: color 0.2s;
+}
+
+.pullreq-item-title:hover {
+  color: #58a6ff;
+}
+
+.pullreq-item-number {
+  color: #8b949e;
+}
+
+.pullreq-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.875rem;
+  color: #8b949e;
+}
+
+.pullreq-item-comment {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.pullreq-item-comment-icon {
+  height: 0.75rem;
+  width: 0.75rem;
+}
+
+.pullreq-item-labels {
+  display: flex;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.pullreq-label {
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  background-color: #21262d;
+  color: #f0f6fc;
+  border: 1px solid #30363d;
+  border-radius: 9999px;
+}

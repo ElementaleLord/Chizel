@@ -1,0 +1,266 @@
+/* Issues Page Container */
+.issues-wrapper {
+  padding: 2rem 1rem;
+}
+
+.issues-container {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 56rem;
+}
+
+/* Breadcrumb and Header */
+.issues-header {
+  margin-bottom: 1.5rem;
+}
+
+.issues-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #8b949e;
+  margin-bottom: 1rem;
+}
+
+.issues-breadcrumb-link {
+  color: #58a6ff;
+  text-decoration: none;
+  transition: text-decoration 0.2s;
+}
+
+.issues-breadcrumb-link:hover {
+  text-decoration: underline;
+}
+
+.issues-breadcrumb-text {
+  color: #f0f6fc;
+}
+
+.issues-breadcrumb-icon {
+  height: 1rem;
+  width: 1rem;
+}
+
+.issues-title-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.issues-title {
+  color: #f0f6fc;
+}
+
+.issues-new-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #238636;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.issues-new-btn:hover {
+  background-color: #2ea043;
+}
+
+.issues-new-btn-icon {
+  height: 1rem;
+  width: 1rem;
+}
+
+/* Search Bar */
+.issues-search-section {
+  margin-bottom: 1rem;
+}
+
+.issues-search-wrapper {
+  position: relative;
+}
+
+.issues-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 1rem;
+  width: 1rem;
+  color: #8b949e;
+}
+
+.issues-search-input {
+  width: 100%;
+  padding-left: 2.25rem;
+  padding-right: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  font-size: 0.875rem;
+  background-color: #0d1117;
+  color: #f0f6fc;
+  border: 1px solid #30363d;
+  border-radius: 0.375rem;
+  transition: all 0.2s;
+}
+
+.issues-search-input::placeholder {
+  color: #8b949e;
+}
+
+.issues-search-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #58a6ff;
+}
+
+/* Filter Buttons */
+.issues-filters {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.issues-filter-btn {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.issues-filter-btn-active {
+  background-color: #238636;
+  color: white;
+}
+
+.issues-filter-btn-inactive {
+  background-color: #21262d;
+  color: #f0f6fc;
+}
+
+.issues-filter-btn-inactive:hover {
+  background-color: #30363d;
+}
+
+/* Issues List */
+.issues-list {
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.issues-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid #30363d;
+  transition: background-color 0.2s;
+}
+
+.issues-item:last-child {
+  border-bottom: none;
+}
+
+.issues-item:hover {
+  background-color: rgba(33, 38, 45, 0.5);
+}
+
+/* Status Icon */
+.issues-status-icon {
+  margin-top: 0.25rem;
+}
+
+.issues-status-icon-container {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.issues-status-open {
+  background-color: rgba(63, 185, 80, 0.1);
+}
+
+.issues-status-open-icon {
+  height: 1rem;
+  width: 1rem;
+  color: #3fb950;
+}
+
+.issues-status-closed {
+  background-color: rgba(137, 87, 229, 0.1);
+}
+
+.issues-status-closed-icon {
+  height: 1rem;
+  width: 1rem;
+  color: #8957e5;
+}
+
+/* Issue Details */
+.issues-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.issues-item-title {
+  color: #f0f6fc;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  margin-bottom: 0.25rem;
+  transition: color 0.2s;
+}
+
+.issues-item-title:hover {
+  color: #58a6ff;
+}
+
+.issues-item-number {
+  color: #8b949e;
+}
+
+.issues-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.875rem;
+  color: #8b949e;
+}
+
+.issues-item-comment {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.issues-item-comment-icon {
+  height: 0.75rem;
+  width: 0.75rem;
+}
+
+.issues-item-labels {
+  display: flex;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.issues-label {
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  background-color: #21262d;
+  color: #f0f6fc;
+  border: 1px solid #30363d;
+  border-radius: 9999px;
+}

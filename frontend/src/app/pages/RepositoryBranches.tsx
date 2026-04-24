@@ -1,66 +1,68 @@
 import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { Link, useParams } from 'react-router';
 import { GitBranch, ChevronRight, Clock } from 'lucide-react';
+// DATA
+import { repositoryBranches } from '../data/branches';
 
-const branches = [
-  { name: 'main', isDefault: true, ahead: 0, behind: 0, updated: '2 hours ago' },
-  { name: 'feature/dark-mode', isDefault: false, ahead: 12, behind: 3, updated: '1 day ago' },
-  { name: 'feature/authentication', isDefault: false, ahead: 8, behind: 0, updated: '3 days ago' },
-  { name: 'bugfix/login-error', isDefault: false, ahead: 2, behind: 5, updated: '5 days ago' },
-];
+import './RepositoryBranches.css';
 
 export function RepositoryBranches() {
   const { owner, repo } = useParams();
 
   return (
-    <div className="min-h-screen bg-background dark">
-      <ChzHeader pageTitle= {`${owner} / ${repo}`} /*isLoggedIn={true}*/ />
+    <div className="branches-container">
+      <ChzHeader pageTitle={`${owner} / ${repo}`} />
 
-      <main className="lg:pl-64 pt-14">
-        <div className="container max-w-6xl px-4 py-8">
-          <div className="mb-6">
-            <div className="flex items-center gap-2 text-sm text-[#c9d1d9] mb-4">
-              <Link to={`/repository/${owner}/${repo}`} className="text-[#fda410] hover:underline">
+      <main className="branches-main">
+        <div className="branches-wrapper">
+          {/* Header */}
+          <div className="branches-header">
+            <div className="branches-breadcrumb">
+              <Link to={`/repository/${owner}/${repo}`} className="branches-breadcrumb-link">
                 {owner}/{repo}
               </Link>
-              <ChevronRight className="h-4 w-4" />
-              <span className="text-foreground">Branches</span>
+              <ChevronRight className="branches-breadcrumb-icon" />
+              <span className="branches-breadcrumb-text">Branches</span>
             </div>
-            <h1 className="text-foreground">Branches</h1>
+            <h1 className="branches-title">Branches</h1>
           </div>
 
-          <div className="bg-card border border-border rounded-lg overflow-hidden">
-            {branches.map((branch, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between p-4 border-b border-border last:border-b-0 hover:bg-secondary/50 transition-colors"
-              >
-                <div className="flex items-center gap-3 flex-1">
-                  <GitBranch className="h-5 w-5 text-[#fda410]" />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-foreground font-medium">{branch.name}</span>
+          {/* Branches List */}
+          <div className="branches-card">
+            {repositoryBranches.map((branch, i) => (
+              <div key={i} className="branches-item">
+                <div className="branches-item-left">
+                  <GitBranch className="branches-icon" />
+                  <div className="branches-item-content">
+                    <div className="branches-item-name-row">
+                      <span className="branches-item-name">{branch.name}</span>
                       {branch.isDefault && (
-                        <span className="px-2 py-0.5 text-xs bg-secondary text-foreground rounded-full border border-border">
+                        <span className="branches-default-badge">
                           default
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 mt-1 text-sm text-[#c9d1d9]">
-                      <Clock className="h-3 w-3" />
+                    <div className="branches-item-meta">
+                      <Clock className="branches-meta-icon" />
                       <span>Updated {branch.updated}</span>
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="branches-item-right">
                   {!branch.isDefault && (
-                    <div className="text-sm text-[#c9d1d9]">
-                      {branch.ahead > 0 && <span className="text-[#3fb950]">{branch.ahead} ahead</span>}
-                      {branch.ahead > 0 && branch.behind > 0 && <span className="mx-1">•</span>}
-                      {branch.behind > 0 && <span className="text-[#d29922]">{branch.behind} behind</span>}
+                    <div className="branches-stats">
+                      {branch.ahead > 0 && (
+                        <span className="branches-stat-ahead">{branch.ahead} ahead</span>
+                      )}
+                      {branch.ahead > 0 && branch.behind > 0 && (
+                        <span className="branches-stat-separator">•</span>
+                      )}
+                      {branch.behind > 0 && (
+                        <span className="branches-stat-behind">{branch.behind} behind</span>
+                      )}
                     </div>
                   )}
-                  <button className="px-3 py-1.5 text-sm bg-secondary text-foreground hover:bg-secondary/80 rounded-md">
+                  <button className="branches-view-btn">
                     View
                   </button>
                 </div>
