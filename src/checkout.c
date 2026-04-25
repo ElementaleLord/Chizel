@@ -1,5 +1,9 @@
 #include <dirent.h>
-#include "../include/chizel.c"
+#include "../include/chizel.h"
+#include "branch.c"
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #ifdef _WIN32
 #include <direct.h>
@@ -7,56 +11,268 @@
 #define mkdir(dir) _mkdir(dir)
 #endif
 
-//~ helper used to create a branch to checkout to
-void callBranch(char* branchName)
+#define GET_IGNORED 0
+#define NO_IGNORED 1
+
+//* P: taken from checkout.c in chz-checkout could be added to the header
+time_t getHeadCommitTime(){
+    char path[2048], headPath[1024], commitPath[1024], fullPath[2048];
+    struct dirent *file;
+    struct stat st;
+
+    char* head;
+    head= getHead();
+
+    sprintf(path, REFS_HEADS_PATH"/%s", head);
+
+    // printf("head= %s\n", head);
+    // printf("path= %s\n", path);
+    
+    FILE* branch_ptr = fopen(path, "r");
+    if (!branch_ptr)
+    {
+        printf(STATUS_ERROR_MSG_START"Failed To Open Branch File"MSG_END);
+        whatIsTheError();
+        return -1;
+    }
+    if (!fgets(path, 1024, branch_ptr))
+    {
+        printf(STATUS_ERROR_MSG_START"Failed To Read Branch File"MSG_END);
+        whatIsTheError();
+        return -1;
+    }
+    fclose(branch_ptr);
+
+    sprintf(commitPath, OBJECTS_PATH"/%c%c",path[0], path[1]);
+
+    // printf("id= %s\n", path);
+    // printf("commit= %s\n", commitPath);
+
+    DIR* commit_ptr = opendir(commitPath);
+    if (!commit_ptr)
+    {
+        printf(STATUS_ERROR_MSG_START"Failed To Open Commit File"MSG_END);
+        whatIsTheError();
+        return 0;
+    }
+
+    while((file = readdir(commit_ptr)) != NULL)
+    {
+        if(strcmp(file->d_name, ".") == 0 || strcmp(file->d_name, "..") == 0) continue;
+        
+        snprintf(fullPath, sizeof(fullPath), "%s/%s", commitPath, file->d_name);
+        // printf("fullPath= %s\n", fullPath);
+        
+        stat(fullPath, &st);
+    }
+    closedir(commit_ptr);
+    return st.st_mtime;
+}
+//* P: taken from checkout.c in chz-checkout  could be added to the header
+
+//~ helper used to check if the given branch exists
+bool checkBranch(char* branchName)
 {
-    //# calls branch.c with given branch name
+    char path[1024];
+    sprintf(path, REFS_HEADS_PATH"/%s", branchName);
+    // printf("exists= %s\n", path);
+
+    FILE* branch_ptr = fopen(path, "r");
+    if (branch_ptr){
+        fclose(branch_ptr);
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+//~ helper used to check if the given branch is the same as current branch
+bool checkCurBranch(char* branchName)
+{
+    char curBranchPath[2048], path[1024], givenBranchPath[1024];
+
+    FILE* head_ptr = fopen(HEAD_PATH, "r");
+    if (!head_ptr)
+    {
+        printf(STATUS_ERROR_MSG_START"Failed To Open HEAD File To Get Path"MSG_END);
+        // whatIsTheError();
+        //! P: make sure to add to header a prototype for whatIsTheError()
+        return true;
+    }
+    if (!fgets(path, 1024, head_ptr))
+    {
+        printf(STATUS_ERROR_MSG_START"Failed To Read Path From HEAD File"MSG_END);
+        // whatIsTheError();
+        return true;
+    }
+    fclose(head_ptr);
+
+    sprintf(curBranchPath, CHZ_PATH"/%s", path);
+    sprintf(givenBranchPath, REFS_HEADS_PATH"/%s", branchName);
+
+    printf("cur= %s\n", curBranchPath);
+    printf("giv= %s\n", givenBranchPath);
+
+    if (strcmp(curBranchPath, givenBranchPath) == 0) return true;
+    else return false;
+
+}
+
+//~ gets all modied files and appends to list
+bool checkForChangesRec(time_t commitTime, char* dirPath){
+    struct dirent *srcIter;
+    struct stat st;
+    char fullPath[1024];
+
+    DIR* p_srcDir = opendir(dirPath);
+    while((srcIter = readdir(p_srcDir)) != NULL){
+        if(strcmp(srcIter->d_name, ".") == 0 || 
+        strcmp(srcIter->d_name, "..") == 0 || strcmp(srcIter->d_name, ".chz") == 0) continue;
+
+        sprintf(fullPath, "%s\\%s", dirPath, srcIter->d_name);
+        stat(fullPath, &st);
+        // printf("Recurs= %s | %.f\n", fullPath,  difftime(st.st_mtime, commitTime));
+        
+        // if (checkIgnore(srcIter->d_name, fullPath)) 
+        if (!false)
+        {//# checks if fullPath is included in .chzIgnore
+            if (S_ISDIR(st.st_mode))
+            {//# checks if fullpath is a directory
+                return checkForChangesRec(commitTime, fullPath);
+            }
+            else
+            {//# checks if the file has been modified since the commit
+                if (difftime(st.st_mtime, commitTime) > 0) return true;
+                else return false;
+            }
+        }
+    }
 }
 
 //~ helper returning true if any file is modified since latest commit to current branch
 bool checkForChanges()
-{
-    //# check if theres modified files in current branch
+{//# check if theres modified files by comparing the mtime of the head commit in current branch with the current repo files mtime
+    struct dirent *srcIter;
+    struct stat st;
+    char fullPath[1024], dirPath[512];
+    time_t commitTime = getHeadCommitTime();
+
+    getcwd(dirPath, 512);
+    DIR* p_srcDir = opendir(dirPath);
+    if(!p_srcDir){
+        printf(MERGE_ERROR_MSG_START"Failed To Open Repository Directory"MSG_END);
+        // whatIsTheError();
+        exit(EXIT_FAILURE);
+    }
+
+    while((srcIter = readdir(p_srcDir)) != NULL){
+        if(strcmp(srcIter->d_name, ".") == 0 || 
+        strcmp(srcIter->d_name, "..") == 0 || strcmp(srcIter->d_name, ".chz") == 0) continue;
+
+        sprintf(fullPath, "%s\\%s", dirPath, srcIter->d_name);
+        stat(fullPath, &st);
+        // printf("%s |---| %.f\n", fullPath, difftime(st.st_mtime, commitTime));
+
+        // if (checkIgnore(srcIter->d_name, fullPath)) 
+        if (!false)
+        {//# checks if fullPath is included in .chzIgnore
+            if (S_ISDIR(st.st_mode))
+            {//# checks if fullpath is a directory
+                checkForChangesRec(commitTime, fullPath);
+            }
+            else 
+            {   if (difftime(st.st_mtime, commitTime) > 0)
+                {//# else checks if the file has been modified since the commit
+                    // printf("%s || %.f\n", fullPath, difftime(st.st_mtime, commitTime));
+                    return true;
+                }
+            }
+        }
+    }
     return false;
 }
 
-//~ helper returning the path to the head commit of given branch
-char* getGivenBranchHeadCommit(char* branchName)
+//~ helper used to create a branch with given branchName
+void callBranch(char* branchName)
 {
-    //# validates the branch exists and return the path to the branches head commit
-    return "";
+    createBranch(branchName);
 }
 
-void loadData(char* path_to_commit)
+//~ function used to overwrite HEAD with the given branch path to make it the Current Branch
+bool alterHEAD(char* branchName)
 {
-    //# delete current repo files (excluding .chz) then uncompresses commits data and writes it to the repo
-}
+    char path[1024];
 
+    FILE* head_ptr = fopen(HEAD_PATH, "w");
+    if (!head_ptr)
+    {
+        printf(CHECKOUT_REPORT_MSG_START"Failed To Open HEAD File To Alter Path"MSG_END);
+        // whatIsTheError();
+        //! P: make sure to add to header a prototype for whatIsTheError()
+        return false;
+    }
+    sprintf(path, "refs/heads/%s",branchName);
+
+    fputs(path, head_ptr);
+    fclose(head_ptr);
+    printf(CHECKOUT_REPORT_MSG_START"Successfully Switched To %s Branch"MSG_END, branchName);
+
+    return true;
+}
 
 //~ function used as interface to call needed functions
-void preCheckout(char* branchName)
+void preCheckout(char* branchName, int needsIgnore)
 {
     if (checkChz())
-    {
-        if (!checkForChanges())
-        {
-            char* headCommit= getGivenBranchHeadCommit(branchName);
-            loadData(headCommit);
-        }
+        if (checkBranch(branchName))
+            if (!checkCurBranch(branchName))
+                if (!checkForChanges())
+                {
+                    zipDirectory(STORE_DATA);
+                    if (alterHEAD(branchName))
+                    {
+                        removeDir(".");
+                        char dataPath[1024];
+                        sprintf(dataPath, ".chz/data/%s/data.pack", branchName);
+                        restorePack(dataPath, ".");
+
+                        if (needsIgnore == GET_IGNORED)
+                        {
+                            char ignorePath[1024];
+                            sprintf(ignorePath, ".chz/data/%s/ignored.pack", branchName);
+                            restorePack(ignorePath, ".");
+                        }
+                    }
+                    else
+                    {
+                        printf(CHECKOUT_ERROR_MSG_START"Failed To ReWrite Head"MSG_END);
+                        whatIsTheError();
+                    }
+                }
+                else
+                {
+                    printf(CHECKOUT_ERROR_MSG_START"There Is Uncommitted Changes"MSG_END);
+                    whatIsTheError();
+                    printf(CHECKOUT_REPORT_MSG_START"Use: chz commit"MSG_END);
+                }
+            else
+            {
+                printf(CHECKOUT_ERROR_MSG_START"Your Already On %s Branch"MSG_END, branchName);
+                whatIsTheError();
+            }
         else
         {
-            printf(CHECKOUT_ERROR_MSG_START"Make Sure To Commit All Changes Before Using chz checkout %s"MSG_END, branchName);
+            printf(CHECKOUT_ERROR_MSG_START"Branch %s Does Not Exist"MSG_END, branchName);
             whatIsTheError();
-            printf(CHECKOUT_REPORT_MSG_START"Hint: use chz commit"MSG_END);
+            printf(CHECKOUT_REPORT_MSG_START"Use: chz checkout -b %s or chz branch %s"MSG_END, branchName, branchName);
         }
-
-    }
 }
 
 //~ helper used to display help menu
 void checkoutHelp()
 {
-    printf(CHECKOUT_REPORT_MSG_START"Usage: chz status | chz status -h."MSG_END);
+    printf(CHECKOUT_REPORT_MSG_START"Usage: chz checkout <branch-name> | chz checkout -h | chz checkout -b <branch-name> | chz checkout -i <branch-name>."MSG_END);
 }
 
 void checkout(int argc, char* argv[])
@@ -76,7 +292,7 @@ void checkout(int argc, char* argv[])
             {//% chz checkout <branch-name>
                 if (checkChz())
                 {
-                    preCheckout(argv[ARG_BASE + 3]);
+                    preCheckout(argv[ARG_BASE + 2], NO_IGNORED);
                 }
             }
             break;
@@ -86,8 +302,15 @@ void checkout(int argc, char* argv[])
             {//% chz checkout -b <branch-name>
                 if (checkChz())
                 {
-                    callBranch(argv[ARG_BASE + 4]);
-                    preCheckout(argv[ARG_BASE + 4]);
+                    callBranch(argv[ARG_BASE + 3]);//! replace with proper func
+                    preCheckout(argv[ARG_BASE + 3], NO_IGNORED);
+                }
+            }
+            else if(strcmp(argv[ARG_BASE + 2], "-i") == 0)
+            {//% chz checkout -i <branch-name>
+                if (checkChz())
+                {
+                    preCheckout(argv[ARG_BASE + 3], GET_IGNORED);
                 }
             }
             break;

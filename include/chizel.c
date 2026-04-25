@@ -26,6 +26,37 @@ void whatIsTheError()
     printf("Error String: %s.\n", strerror(errno));
 }
 
+//~ used to check the existance of a directory
+bool dirExists(const char* path){
+    DIR* p_dir = opendir(path);
+
+    if(!p_dir){
+        return false;
+    }
+
+    closedir(p_dir);
+    return true;
+}
+
+//~ Checks if a branch exists
+bool branchExists(char* branch){
+    struct dirent *curDir;
+    struct stat st;
+    DIR* branches = opendir(BRANCHES_PATH);
+
+    while((curDir = readdir(branches)) != NULL)
+    {
+        if(strcmp(curDir->d_name, ".") != 0 && strcmp(curDir->d_name, "..") != 0)
+        {
+            if(strcmp(curDir->d_name, branch) == 0){
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 //~ Returns the head
 char* getHead(){
     static char head[256];
@@ -49,6 +80,29 @@ char* getHead(){
     }
 
     return head;
+}
+
+//~ Returns the hash pointed to by specified branch
+char* getLatestHash(char* branch){
+    char path[1024];
+    static char hash[64];
+    snprintf(path, sizeof(path), "%s/%s", REFS_HEADS_PATH, branch);
+
+    FILE* f = fopen(path, "r");
+    if(!f){
+        printf(CHZ_ERROR_MSG_START"Error opening reference head"MSG_END);
+        return NULL;
+    }
+
+    if(fgets(hash, sizeof(hash), f) == NULL){
+        printf(CHZ_ERROR_MSG_START"Error reading hash"MSG_END);
+        return NULL;
+    }
+    fclose(f);
+
+    hash[strcspn(hash, "\n")] = '\0';  // replace newline
+
+    return hash;
 }
 
 //~ helper used to check if .chz exists
@@ -592,7 +646,7 @@ int addLogEntry(){
 
     commit.message = newlineFake(commit.message);
 
-    snprintf(content, sizeof(content), "%s  %s  %s  %ld  \"%s\"\n", commit.tree_hash, commit.parent_hash, commit.author, commit.commit_date, commit.message);
+    snprintf(content, sizeof(content), "%s  %s  %s  %ld  \"%s\"\n", commit.parent_hash, commit.tree_hash, commit.author, commit.commit_date, commit.message);
     int r = fputs(content, logs);
     fclose(logs);
 
@@ -820,7 +874,7 @@ int pushPath(const char *root, const char *relative, const char *packPath, int c
             getcwd(rootPath, sizeof(rootPath));
             // check ignore
             
-            if (command != CHZ_PUSH)
+            if (command == STORE_DATA)
             {
                 char ignorePath[4096] = {0};
                 snprintf(ignorePath, sizeof(ignorePath), "%s/%s/ignored.pack", DATA_PATH, getHead());
@@ -835,6 +889,10 @@ int pushPath(const char *root, const char *relative, const char *packPath, int c
                     // ignored
                     snprintf(newPath, sizeof(newPath), "%s", ignorePath);
                 }
+            }
+            else if (command == CHZ_TAG && checkIgnore(entry->d_name, makeRelativePath(full_path, rootPath)))
+            {
+                snprintf(newPath, sizeof(newPath), "%s", packPath);
             }
             else
             {
@@ -900,7 +958,7 @@ int pushPath(const char *root, const char *relative, const char *packPath, int c
         char ignorePath[4096] = {0};
         snprintf(ignorePath, sizeof(ignorePath), "%s/%s/ignored.pack", DATA_PATH, getHead());
 
-        if (command != CHZ_PUSH)
+        if (command == STORE_DATA)
         {
             if (checkIgnore(full_path, makeRelativePath(full_path, rootPath)))
             {
@@ -946,7 +1004,7 @@ int pushPath(const char *root, const char *relative, const char *packPath, int c
     return 1;
 }
 
-//~ Starts the compression process, mode is either CHZ_PUSH or STORE_DATA
+//~ Starts the compression process, mode is either CHZ_PUSH, STORE_DATA or CHZ_TAG (!!USE setTag(tagName) BEFORE USING CHZ_TAG!!)
 int zipDirectory(int mode)
 {
     char curpath[4096];
@@ -961,6 +1019,10 @@ int zipDirectory(int mode)
     {
         snprintf(pack, sizeof(pack), "%s/compacted.pack", PACK_PUSH_PATH);
     }
+    else if (mode == CHZ_TAG)
+    {
+        snprintf(pack, sizeof(pack), "%s/%s.pack", TAGS_DATA_PATH, getTag());
+    }
     else
     {
         snprintf(pack, sizeof(pack), "%s/%s/data.pack", DATA_PATH, getHead());
@@ -974,7 +1036,11 @@ int zipDirectory(int mode)
 
     fclose(pfile);
 
-    return pushPath(curpath, "", pack, mode); // "" as in root
+    int result = pushPath(curpath, "", pack, mode); // "" as in root
+    if(mode == CHZ_TAG){
+        remove(TAG_NAME_FILE);
+    }
+    return result;
 }
 
 //~ Inflates compressed bytes
@@ -1147,16 +1213,21 @@ int removeDir(const char *path)
     if (strcmp(path, "/") == 0) return -1;
     char base[2048];
 
-    if (realpath(path, base) == NULL)
-    {
-        perror("realpath");
-        return -1;
-    }
+    #ifdef _WIN32
+        if (_fullpath(base, path, sizeof(base)) == NULL)
+        {
+            return -1;
+        }
+    #else
+        if (realpath(path, base) == NULL)
+        {
+            return -1;
+        }
+    #endif
 
     DIR *dir = opendir(base);
     if (!dir)
     {
-        perror("opendir");
         return -1;
     }
 
@@ -1180,7 +1251,6 @@ int removeDir(const char *path)
         struct stat st;
         if (stat(full_path, &st) != 0)
         {
-            perror("stat");
             closedir(dir);
             return -1;
         }
@@ -1195,7 +1265,6 @@ int removeDir(const char *path)
 
             if (rmdir(full_path) != 0)
             {
-                perror("rmdir");
                 closedir(dir);
                 return -1;
             }
@@ -1204,7 +1273,6 @@ int removeDir(const char *path)
         {
             if (remove(full_path) != 0)
             {
-                perror("remove");
                 closedir(dir);
                 return -1;
             }
@@ -1214,3 +1282,82 @@ int removeDir(const char *path)
     closedir(dir);
     return 1;
 }
+
+//~ Set the next tag name usable by zipDirectory(CHZ_TAG)
+int setTag(char* tagName){
+    FILE* f = fopen(TAG_NAME_FILE, "w");
+    if(!f){
+        return -1;
+    }
+
+    fputs(tagName, f);
+    fclose(f);
+    return 1;
+}
+
+char* getTag(){
+    FILE* f = fopen(TAG_NAME_FILE, "r");
+    if(!f){
+        return NULL;
+    }
+
+    char* tag = malloc(256);
+    if(!tag){
+        fclose(f);
+        return NULL;
+    }
+
+    if(!fgets(tag, 256, f)){
+        free(tag);
+        fclose(f);
+        return NULL;
+    }
+
+    fclose(f);
+    tag[strcspn(tag, "\n")] = '\0';
+
+    return tag;
+}
+//& Packed Files
+
+//& Stack Implementation
+//~ Adds value to the top of stack
+void push(Stack* s, char* value){
+    Node* n = malloc(sizeof(Node));
+    n->value = value;
+    n->next = s->top;
+    s->top = n;
+}
+
+//~ Removes the top value
+char* pop(Stack* s){
+    if (!s->top) return NULL;
+
+    Node* temp = s->top;
+    char* value = temp->value;
+
+    s->top = temp->next;
+    free(temp);
+
+    return value;
+}
+
+//~ Fully clears the stack
+void clearStack(Stack* s){
+    Node* current = s->top;
+
+    while (current != NULL){
+        Node* next = current->next;
+        free(current->value);   //! REQUIRED
+        free(current);
+        current = next;
+    }
+
+    s->top = NULL;
+}
+
+//~ Initializes a stack for use
+void initStack(Stack* s){
+    s->top = NULL;
+}
+//& Stack Implementation

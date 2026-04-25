@@ -170,12 +170,18 @@ void readAmountLogs(int count){
     char line[4096];
     int n = 0;
     size_t len = 0;
+    int c;
 
-    while(pos > 0 && n < count){
+    while(pos >= 0 && n < count){
         pos--;
-        fseek(f, pos, SEEK_SET);
-
-        int c = fgetc(f);
+        
+        if(pos == 0){
+            c = '\n';  // force flush last line
+        } else {
+            fseek(f, pos, SEEK_SET);
+            c = fgetc(f);
+        }
+        
         if(c == '\n'){
             if(len > 0){
                 line[len] = '\0';
@@ -227,12 +233,17 @@ void readLogs(int mode, char* branch){
     char conf[16];
     bool cont = true;
     size_t len = 0;
+    int c;
 
-    while(pos > 0 && cont){
+    while(pos >= 0 && cont){
         pos--;
-        fseek(f, pos, SEEK_SET);
+        if(pos == 0){
+            c = '\n';  // force flush last line
+        } else {
+            fseek(f, pos, SEEK_SET);
+            c = fgetc(f);
+        }
 
-        int c = fgetc(f);
         if(c == '\n'){
             if(len > 0){
                 line[len] = '\0';
@@ -271,13 +282,16 @@ bool logs(int argc, char* argv[]){
 
         //@ chz log <arg>
         case (ARG_BASE + 3):
-            if(strcmp(argv[ARG_BASE + 2], "-h") == 0){//% chz log -h
+            if(strcmp(argv[ARG_BASE + 2], "-h") == 0){
+                //% chz log -h
                 logHelp();
 
-            }else if(strcmp(argv[ARG_BASE + 2], "-o") == 0){//% chz log -o
+            }else if(strcmp(argv[ARG_BASE + 2], "-o") == 0){
+                //% chz log -o
                 readLogs(LOG_SHORT, NULL);      // 6 letter hashes + message
 
-            }else if(strcmp(argv[ARG_BASE + 2], "-r") == 0){//% chz log -r
+            }else if(strcmp(argv[ARG_BASE + 2], "-r") == 0){
+                //% chz log -r
                 readLogsReverse();
 
             }
@@ -285,10 +299,12 @@ bool logs(int argc, char* argv[]){
 
         //@ chz log <arg> <arg>
         case (ARG_BASE + 4):
-            if(strcmp(argv[ARG_BASE + 2], "-n") == 0){//% chz branch -n <int>       
+            if(strcmp(argv[ARG_BASE + 2], "-n") == 0){
+                //% chz log -n <int>       
                 readAmountLogs(atoi(argv[ARG_BASE + 3]));
 
-            }else if(strcmp(argv[ARG_BASE + 2], "-b") == 0){//% chz log -b <branch>
+            }else if(strcmp(argv[ARG_BASE + 2], "-b") == 0){
+                //% chz log -b <branch>
                 readLogs(LOG_NORMAL, argv[ARG_BASE + 3]);
             }
             break;
@@ -299,7 +315,7 @@ bool logs(int argc, char* argv[]){
     }
 }
 
-
 int main(int argc, char* argv[]){
     logs(argc, argv);
+    return 0;
 }

@@ -41,9 +41,6 @@ int push(int argc, char *argv[])
             int count = 3;
 
             commit(count, args);
-            if(addLogEntry() < 0){
-                return -1;
-            }
 
             int zip = zipDirectory(CHZ_PUSH);
             if(zip == -1){
@@ -51,7 +48,11 @@ int push(int argc, char *argv[])
                 return -1;
             }
 
-            uploadToDB();
+            if(uploadToDB()){
+                printf(PUSH_REPORT_MSG_START"Successfully pushed to %s"MSG_END, getHead());
+            }else{
+                printf(PUSH_ERROR_MSG_START"Could not upload data"MSG_END);
+            }
             
         }
         break;

@@ -159,6 +159,22 @@ bool fetchFunction(char* link)
     }
 }
 
+bool preFetch(){
+    FILE *file = fopen(ORIGIN_FILE,"r");
+    if(file == NULL)
+    {
+        printf(FETCH_ERROR_MSG_START"ERROR OPENING ORIGIN FILE"MSG_END);
+        whatIsTheError();
+        return NULL;
+        break;
+    }
+    char origin[256];
+    rewind(file);
+    fgets(origin, sizeof(origin), file);
+    fclose(file);
+    return fetchFunction(origin);
+}
+
 //~ main runner function used to determine case and call appropriate function
 bool fetch(int argc, char* argv[])
 {
@@ -170,19 +186,7 @@ bool fetch(int argc, char* argv[])
             //% chz fetch
             if(checkOrigin(NULL))
             {
-                FILE *file = fopen(ORIGIN_FILE,"r");
-                if(file == NULL)
-                {
-                    printf(FETCH_ERROR_MSG_START"ERROR OPENING ORIGIN FILE"MSG_END);
-                    whatIsTheError();
-                    return NULL;
-                    break;
-                }
-                char origin[256];
-                rewind(file);
-                fgets(origin, sizeof(origin), file);
-                fclose(file);
-                return fetchFunction(origin);
+                return preFetch();
             }
             else
             {

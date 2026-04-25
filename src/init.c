@@ -1,5 +1,6 @@
+#include "../include/chizel.h"
 #include <dirent.h>
-#include "../include/chizel.c"
+#include <sys/stat.h>
 
 #ifdef _WIN32
 #include <direct.h>
@@ -122,4 +123,9 @@ void init(int argc, char* argv[])
             printf(CHZ_ERROR_MSG_START"Invalid Command"MSG_END);
             break;
     }
+}
+
+int main(int argc, char* argv[]){
+    init(argc, argv);
+    return 0;
 }

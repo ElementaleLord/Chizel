@@ -1,4 +1,5 @@
-#include "../include/chizel.c"
+#include "../include/chizel.h"
+#include "commit.c"
 #include <dirent.h>
 #include <errno.h>
 #include <sys/stat.h>
@@ -20,19 +21,23 @@ typedef struct{
     size_t capacity;
 }ConflictVector;
 
-//*------------------------------------------------------------------------------
-//~ used to check the existance of a directory
-bool dirExists(const char* path){
-    DIR* p_dir = opendir(path);
+//~ Overwrites data on current directory based on branch's, then creates a custom commit
+int fastForwardMerge(char* branch){
+    char pack[1024];
+    snprintf(pack, sizeof(pack), "%s/%s/data.pack", DATA_PATH, branch);
 
-    if(!p_dir){
-        return false;
-    }
+    int r = restorePack(pack, ".");
 
-    closedir(p_dir);
-    return true;
+    char message[128];
+    snprintf(message, 128, "Merging %s to %s", branch, getHead());
+
+    char* args[] = {"./commit", "-m", message};
+    int count = 3;
+
+    commit(count, args);
+
+    return r;
 }
-//*------------------------------------------------------------------------------
 
 //~ copies data from a src file to a target file
 bool copyFile(const char* src, const char* dest){
@@ -130,14 +135,6 @@ bool mergeRec(const char* srcPath, const char* destPath){
 bool doMerge(DIR* p_dir, const char* source, const char* target){
     char srcPath[1024], destPath[1024];
 
-//*-------------------------------------------------------------------------------------------
-    //? P: maybe pass the full path instead of just the name ?
-    //? P: will need to refactor both preDoMerge() and curMerge() if so
-    //? P: i think its better to pass path bc i get the full path from HEAD in curMerge()
-    //? P: if we do that we just move the snprintf() calls from here to those other functions and change the param names ig
-    //^ O: if u deem it better, wait for confirmation from F
-//*-------------------------------------------------------------------------------------------
-
     snprintf(srcPath, sizeof(srcPath), "%s/%s", BRANCHES_PATH, source);
     snprintf(destPath, sizeof(destPath), "%s/%s", BRANCHES_PATH, target);
 
@@ -218,7 +215,7 @@ void clearConflictVector(ConflictVector *vec){
 }
 
 //~ searches destination path for the same name
-bool searchSameName(const char* dest, const char fileName, const char *src, ConflictVector *v){
+bool searchSameName(const char* dest, const char* fileName, const char *src, ConflictVector *v){
     DIR* dir = opendir(dest);
     struct dirent *entry;
     struct stat st;
@@ -312,7 +309,7 @@ bool checkFileConflicts(const char* pathSrc, const char* pathDest){
     size_t i;
 
     if(!collectFileConflicts(pathSrc, pathDest, &conflicts)){
-        freeConflictVector(&conflicts);
+        clearConflictVector(&conflicts);
         return false;
     }
 
@@ -321,7 +318,7 @@ bool checkFileConflicts(const char* pathSrc, const char* pathDest){
         {
             printf(MERGE_ERROR_MSG_START"Failed To Stat Conflict Paths"MSG_END);
             whatIsTheError();
-            freeConflictVector(&conflicts);
+            clearConflictVector(&conflicts);
             return false;
         }
 
@@ -344,17 +341,13 @@ bool checkFileConflicts(const char* pathSrc, const char* pathDest){
         }
     }
 
-    freeConflictVector(&conflicts);
+    clearConflictVector(&conflicts);
     return true;
 }
-/*
-* curMerge() should handle the case of if the branches given dont exist
-* and i think if the above is done then doMerge() should just get the full paths instead of just the names
-*/
+
 //~ used to identify if there is merge conflicts between the two branchs
 bool checkMergeConflicts(const char* src, const char* dest)
 {
-    //omar's idea
     if(strcmp(src, dest) == 0)
     {
         printf(MERGE_ERROR_MSG_START"Cannot Merge A Branch With Itself, what are u trying to do?"MSG_END);
@@ -410,6 +403,8 @@ bool checkMergeConflicts(const char* src, const char* dest)
     takes the PATH to each branch as params
 */
 
+
+
 //~ helper used to handle prerequisite checks prior to calling doMerge()
 void preDoMerge(DIR* p_dir, const char* source, const char* target){
 
@@ -423,20 +418,202 @@ void preDoMerge(DIR* p_dir, const char* source, const char* target){
     }
 }
 
-//~ gets the current branch to use as the target of the merge then calls doMerge
-void curMerge(DIR* p_dir, const char* source){
-    char path[1024], *token;
-    DIR* p_headF= open(HEAD_PATH, "r");
+//~ Returns the commit's hash from a log entry
+char* readCommitHash(char* line){
+    char* hash = malloc(65);
+    char parentHash[65];
 
-    if (!p_headF){
-        printf(MERGE_ERROR_MSG_START"Failed To Open %s"MSG_END, HEAD_PATH);
-        whatIsTheError();
+    int fields = sscanf(
+        line,
+        "%64s %64s",
+        parentHash, hash
+    );
+
+    if(fields != 2){
+        free(hash);
+        return NULL;
     }
 
-    read(p_headF, path, 1024);
-    strtok_r(path, " ", &path);
-    token= strtok_r(path, " ", &path);
-    //$ P: need clearer picture of how cur branch is saved
+    return hash;
+}
+
+//~ Returns a commit's hash an offset amount of commits pre-latest
+char* getSpecificHash(char* branch, int offset){
+
+    char log[1024];
+    snprintf(log, sizeof(log), "%s%s.log", LOGS_PATH, branch);
+
+    FILE* f = fopen(log, "r");
+    if(!f){
+        return NULL;
+    }
+
+    fseek(f, 0, SEEK_END);
+    long pos = ftell(f);
+
+    char line[4096];
+    int n = 0;
+    size_t len = 0;
+    char* hash = NULL;
+    int c;
+
+    while(pos >= 0 && n <= offset){
+        pos--;
+        
+        if(pos == 0){
+            c = '\n';  // force flush last line
+        } else {
+            fseek(f, pos, SEEK_SET);
+            c = fgetc(f);
+        }
+
+        if(c == '\n'){
+            if(len > 0){
+                line[len] = '\0';
+                reverseString(line);
+                len = 0;
+                hash = readCommitHash(line);
+                n++;
+            }
+        }else if (len < sizeof(line) - 1){
+            line[len++] = (char)c;
+        }    
+    }
+
+    if(len>0 && n < offset){
+        line[len] = '\0';
+        reverseString(line);
+        hash = readCommitHash(line);
+        n++;
+    }
+
+    fclose(f);
+
+    return hash;
+}
+
+//~ Checks if head & branch share a commit hash based on offset
+int commitsTreeCheck(char* head, char* branch, Stack* commits, int head_offset){
+    clearStack(commits);
+    char* headHash;
+    bool freeHash = false;
+    if(head_offset == 0){
+        headHash = getLatestHash(head);
+    }else{
+        headHash = getSpecificHash(head, head_offset);
+        freeHash = true;
+    }
+    
+    if (!headHash){
+        return -1;
+    }
+    //char* branchHash = getLatestHash(branch);
+
+    char log[1024];
+    snprintf(log, sizeof(log), "%s%s.log", LOGS_PATH, branch);
+
+    FILE* f = fopen(log, "r");
+    if(!f){
+        return -1;
+    }
+
+    fseek(f, 0, SEEK_END);
+    long pos = ftell(f);
+
+    char line[4096];
+    bool cont = true, found = false;
+    size_t len = 0;
+    char* hash;
+    int c;
+
+    while(pos >= 0 && cont){
+        pos--;
+
+        if(pos == 0){
+            c = '\n';  // force flush last line
+        } else {
+            fseek(f, pos, SEEK_SET);
+            c = fgetc(f);
+        }
+
+        if(c == '\n'){
+            if(len > 0){
+                line[len] = '\0';
+                reverseString(line);
+                len = 0;
+                hash = readCommitHash(line);
+                if(hash == NULL){
+                    cont = false;
+                }else{
+                    if(strcmp(hash, headHash) == 0){
+                        cont = false;
+                        found = true;
+                    }else{
+                        push(commits, hash);
+                    }
+                }
+            }
+        }else if (len < sizeof(line) - 1){
+            line[len++] = (char)c;
+        }    
+    }
+
+    if(len>0 && cont){
+        line[len] = '\0';
+        reverseString(line);
+        hash = readCommitHash(line);
+        if(hash == NULL){
+            cont = false;
+        }else{
+            if(strcmp(hash, headHash) == 0){
+                cont = false;
+            }else{
+                push(commits, hash);
+            }
+        }
+    }
+
+    fclose(f);
+    if(freeHash){
+        free(headHash);
+    }
+
+    if(found){
+        return 1;
+    }else{
+        return 0;
+    }
+}
+
+//~ gets the current branch to use as the target of the merge then calls doMerge
+void curMerge(char* branch){
+    char* head = getHead();
+
+    if(!branchExists(branch)){
+        printf(MERGE_ERROR_MSG_START"Branch %s does not exist."MSG_END, branch);
+        return;
+    }
+
+    Stack commits;
+    initStack(&commits);
+
+    //@ Fast Forward Applicable?
+    int r = commitsTreeCheck(head, branch, &commits, 0);
+
+    if(r == 1){
+        if(!fastForwardMerge(branch)){
+            printf(MERGE_ERROR_MSG_START"Couldnt merge %s to %s"MSG_END, branch, head);
+        }
+        printf(MERGE_REPORT_MSG_START"Successfully merged %s to %s"MSG_END, branch, head);
+        return;
+    }
+
+    int i = 0;
+    while(r != 1 && i < 50 && r != -1){
+        i++;
+        r = commitsTreeCheck(head, branch, &commits, i);
+    }
+    printf("There is %d commits between the current %s head and the common ancestor commit\n", i, getHead());
 }
 
 //~ used to display help message replated to merge
@@ -446,39 +623,43 @@ void mergeHelp(){
 
 //~ handles cases based on arguments to call needed functions
 void merge(int argc, char* argv[]){
-    DIR* p_dir;
 
     switch(argc){
         //@ chz merge <arg>
-        case (ARG_BASE+ 3):
-            if (strcmp(argv[ARG_BASE+ 3], "-h") == 0)
+        case (ARG_BASE + 3):
+            if (strcmp(argv[ARG_BASE + 2], "-h") == 0)
             {//% chz merge -h
                 mergeHelp();
             }
             else
             {//% chz merge <branch-name>
-                p_dir = checkChz();
-                curMerge(p_dir, argv[ARG_BASE+ 3]);
+                if(!checkChz){
+                    printf(CHZ_ERROR_MSG_START"Not in a .chz directory"MSG_END);
+                    return;
+                }
+                curMerge(argv[ARG_BASE+ 2]);
             }
             break;
 
         //@ chz merge <arg> <arg>
         case (ARG_BASE+ 4):
-
-            {//% chz merge <compare-branch> <base-branch>
-            p_dir = checkChz();
-            doMerge(p_dir, argv[ARG_BASE+ 3], argv[ARG_BASE+ 4]);
+            //% chz merge <compare-branch> <base-branch>
+                if(!checkChz){
+                    printf(CHZ_ERROR_MSG_START"Not in a .chz directory"MSG_END);
+                    return;
+                }
+            //doMerge(argv[ARG_BASE+ 2], argv[ARG_BASE+ 3]);
             //& P: the compare branch will be merged into the base branch
-            }
+            
             break;
 
         default:
             printf(CHZ_ERROR_MSG_START"Invalid Command"MSG_END);
             break;
     }
-    closedir(p_dir);
 }
 
 int main(int argc, char* argv[]){
     merge(argc, argv);
+    return 0;
 }

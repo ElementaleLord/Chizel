@@ -36,10 +36,8 @@ void update_branch_ref(const char* new_commit_hash);
 void commitHelp();
 void commit(int argc, char* argv[]);
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]){
     commit(argc, argv);
-    return 0;
 }
 
 int compare_paths(const void* a, const void* b)
@@ -396,6 +394,7 @@ void commit(int argc, char* argv[])
                 free(index.content);
 
                 addLogEntry();
+                zipDirectory(STORE_DATA);
             }
             break;
 
@@ -422,4 +421,9 @@ void update_branch_ref(const char* new_commit_hash)
 
     fprintf(f_ptr, "%s\n", new_commit_hash);
     fclose(f_ptr);
+}
+
+int main(int argc, char* argv[]){
+    commit(argc, argv);
+    return 0;
 }

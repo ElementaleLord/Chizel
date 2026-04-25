@@ -13,7 +13,6 @@ void listBranches()
 {   
     struct dirent *curDir;
     struct stat st;
-    char path[1024];
     DIR* branches = opendir(BRANCHES_PATH);
 
     printf("Current Branches:\n");
@@ -26,9 +25,79 @@ void listBranches()
     }
 }
 
+//~ clones the latest log entry from head to branch's log
+void cloneLatestCommit(char* branch){
+    char log[1024];
+    snprintf(log, sizeof(log), "%s%s.log", LOGS_PATH, branch);
+
+    FILE* flog = fopen(log, "w");
+    if(!flog){
+        return;
+    }
+    
+    char headLog[1024];
+    snprintf(headLog, sizeof(headLog), "%s%s.log", LOGS_PATH, getHead());
+
+    FILE* f = fopen(headLog, "r");
+    if(!f){
+        return;
+    }
+
+    fseek(f, 0, SEEK_END);
+    long pos = ftell(f);
+
+    char line[4096];
+    bool cont = true;
+    size_t len = 0;
+    int c;
+
+    while(pos >= 0 && cont){
+        pos--;
+
+        if(pos == 0){
+            c = '\n';  // force flush last line
+        } else {
+            fseek(f, pos, SEEK_SET);
+            c = fgetc(f);
+        }
+
+        if(c == '\n'){
+            if(len > 0){
+                line[len] = '\0';
+                reverseString(line);
+                len = 0;
+                cont = false;
+                fputs(line, flog);
+            }
+        }else if (len < sizeof(line) - 1){
+            line[len++] = (char)c;
+        }    
+    }
+
+    if(len>0 && cont){
+        line[len] = '\0';
+        reverseString(line);
+        cont = false;
+        fputs(line, flog);
+    }
+
+    fclose(f);
+    fclose(flog);
+}
+
 //~ Creates the branch's head reference file
 bool createBranch(char* branchName)
 {
+    if(strcmp(branchName, "main") == 0 || strcmp(branchName, "tag") == 0 || strcmp(branchName, "tags") == 0){
+        printf(BRANCH_ERROR_MSG_START"Cannot create a new %s branch"MSG_END, branchName);
+        return false;
+    }
+
+    if(branchExists(branchName)){
+        printf(BRANCH_ERROR_MSG_START"Branch %s already exists"MSG_END, branchName);
+        return false;
+    }
+
     char path[1024];
     snprintf(path, sizeof(path), "%s/%s", REFS_HEADS_PATH, branchName);
 
@@ -50,6 +119,7 @@ bool createBranch(char* branchName)
 
     FILE* l = fopen(log, "w");
     if(!l){ return false; }
+    cloneLatestCommit(branchName);
 
     char data[1024];
     snprintf(data, sizeof(data), "%s/%s", DATA_PATH, branchName);
@@ -59,8 +129,27 @@ bool createBranch(char* branchName)
         mkdir(data, DEF_PERM);
     #endif
 
+    //% Copying data.pack
+    char packPath[1024];
+    snprintf(packPath, sizeof(packPath), "%s/%s/data.pack", DATA_PATH, branchName);
+
+    FILE* dataFile = fopen(packPath, "w");
+    if(!dataFile){ return false; }
+
+    char headPack[1024];
+    snprintf(headPack, sizeof(headPack), "%s/%s/data.pack", DATA_PATH, getHead());
+    FILE* headData = fopen(headPack, "r");
+    if(!headData){ return false; }
+
+    char bufferData[4096];
+    while(fgets(bufferData, sizeof(bufferData), headData)){
+        fputs(bufferData, dataFile);
+    }
+
     fclose(f);
     fclose(head);
+    fclose(dataFile);
+    fclose(headData);
     fclose(l);
 
     return true;
@@ -69,8 +158,8 @@ bool createBranch(char* branchName)
 //~ used to soft-delete any empty branch
 void deleteBranch(const char* branch)
 {
-    if(strcmp(branch, "main") == 0){
-        printf(BRANCH_ERROR_MSG_START"Cannot delete main"MSG_END);
+    if(strcmp(branch, "main") == 0 || strcmp(branch, "tag") == 0 || strcmp(branch, "tags") == 0){
+        printf(BRANCH_ERROR_MSG_START"Cannot delete %s"MSG_END, branch);
         return;
     }
     struct dirent *curDir;
@@ -138,8 +227,8 @@ void preDeleteCurrent()
 //~ Renames a branch
 void renameBranch(char* oldName, char* newName)
 {
-    if(strcmp(oldName, "main") == 0 || strcmp(newName, "main") == 0){
-        printf(BRANCH_ERROR_MSG_START"Cannot manipulate main"MSG_END);
+    if(strcmp(oldName, "main") == 0 || strcmp(newName, "main") == 0 || strcmp(oldName, "tag") == 0 || strcmp(newName, "tag") == 0 || strcmp(oldName, "tags") == 0 || strcmp(newName, "tags") == 0){
+        printf(BRANCH_ERROR_MSG_START"Cannot manipulate main, tag nor tags"MSG_END);
         return;
     }
 
@@ -240,7 +329,6 @@ bool branch(int argc, char* argv[])
                     else
                     {
                         printf(BRANCH_ERROR_MSG_START"Failed To Create Branch %s"MSG_END, argv[ARG_BASE + 2]);
-                        whatIsTheError();
                     }
                 }
             }
@@ -274,7 +362,6 @@ bool branch(int argc, char* argv[])
     }
 }
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]){
     branch(argc, argv);
 }
