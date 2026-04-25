@@ -1,5 +1,4 @@
 import { Link } from 'react-router';
-import { MoreVertical } from 'lucide-react';
 
 import './FeedItem.css';
 
@@ -40,9 +39,6 @@ export function FeedItem( { item, index } : { item : FeedItemProps; index: numbe
                     )}
                     <p className="feed-preview">{item.preview}</p>
                 </div>
-                <button className="feed-menu-btn">
-                    <MoreVertical />
-                </button>
             </div>
         </div>
     )

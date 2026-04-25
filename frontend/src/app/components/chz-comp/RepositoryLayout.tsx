@@ -40,9 +40,6 @@ export function RepositoryLayout({ children }: { children: React.ReactNode }) {
             })}
           </nav>
           <div className="repo-actions">
-            <span className="repo-status-badge">
-              Public
-            </span>
             <button className="repo-action-btn">
               <Eye className="repo-action-icon" />
               Watch

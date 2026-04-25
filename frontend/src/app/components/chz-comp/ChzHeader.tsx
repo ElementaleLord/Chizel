@@ -67,9 +67,9 @@ export function ChzHeader({ pageTitle }: { pageTitle: string }){
               }
               <div className="chz-header-right">
                 { user && <>
-                <button className="chz-icon-btn">
+                <Link to="./repositories" className="chz-icon-btn">
                   <Plus />
-                </button>
+                </Link>
                 <Link to="/issues" className="chz-icon-btn">
                   <CircleDot />
                 </Link>

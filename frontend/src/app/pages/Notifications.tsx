@@ -11,7 +11,6 @@ export function Notifications() {
   return (
     <div className="min-h-screen bg-background dark">
        <ChzHeader pageTitle="Notifications" /* isLoggedIn={true} */ />
-
       <main className="lg:pl-64 pt-14">
         <div className="container max-w-5xl px-4 py-8">
           <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

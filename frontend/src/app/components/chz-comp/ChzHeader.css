@@ -84,6 +84,11 @@
   color: #f0f6fc;
 }
 
+.chz-dashboard-text:hover {
+  color: #fda410;
+  transition: color 0.3s;
+}
+
 /* Middle Section - Search */
 .chz-search-container {
   flex: 1;
@@ -155,7 +160,7 @@
   background-color: transparent;
   border: none;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.3s;
 }
 
 .chz-icon-btn:hover {
@@ -166,6 +171,11 @@
   height: 1.25rem;
   width: 1.25rem;
   color: #f0f6fc;
+}
+
+.chz-icon-btn:hover svg{
+  color: #fda410;
+  transition: color 0.3s;
 }
 
 .chz-notification-btn {
@@ -203,7 +213,7 @@
 }
 
 .chz-user-avatar-btn:hover {
-  ring: 2px solid #fda410;
+  ring: 2px solid #e38c05;
   box-shadow: 0 0 0 2px #fda410;
 }
 
@@ -237,7 +247,7 @@
   text-align: left;
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
-  color: #c60000;
+  color: #ff0000;
   background-color: transparent;
   border: none;
   cursor: pointer;

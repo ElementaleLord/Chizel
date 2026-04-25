@@ -1,4 +1,5 @@
-import { GitPullRequest, FileCode, GitBranch, Code } from 'lucide-react';
+import { GitPullRequest, CircleDot, BookMarked } from 'lucide-react';
+import { Link } from 'react-router';
 // USEFULL
 import { useAuth } from '../components/auth/AuthContext';
 // COMPONENTS
@@ -40,21 +41,17 @@ export function Home() {
               />
             </div>
             <div className="composer-actions">
-              <button className="composer-btn composer-btn-secondary">
-                All repositories
-              </button>
-              <button className="composer-btn composer-btn-secondary">
-                <FileCode /> {/* FileCode is just an icon */}
-                Create issue
-              </button>
-              <button className="composer-btn composer-btn-secondary">
-                <GitBranch /> {/* GitBranch is just an icon */}
-                Git
-              </button>
-              <button className="composer-btn composer-btn-secondary">
-                <GitPullRequest /> {/* GitPullRequest is just an icon */}
-                Pull requests
-              </button>
+              <Link to='/repositories' className="composer-btn composer-btn-secondary">
+                <BookMarked />All Repositories
+              </Link>
+              <Link to='/issues' className="composer-btn composer-btn-secondary">
+                <CircleDot />
+                Create Issue
+              </Link>
+              <Link to='/pull-requests' className="composer-btn composer-btn-secondary">
+                <GitPullRequest />
+                Pull Requests
+              </Link>
             </div>
           </div>
 

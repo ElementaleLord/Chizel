@@ -6,7 +6,7 @@ export function RepoSideBar({ topRepos }: { topRepos: Array<{name: string, avata
     return (
         <aside className="repo-sidebar">
           <div className="repo-sidebar-header">
-            <h2 className="repo-sidebar-title">Top repositories</h2>
+            <h2 className="repo-sidebar-title">Top Repositories</h2>
             <button className="repo-sidebar-new-btn">
               New
             </button>
