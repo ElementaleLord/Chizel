@@ -1,0 +1,119 @@
+/* Notification Entry */
+.notification-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border-bottom: 1px solid #30363d;
+  padding: 1rem 1.25rem;
+  transition: background-color 0.2s;
+  text-decoration: none;
+  color: inherit;
+}
+
+.notification-entry:last-child {
+  border-bottom: none;
+}
+
+.notification-entry:hover {
+  background-color: rgba(33, 38, 45, 0.4);
+}
+
+.notification-entry-unread {
+  background-color: rgba(33, 38, 45, 0.2);
+}
+
+@media (min-width: 640px) {
+  .notification-entry {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+/* Icon and Meta Section */
+.notification-entry-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .notification-entry-meta {
+    width: 10rem;
+    flex-shrink: 0;
+  }
+}
+
+.notification-entry-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.5rem;
+  width: 2.5rem;
+  border-radius: 9999px;
+  background-color: rgba(253, 164, 16, 0.1);
+  color: #fda410;
+  flex-shrink: 0;
+}
+
+.notification-entry-icon {
+  height: 1rem;
+  width: 1rem;
+}
+
+.notification-entry-meta-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.notification-entry-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #f0f6fc;
+}
+
+.notification-entry-time {
+  font-size: 0.75rem;
+  color: #8b949e;
+}
+
+/* Content Section */
+.notification-entry-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.notification-entry-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.notification-entry-title {
+  font-weight: 500;
+  color: #f0f6fc;
+}
+
+.notification-entry-badge {
+  border-radius: 9999px;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.688rem;
+  font-weight: 500;
+}
+
+.notification-entry-badge-unread {
+  background-color: rgba(253, 164, 16, 0.15);
+  color: #fda410;
+}
+
+.notification-entry-badge-read {
+  background-color: #21262d;
+  color: #8b949e;
+}
+
+.notification-entry-description {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #8b949e;
+}

@@ -1,4 +1,4 @@
-import '../../pages/SettingsBase.css';
+import './SettingsBase.css';
 import './SettingsProfile.css';
 
 interface ProfileData {

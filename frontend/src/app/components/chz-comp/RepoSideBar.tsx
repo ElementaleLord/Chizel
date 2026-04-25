@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+
 import './RepoSideBar.css';
 
 export function RepoSideBar({ topRepos }: { topRepos: Array<{name: string, avatar: string, color: string}> }){

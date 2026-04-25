@@ -4,8 +4,10 @@ import { BookOpen, ChevronDown, FileText, GitCommit, Package, Scale, Tag,} from 
 // COMPENENTS
 import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { RepositoryLayout } from '../components/chz-comp/RepositoryLayout';
+import { RepositoryFileList } from '../components/chz-comp/RepositoryFileList';
 // DATA
-import { repositoryFiles, latestCommit, readmeContent } from '../data/repositoryData';
+import { fileStructure } from '../data/fileExplorerData';
+import { latestCommit, readmeContent } from '../data/repositoryData';
 
 import './Repository.css';
 
@@ -66,7 +68,7 @@ export function Repository() {
     { name: 'SQL', percentage: 8, color: '#e38c05' },
   ];
 
-  const handleFileClick = (file: typeof repositoryFiles[0]) => {
+  const handleFileClick = (file: { type: 'file' | 'folder'; name: string }) => {
     if (file.type === 'folder') {
       navigate(`/repository/${owner}/${repo}/tree/${file.name}`);
     } else {
@@ -110,48 +112,13 @@ export function Repository() {
                   </div>
 
                   {/* File Browser */}
-                  <div className="repo-file-card">
-                    <div className="repo-file-header">
-                      <div className="repo-file-avatar"></div>
-                      <span className="repo-file-author">{owner}</span>
-                      <Link
-                        to={`/repository/${owner}/${repo}/commits`}
-                        className="repo-file-message"
-                      >
-                        {latestCommit.message}
-                      </Link>
-                      <Link
-                        to={`/repository/${owner}/${repo}/commits`}
-                        className="repo-file-time"
-                      >
-                        {latestCommit.time}
-                      </Link>
-                    </div>
-
-                    <div className="repo-file-list">
-                      {repositoryFiles.map((file) => (
-                        <div
-                          key={file.name}
-                          onClick={() => handleFileClick(file)}
-                          className="repo-file-item"
-                        >
-                          <div className="repo-file-item-content">
-                            {file.type === 'folder' ? (
-                              <svg className="repo-file-icon repo-file-icon-folder" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M1.75 1A1.75 1.75 0 000 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0016 13.25v-8.5A1.75 1.75 0 0014.25 3H7.5a.25.25 0 01-.2-.1l-.9-1.2C6.07 1.26 5.55 1 5 1H1.75z"/>
-                              </svg>
-                            ) : (
-                              <svg className="repo-file-icon repo-file-icon-file" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0113.25 16h-9.5A1.75 1.75 0 012 14.25V1.75z"/>
-                              </svg>
-                            )}
-                            <span className="repo-file-name">{file.name}</span>
-                          </div>
-                          <span className="repo-file-updated">{file.updated}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <RepositoryFileList
+                    structure={fileStructure}
+                    owner={owner}
+                    repo={repo}
+                    onFileSelect={handleFileClick}
+                    latestCommit={latestCommit}
+                  />
 
                   {/* README Section */}
                   <div className="repo-readme-card">

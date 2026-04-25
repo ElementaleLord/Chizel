@@ -1,6 +1,8 @@
-import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { GitBranch, Code, Users } from 'lucide-react';
 import { Link } from 'react-router';
+// COMPONENTS
+import { ChzHeader } from '../components/chz-comp/ChzHeader';
+
 import './Landing.css';
 
 export function Landing() {

@@ -1,4 +1,5 @@
 import { GitFork, Star } from 'lucide-react';
+
 import './RepositoryEntry.css';
 
 interface RepoEntryProp {

@@ -1,6 +1,7 @@
-import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { Link, useParams } from 'react-router';
 import { GitBranch, ChevronRight, Clock } from 'lucide-react';
+// COMPONENTS
+import { ChzHeader } from '../components/chz-comp/ChzHeader';
 // DATA
 import { repositoryBranches } from '../data/branches';
 

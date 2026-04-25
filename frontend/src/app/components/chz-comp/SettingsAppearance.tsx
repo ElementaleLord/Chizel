@@ -1,6 +1,6 @@
 import { Sun, Moon } from 'lucide-react';
 
-import '../../pages/SettingsBase.css';
+import './SettingsBase.css';
 import './SettingsAppearance.css';
 
 interface SettingsAppearanceProps {

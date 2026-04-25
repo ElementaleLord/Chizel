@@ -1,7 +1,10 @@
 import { Link } from 'react-router';
 import { ChevronDown, MessageSquare } from 'lucide-react';
+// COMPONENTS
 import { getPullRequestStatusStyles } from '../utils/prStatusStyles';
+// DATA
 import type { UserPullRequestItem } from '../../data/userActivity';
+
 import './PullRequestSection.css';
 
 interface PullRequestSectionProps {

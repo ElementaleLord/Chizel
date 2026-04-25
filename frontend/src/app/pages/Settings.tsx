@@ -11,15 +11,9 @@ import { SettingsSecurity } from '../components/chz-comp/SettingsSecurity';
 import { SettingsNotifications } from '../components/chz-comp/SettingsNotifications';
 import { SettingsAppearance } from '../components/chz-comp/SettingsAppearance';
 // DATA
-import { 
-  type SettingsTab,
-  notificationPreferences,
-  connectedAccounts,
-  profileData,
-  accountData,
-} from '../data/settingsData';
-// STYLES
-import './SettingsBase.css';
+import { type SettingsTab, notificationPreferences, connectedAccounts, profileData, accountData, } from '../data/settingsData';
+
+import './Settings.css';
 
 export function Settings() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile');

@@ -1,7 +1,9 @@
-import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { useParams, Link } from 'react-router';
 import { ChevronRight, AlertTriangle, Trash2 } from 'lucide-react';
+// COMPONENTS
+import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { RepositoryLayout } from '../components/chz-comp/RepositoryLayout';
+
 import './RepositorySettings.css';
 
 const features = [

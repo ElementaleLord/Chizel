@@ -1,8 +1,7 @@
 import { GitPullRequest, CircleDot, BookMarked } from 'lucide-react';
 import { Link } from 'react-router';
-// USEFULL
-import { useAuth } from '../components/auth/AuthContext';
 // COMPONENTS
+import { useAuth } from '../components/auth/AuthContext';
 import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { RepoSideBar } from '../components/chz-comp/RepoSideBar';
 import { FeedItem } from '../components/chz-comp/FeedItem';
