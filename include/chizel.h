@@ -60,7 +60,7 @@
     #define IGNORE_FILE ".chzignore"
 
     //~ Offsets
-    #define ARG_BASE -1
+    #define ARG_BASE 0
 
     //~ Permissions
     #define DEF_PERM 0700
