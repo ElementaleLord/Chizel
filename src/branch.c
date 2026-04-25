@@ -80,6 +80,7 @@ void cloneLatestCommit(char* branch){
         cont = false;
         fputs(line, flog);
     }
+    fputc('\n', flog);
 
     fclose(f);
     fclose(flog);
@@ -133,12 +134,12 @@ bool createBranch(char* branchName)
     char packPath[1024];
     snprintf(packPath, sizeof(packPath), "%s/%s/data.pack", DATA_PATH, branchName);
 
-    FILE* dataFile = fopen(packPath, "w");
+    FILE* dataFile = fopen(packPath, "wb");
     if(!dataFile){ return false; }
 
     char headPack[1024];
     snprintf(headPack, sizeof(headPack), "%s/%s/data.pack", DATA_PATH, getHead());
-    FILE* headData = fopen(headPack, "r");
+    FILE* headData = fopen(headPack, "rb");
     if(!headData){ return false; }
 
     char bufferData[4096];

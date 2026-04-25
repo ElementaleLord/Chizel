@@ -9,6 +9,39 @@
 //& General
 int max(int a, int b) { return (a > b) ? a : b; }
 
+int is_dir(const char *path)
+{
+    struct stat st;
+    if (stat(path, &st) == -1) return 0;
+    return S_ISDIR(st.st_mode);
+}
+
+int is_binary_file(const char *path)
+{
+    FILE *f = fopen(path, "rb");
+    if (!f) return -1;
+
+    unsigned char buffer[4096];
+    size_t n = fread(buffer, 1, sizeof(buffer), f);
+    fclose(f);
+
+    if (n == 0) return 0; // empty file => treat as text
+
+    size_t nonprintable = 0;
+
+    for (size_t i = 0; i < n; i++)
+    {
+        if (buffer[i] == 0)
+            return 1; // null byte => binary
+
+        if (!isprint(buffer[i]) && !isspace(buffer[i]))
+            nonprintable++;
+    }
+
+    // if too many weird chars => binary
+    return (nonprintable > n * 0.3);
+}
+
 //~ Reverses a string, log reads from end to beginning of line
 void reverseString(char* s){
     size_t len = strlen(s);
@@ -188,7 +221,7 @@ Lines readStagingArea()
     char line[256];
     while(fgets(line,sizeof(line), f_ptr))
     {
-        dynamic_append(index_content, strdup(line));
+        dynamic_append(&index_content, strdup(line));
     }
     return index_content;
 }
@@ -285,84 +318,91 @@ bool checkIgnore(char* file, const char* relative_path){
 //& .chzignore
 
 //& LCS
-//~ 
+void dynamic_append(Lines *arr, char *line)
+{
+    if (arr->capacity == 0)
+    {
+        arr->capacity = 8;
+        arr->content = malloc(arr->capacity * sizeof(char *));
+    }
+    else if (arr->size >= arr->capacity)
+    {
+        arr->capacity *= 2;
+        arr->content = realloc(arr->content, arr->capacity * sizeof(char *));
+    }
+
+    arr->content[arr->size++] = line;
+}
+
 Lines read_file(FILE* f)
 {
     Lines result = {0};
     char line[1024];
     while(fgets(line, sizeof(line), f))
     {
-        dynamic_append(result, strdup(line));
+        line[strcspn(line, "\n")] = 0;      //remove \n for better formatting
+        dynamic_append(&result, strdup(line));
     }
     
     return result;
 }
 
-//~ 
-char **lcs_backtrack(Lines new_file, Lines old_file, int lcs_table[old_file.size+1][new_file.size+1], int len)
+void lcs_backtrack(Lines new_file, Lines old_file, int lcs_table[old_file.size+1][new_file.size+1], size_t i, size_t j, Lines* out)
 {
-    size_t i = old_file.size;
-    size_t j = new_file.size;
-    int k = len - 1;
-    char **lcs_lines = malloc(len * sizeof(char *));
-
-    while(i > 0 && j > 0)
+    if(i > 0 && j > 0 && strcmp(old_file.content[i-1], new_file.content[j-1]) == 0)
     {
-        if(strcmp(old_file.content[i-1], new_file.content[j-1]) == 0)
-        {
-            printf(" %s", old_file.content[i-1]);
-            i--;
-            j--;
-        }
-        else if(lcs_table[i-1][j] >= lcs_table[i][j-1]) 
-        {
-            printf("- %s", old_file.content[i-1]);
-            i--;
-        }
-        else 
-        {
-            printf("+ %s", new_file.content[j-1]);
-            j--;
-        }
-        
-        while(i > 0) { printf("- %s",old_file.content[i - 1]); i--;} 
-        while(j > 0) { printf("+ %s",old_file.content[j - 1]); j--;} 
+        lcs_backtrack(new_file, old_file, lcs_table, i-1, j-1, out);
+        //dynamic_append(out, strdup(old_file.content[i-1]));
     }
+    else if(j>0 && (i==0 || lcs_table[i][j-1] >= lcs_table[i-1][j]))
+    {
+        lcs_backtrack(new_file, old_file, lcs_table, i, j-1, out);
 
-    return lcs_lines;
+        char* line = malloc(strlen(new_file.content[j-1]) + 32);
+        sprintf(line, "%zu + %s\n", j, new_file.content[j-1]);
+        dynamic_append(out, line);
+    }
+    else if(i > 0){
+        lcs_backtrack(new_file, old_file, lcs_table, i-1, j, out);
+
+        char* line = malloc(strlen(old_file.content[i-1]) + 32);
+        sprintf(line, "%zu - %s\n", i, old_file.content[i-1]);
+        dynamic_append(out, line);
+    }
 }
 
-//~ 
-int lcs(Lines new_file, Lines old_file)
+int lcs(Lines new_file, Lines old_file, Lines* out)
 {
-    int lcs_table[old_file.size + 1][new_file.size + 1];
+    int n = old_file.size;
+    int m = new_file.size;
+    int lcs_table[n + 1][m + 1];
 
     //# lcs of first file vs line 0 of new file
-    for(int i = 0; i < old_file.size; i++)
+    for(int i = 0; i <= n; i++)
     {
         lcs_table[i][0] = 0;
     }
     
     //# lcs of new file vs line 0 of old file
-    for(int j = 0; j < old_file.size; j++)
+    for(int j = 0; j <= m; j++)
     {
         lcs_table[0][j] = 0;
     }
-
     
-    for(int i = 1; i <= old_file.size; i++)
+    for(int i = 1; i <= n; i++)
     {
-        for(int j = 1; j <= new_file.size; j++)
+        for(int j = 1; j <= m; j++)
         {
-            if(strcmp(old_file.content[i-1], new_file.content[j-1])) lcs_table[i][j] = lcs_table[i - 1][j - 1] + 1;
-            else lcs_table[i][j] = max(lcs_table[i-1][j], lcs_table[i][j-1]);
+            if(strcmp(old_file.content[i-1], new_file.content[j-1]) == 0) 
+                lcs_table[i][j] = lcs_table[i - 1][j - 1] + 1;
+            else 
+                lcs_table[i][j] = max(lcs_table[i-1][j], lcs_table[i][j-1]);
         }
     }
 
-    int len = lcs_table[old_file.size][new_file.size];
-    char **lcs_lines = lcs_backtrack(new_file, old_file, lcs_table, len);
+    lcs_backtrack(new_file, old_file, lcs_table, n, m, out);
 
-    return len;
+    return lcs_table[n][m];
 }
 //& LCS
 
@@ -1319,45 +1359,3 @@ char* getTag(){
     return tag;
 }
 //& Packed Files
-
-//& Stack Implementation
-//~ Adds value to the top of stack
-void push(Stack* s, char* value){
-    Node* n = malloc(sizeof(Node));
-    n->value = value;
-    n->next = s->top;
-    s->top = n;
-}
-
-//~ Removes the top value
-char* pop(Stack* s){
-    if (!s->top) return NULL;
-
-    Node* temp = s->top;
-    char* value = temp->value;
-
-    s->top = temp->next;
-    free(temp);
-
-    return value;
-}
-
-//~ Fully clears the stack
-void clearStack(Stack* s){
-    Node* current = s->top;
-
-    while (current != NULL){
-        Node* next = current->next;
-        free(current->value);   //! REQUIRED
-        free(current);
-        current = next;
-    }
-
-    s->top = NULL;
-}
-
-//~ Initializes a stack for use
-void initStack(Stack* s){
-    s->top = NULL;
-}
-//& Stack Implementation
