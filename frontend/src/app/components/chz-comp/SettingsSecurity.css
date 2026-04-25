@@ -1,0 +1,92 @@
+/* Password Form */
+.settings-security-box {
+  border-radius: 0.5rem;
+  border: 1px solid #30363d;
+  background-color: rgba(33, 38, 45, 0.3);
+  padding: 1rem;
+}
+
+.settings-security-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .settings-security-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.settings-security-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #f0f6fc;
+}
+
+.settings-security-desc {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: #8b949e;
+}
+
+.settings-security-btn {
+  border-radius: 0.375rem;
+  background-color: #fda410;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.settings-security-btn:hover {
+  background-color: #e38c05;
+}
+
+.settings-password-form {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.settings-error-alert {
+  border-radius: 0.375rem;
+  border: 1px solid rgba(241, 81, 81, 0.4);
+  background-color: rgba(241, 81, 81, 0.1);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: #f15151;
+}
+
+.settings-success-alert {
+  border-radius: 0.375rem;
+  border: 1px solid rgba(63, 185, 80, 0.3);
+  background-color: rgba(63, 185, 80, 0.1);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: #3fb950;
+  margin-top: 1rem;
+}
+
+/* 2FA Section */
+.settings-2fa-section {
+  border-top: 1px solid #30363d;
+  padding-top: 1rem;
+}
+
+.settings-2fa-title {
+  color: #f0f6fc;
+  margin-bottom: 0.75rem;
+}
+
+.settings-2fa-desc {
+  font-size: 0.875rem;
+  color: #c9d1d9;
+  margin-bottom: 1rem;
+}

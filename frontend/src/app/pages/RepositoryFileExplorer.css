@@ -1,0 +1,35 @@
+/* File Explorer Container */
+.file-explorer-container {
+  min-height: 100vh;
+  background-color: #0d1117;
+  display: flex;
+  flex-direction: column;
+}
+
+.file-explorer-main {
+  flex: 1;
+  display: flex;
+  padding-top: 3.5rem;
+}
+
+/* Content Area */
+.file-explorer-content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Empty State */
+.file-explorer-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8b949e;
+  text-align: center;
+}
+
+.file-explorer-empty-text {
+  font-size: 0.875rem;
+}

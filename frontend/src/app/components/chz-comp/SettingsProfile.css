@@ -1,0 +1,33 @@
+/* Profile Picture Section */
+.settings-profile-pic-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.settings-profile-pic {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 5rem;
+  width: 5rem;
+  border-radius: 9999px;
+  background-image: linear-gradient(to bottom right, #e38c05, #fda410);
+  font-size: 1.5rem;
+  color: white;
+}
+
+.settings-upload-btn {
+  border-radius: 0.375rem;
+  background-color: #21262d;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  color: #f0f6fc;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.settings-upload-btn:hover {
+  background-color: #30363d;
+}
