@@ -4,17 +4,6 @@
   background-color: #0d1117;
 }
 
-.profile-main {
-  padding-left: 0;
-  padding-top: 3.5rem;
-}
-
-@media (min-width: 1024px) {
-  .profile-main {
-    padding-left: 16rem;
-  }
-}
-
 .profile-wrapper {
   margin-left: auto;
   margin-right: auto;
@@ -96,7 +85,7 @@
 
 .profile-search-input:focus {
   outline: none;
-  box-shadow: 0 0 0 2px #58a6ff;
+  box-shadow: 0 0 0 2px #fda410;
 }
 
 .profile-repos-list {
@@ -198,7 +187,7 @@
 }
 
 .profile-activity-stats-number {
-  color: #f0f6fc;
+  color: #fda410;
   font-weight: 500;
 }
 

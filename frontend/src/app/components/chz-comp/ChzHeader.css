@@ -130,7 +130,7 @@
 
 .chz-search-input:focus {
   outline: none;
-  ring: 2px solid #58a6ff;
+  ring: 2px solid #fda410;
   border-color: transparent;
 }
 
@@ -240,6 +240,8 @@
 
 .chz-menu-link:hover {
   background-color: #21262d;
+  color: #fda410;
+  transition: 0.3s all;
 }
 
 .chz-menu-signout {
@@ -247,7 +249,7 @@
   text-align: left;
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
-  color: #ff0000;
+  color: #ff8e8e;
   background-color: transparent;
   border: none;
   cursor: pointer;
@@ -256,7 +258,10 @@
 }
 
 .chz-menu-signout:hover {
-  background-color: #21262d;
+  background-color: rgba(255, 120, 120, 0.08);
+  border-color: rgba(255, 120, 120, 0.16);
+  color: #ffb4b4;
+  transition: 0.3s all;
 }
 
 .chz-side-menu {
@@ -277,7 +282,9 @@
 }
 
 .chz-side-link:hover {
+  color: #fda410;
   background-color: #202833;
+  transition: 0.3s all;
 }
 
 .chz-sidebar-overlay {
@@ -393,6 +400,7 @@
   background-color: rgba(255, 120, 120, 0.08);
   border-color: rgba(255, 120, 120, 0.16);
   color: #ffb4b4;
+  transition: 0.3s all;
 }
 
 @media (max-width: 768px) {
