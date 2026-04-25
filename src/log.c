@@ -1,10 +1,6 @@
-#include "../include/chizel.h"
+#include "../include/headers/log.h"
+#include "../include/headers/commit.h"
 #include <dirent.h>
-
-#define LOG_NORMAL 0
-#define LOG_REVERSE 1
-#define LOG_SHORT 2
-#define LOG_NUMBERED 3
 
 void logHelp(){
     printf(LOG_REPORT_MSG_START"Usage:\n chz log | chz log -o | chz log -h | ");
@@ -315,7 +311,151 @@ bool logs(int argc, char* argv[]){
     }
 }
 
-int main(int argc, char* argv[]){
-    logs(argc, argv);
-    return 0;
+//~ replaces instances of \n with \\n, so that it appears as \n without actual newlines
+char *newlineFake(char *msg)
+{
+    size_t extra = 0;
+
+    for (const char *p = msg; *p; p++)
+    {
+        if (*p == '\n')
+        {
+            extra++;
+        }
+    }
+
+    char *out = malloc(strlen(msg) + extra + 1);
+    if (out == NULL)
+    {
+        return NULL;
+    }
+
+    char *dst = out;
+    for (const char *src = msg; *src; src++)
+    {
+        if (*src == '\n')
+        {
+            *dst++ = '\\';
+            *dst++ = 'n';
+        }
+        else
+        {
+            *dst++ = *src;
+        }
+    }
+
+    *dst = '\0';
+    return out;
+}
+
+//~ Restores fake newlines for outputs (\\n -> \n) and stops after the first encounter
+char *newlineRestoreShort(char *message)
+{
+    char *shortMsg = malloc(strlen(message) + 1);
+    if (shortMsg == NULL)
+    {
+        return NULL;
+    }
+    char *shrt = shortMsg;
+    bool shortCont = true;
+
+    for (const char *src = message; *src; src++)
+    {
+        if (src[0] == '\\' && src[1] == 'n')
+        {
+            src++;
+            shortCont = false;
+        }
+        else
+        {
+            if (shortCont)
+            {
+                *shrt++ = *src;
+            }
+        }
+    }
+    *shrt = '\0';
+    return shortMsg;
+}
+
+//~ Restores fake newlines for outputs (\\n -> \n)
+char *newlineRestore(char *message)
+{
+    char *fixedMsg = malloc(strlen(message) + 1);
+    if (fixedMsg == NULL)
+    {
+        return NULL;
+    }
+    char *dst = fixedMsg;
+    bool shortCont = true;
+
+    for (const char *src = message; *src; src++)
+    {
+        if (src[0] == '\\' && src[1] == 'n')
+        {
+            *dst++ = '\n';
+            src++;
+        }
+        else
+        {
+            *dst++ = *src;
+        }
+    }
+    *dst = '\0';
+    return fixedMsg;
+}
+
+//~ From the specified information, add a new entry log to the specified branch's logs
+int addLogEntry(char* parentHash, char* commitHash)
+{
+    char objPath[1024];
+
+    if (get_object_path(objPath) < 0)
+    {
+        return -1;
+    }
+
+    FILE *obj_ptr = fopen(objPath, "rb");
+    if (!obj_ptr)
+    {
+        return -1;
+    }
+
+    CommitObject commit;
+    if (load_commit_object(obj_ptr, &commit) < 0)
+    {
+        fclose(obj_ptr);
+        return -1;
+    }
+    fclose(obj_ptr);
+
+    struct dirent *dir;
+    char path[1024];
+
+    snprintf(path, sizeof(path), "%s%s.log", LOGS_PATH, getHead());
+    FILE *logs = fopen(path, "a");
+    if (!logs)
+    {
+        return -1;
+    }
+
+    char content[5124];
+
+    if (commit.author == NULL)
+    {
+        return -1;
+    }
+    if (strcmp(commit.author, "ChizelUser <user@example.com>") == 0)
+    {
+        free(commit.author);
+        commit.author = strdup("local  null");
+    }
+
+    commit.message = newlineFake(commit.message);
+
+    snprintf(content, sizeof(content), "%s  %s  %s  %ld  \"%s\"\n", parentHash, commitHash, commit.author, commit.commit_date, commit.message);
+    int r = fputs(content, logs);
+    fclose(logs);
+
+    return r;
 }

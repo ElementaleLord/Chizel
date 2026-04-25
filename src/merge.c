@@ -1,10 +1,7 @@
-#include "../include/chizel.h"
-#include "commit.c"
+#include "../include/headers/merge.h"
+#include "../include/headers/commit.h"
 #include <openssl/evp.h>
 #include <dirent.h>
-#include <errno.h>
-#include <sys/stat.h>
-#include <ctype.h>
 
 #ifdef _WIN32
 #include <direct.h>
@@ -18,7 +15,8 @@ void lcsConflicts(const char *base_conflict, const char *relative_path)
     snprintf(fullpath, sizeof(fullpath), "%s/%s", base_conflict, relative_path);
 
     DIR *dir = opendir(fullpath);
-    if (!dir) return;
+    if (!dir)
+        return;
 
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL)
@@ -35,7 +33,7 @@ void lcsConflicts(const char *base_conflict, const char *relative_path)
         char conflict_path[8192];
         snprintf(conflict_path, sizeof(conflict_path), "%s/%s", base_conflict, new_rel);
 
-        if (is_dir(conflict_path))
+        if (isDir(conflict_path))
         {
             lcsConflicts(base_conflict, new_rel);
         }
@@ -44,7 +42,8 @@ void lcsConflicts(const char *base_conflict, const char *relative_path)
             char real_path[8192];
             snprintf(real_path, sizeof(real_path), "./%s", new_rel);
 
-            if (is_binary_file(real_path) || is_binary_file(conflict_path)) {
+            if (isBinary(real_path) || isBinary(conflict_path))
+            {
                 printf("Binary File: %s\n", new_rel);
                 continue;
             }
@@ -56,8 +55,10 @@ void lcsConflicts(const char *base_conflict, const char *relative_path)
 
             if (!f1 || !f2)
             {
-                if (f1) fclose(f1);
-                if (f2) fclose(f2);
+                if (f1)
+                    fclose(f1);
+                if (f2)
+                    fclose(f2);
                 continue;
             }
 
@@ -85,7 +86,8 @@ int countDirectory(const char *path)
     int count = 0;
 
     DIR *dir = opendir(path);
-    if (!dir) return 0;
+    if (!dir)
+        return 0;
 
     struct dirent *entry;
     while ((entry = readdir(dir)) != NULL)
@@ -110,7 +112,7 @@ int countDirectory(const char *path)
     return count;
 }
 
-int get_file_hash(const char *path, char out_buffer[65])
+int getFileHash(const char *path, char out_buffer[65])
 {
     FILE *f_ptr = fopen(path, "rb");
     if (!f_ptr)
@@ -146,7 +148,7 @@ int get_file_hash(const char *path, char out_buffer[65])
     return 1;
 }
 
-int check_sum(const char *file1, const char *file2)
+int checkSum(const char *file1, const char *file2)
 {
     struct stat s1, s2;
 
@@ -156,33 +158,37 @@ int check_sum(const char *file1, const char *file2)
         return -1;
     }
 
-    if (s1.st_size != s2.st_size) return 0;
+    if (s1.st_size != s2.st_size)
+        return 0;
 
     char hash1[65], hash2[65];
-    if (!get_file_hash(file1, hash1) || !get_file_hash(file2, hash2))
+    if (!getFileHash(file1, hash1) || !getFileHash(file2, hash2))
     {
-        printf(MERGE_ERROR_MSG_START "Couldnt hash files"MSG_END);
+        printf(MERGE_ERROR_MSG_START "Couldnt hash files" MSG_END);
         return -1;
     }
 
-    if(strcmp(hash1, hash2) == 0) return 1;
+    if (strcmp(hash1, hash2) == 0)
+        return 1;
 
     return 0;
 }
 
-void ensure_parent_dir(const char *path)
+void ensureParentDir(const char *path)
 {
     char tmp[2048];
     snprintf(tmp, sizeof(tmp), "%s", path);
 
-    for (char *p = tmp + 1; *p; p++) {
-        if (*p == '/') {
+    for (char *p = tmp + 1; *p; p++)
+    {
+        if (*p == '/')
+        {
             *p = '\0';
-            #ifdef _WIN32
-                mkdir(tmp);
-            #else
-                mkdir(tmp, 0755);
-            #endif
+#ifdef _WIN32
+            mkdir(tmp);
+#else
+            mkdir(tmp, 0755);
+#endif
             *p = '/';
         }
     }
@@ -191,7 +197,8 @@ void ensure_parent_dir(const char *path)
 bool checkFiles(const char *base, const char *rel)
 {
     DIR *dir = opendir(base);
-    if (!dir) return false;
+    if (!dir)
+        return false;
 
     struct dirent *entry;
     struct stat st;
@@ -215,14 +222,16 @@ bool checkFiles(const char *base, const char *rel)
         else
             snprintf(relPath, sizeof(relPath), "%s/%s", rel, entry->d_name);
 
-        if (stat(fullPath, &st) != 0) {
+        if (stat(fullPath, &st) != 0)
+        {
             closedir(dir);
             return false;
         }
 
         if (S_ISDIR(st.st_mode))
         {
-            if (!checkFiles(fullPath, relPath)) {
+            if (!checkFiles(fullPath, relPath))
+            {
                 closedir(dir);
                 return false;
             }
@@ -234,7 +243,7 @@ bool checkFiles(const char *base, const char *rel)
             struct stat tmpSt;
             if (stat(tmpFile, &tmpSt) == 0 && S_ISREG(tmpSt.st_mode))
             {
-                int r = check_sum(fullPath, tmpFile);
+                int r = checkSum(fullPath, tmpFile);
 
                 if (r == 1)
                 {
@@ -245,11 +254,12 @@ bool checkFiles(const char *base, const char *rel)
                     snprintf(confPath, sizeof(confPath), ".chz/conflicts/%s", relPath);
 
                     // ensure parent directories exist
-                    ensure_parent_dir(confPath);
+                    ensureParentDir(confPath);
 
                     // prevent writing over directory
                     struct stat dstSt;
-                    if (stat(confPath, &dstSt) == 0 && S_ISDIR(dstSt.st_mode)) {
+                    if (stat(confPath, &dstSt) == 0 && S_ISDIR(dstSt.st_mode))
+                    {
                         printf("ERROR: %s is a directory\n", confPath);
                         closedir(dir);
                         return false;
@@ -258,9 +268,12 @@ bool checkFiles(const char *base, const char *rel)
                     FILE *src = fopen(tmpFile, "rb");
                     FILE *dst = fopen(confPath, "wb");
 
-                    if (!src || !dst) {
-                        if (src) fclose(src);
-                        if (dst) fclose(dst);
+                    if (!src || !dst)
+                    {
+                        if (src)
+                            fclose(src);
+                        if (dst)
+                            fclose(dst);
                         closedir(dir);
                         return false;
                     }
@@ -268,7 +281,8 @@ bool checkFiles(const char *base, const char *rel)
                     char buf[4096];
                     size_t n;
 
-                    while ((n = fread(buf, 1, sizeof(buf), src)) > 0) {
+                    while ((n = fread(buf, 1, sizeof(buf), src)) > 0)
+                    {
                         fwrite(buf, 1, n, dst);
                     }
 
@@ -329,7 +343,7 @@ bool copyFile(const char *src, const char *dest)
     if (!fp_dest)
     {
         fclose(fp_src);
-        printf(MERGE_ERROR_MSG_START "Failed To Open Destination %s: %s" MSG_END, dest, strerror(errno));
+        printf(MERGE_ERROR_MSG_START "Failed To Open Destination %s" MSG_END, dest);
         whatIsTheError();
         return false;
     }
@@ -380,14 +394,14 @@ bool mergeRec(const char *srcPath, const char *destPath)
             // create destination directory ONLY for directories
             if (!dirExists(fileFromDest))
             {
-                #ifdef _WIN32
+#ifdef _WIN32
                 if (mkdir(fileFromDest) < 0)
-                #else
+#else
                 if (mkdir(fileFromDest, DEF_PERM) < 0)
-                #endif
+#endif
                 {
                     closedir(p_srcDir);
-                    printf(MERGE_ERROR_MSG_START "Failed To Create Directory %s: %s" MSG_END, fileFromDest, strerror(errno));
+                    printf(MERGE_ERROR_MSG_START "Failed To Create Directory %s" MSG_END, fileFromDest);
                     return false;
                 }
             }
@@ -660,7 +674,7 @@ int commitsTreeCheck(char *head, char *branch, int head_offset)
 }
 
 //~ gets the current branch to use as the target of the merge then calls doMerge
-void curMerge(char* head, char *branch)
+void curMerge(char *head, char *branch)
 {
     if (!branchExists(branch) || !branchExists(head))
     {
@@ -706,20 +720,20 @@ void curMerge(char* head, char *branch)
     }
 
     // checksum check for no changes between packs
-    if(check_sum(headPack, branchPack)){
-        printf(MERGE_REPORT_MSG_START"Data is exactly the same between head and %s, merge \"success\""MSG_END, branch);
+    if (checkSum(headPack, branchPack))
+    {
+        printf(MERGE_REPORT_MSG_START "Data is exactly the same between head and %s, merge \"success\"" MSG_END, branch);
         return;
     }
 
-    
-    // create a new tmp directory in .chz, extract branch's data.pack in it
-    #ifdef _WIN32
-        mkdir(".chz/tmp");
-        mkdir(".chz/conflicts");
-    #else
-        mkdir(".chz/tmp", DEF_PERM);
-        mkdir(".chz/conflicts", DEF_PERM);
-    #endif
+// create a new tmp directory in .chz, extract branch's data.pack in it
+#ifdef _WIN32
+    mkdir(".chz/tmp");
+    mkdir(".chz/conflicts");
+#else
+    mkdir(".chz/tmp", DEF_PERM);
+    mkdir(".chz/conflicts", DEF_PERM);
+#endif
     restorePack(branchPack, ".chz/tmp");
 
     // loop the files in head, checkSameName() in tmp directory
@@ -730,8 +744,9 @@ void curMerge(char* head, char *branch)
     // when done, copy all files in tmp to head as they arent in head directory
     int c = countDirectory(".chz/conflicts");
     int new = countDirectory(".chz/tmp");
-    if(c == 0){
-        printf(MERGE_REPORT_MSG_START"No conflicts recorded, merge success"MSG_END);
+    if (c == 0)
+    {
+        printf(MERGE_REPORT_MSG_START "No conflicts recorded, merge success" MSG_END);
         mergeRec(".chz/tmp", ".");
         removeDir(".chz/tmp");
         removeDir(".chz/conflicts");
@@ -771,7 +786,7 @@ void merge(int argc, char *argv[])
                 printf(CHZ_ERROR_MSG_START "Not in a .chz directory" MSG_END);
                 return;
             }
-            
+
             curMerge(getHead(), argv[ARG_BASE + 2]);
         }
         break;
@@ -784,7 +799,7 @@ void merge(int argc, char *argv[])
             printf(CHZ_ERROR_MSG_START "Not in a .chz directory" MSG_END);
             return;
         }
-        printf(MERGE_REPORT_MSG_START"Unfortunately, this feature has not been made yet"MSG_END);
+        printf(MERGE_REPORT_MSG_START "Unfortunately, this feature has not been made yet" MSG_END);
         printf("But you could do the following to achieve the same result: \n");
         printf("chz checkout %s <= then => chz merge %s", argv[ARG_BASE + 2], argv[ARG_BASE + 3]);
 
@@ -794,9 +809,4 @@ void merge(int argc, char *argv[])
         printf(CHZ_ERROR_MSG_START "Invalid Command" MSG_END);
         break;
     }
-}
-
-int main(int argc, char *argv[])
-{
-    merge(argc, argv);
 }

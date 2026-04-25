@@ -1,6 +1,5 @@
-#include "../include/chizel.h"
-#include "../include/chzdb.h"
-#include "fetch.c"
+#include "../include/headers/pull.h"
+#include "../include/headers/fetch.h"
 
 void pullHelp(){
     printf(PULL_REPORT_MSG_START"\nUsage: chz pull | chz pull -h"MSG_END);
@@ -48,8 +47,4 @@ void pull(int argc, char* argv[]){
             printf(CHZ_ERROR_MSG_START"Invalid Command"MSG_END);
             break;
     }
-}
-
-int main(int argc, char* argv[]){
-    pull(argc, argv);
 }

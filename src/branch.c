@@ -1,6 +1,5 @@
-#include "../include/chizel.h"
+#include "../include/headers/branch.h"  
 #include <dirent.h>
-#include <sys/stat.h>
 
 #ifdef _WIN32
 #include <direct.h>
@@ -288,7 +287,7 @@ void branchHelp()
     printf("chz branch -m <old-branch-name> <new-branch-name>");
 }
 
-bool branch(int argc, char* argv[])
+void branch(int argc, char* argv[])
 {
     char path[1024];
     
@@ -361,8 +360,4 @@ bool branch(int argc, char* argv[])
             printf(CHZ_ERROR_MSG_START"Invalid Command"MSG_END);
             break;
     }
-}
-
-int main(int argc, char* argv[]){
-    branch(argc, argv);
 }

@@ -1,7 +1,6 @@
-#include "../include/chizel.h"
+#include "../include/headers/status.h"
+#include "../include/headers/add.h"
 #include <dirent.h>
-#include <fcntl.h>
-#include <sys/stat.h>
 
 #ifdef _WIN32
 #include <direct.h>
@@ -9,14 +8,13 @@
 #define mkdir(dir) _mkdir(dir)
 #define getcwd(dirPath, num) _getcwd(dirPath, num)
 #else
-#include <unistd.h>
 #define get_cwd getcwd
 #endif
 
 time_t getHeadCommitTime()
 { // # searches for and retrieves the current branches head commit path (could just retrieve a file ptr instead)
 
-    char headPath[1024], branchPath[1024];
+    char headPath[1024], branchPath[2048];
     FILE *head_ptr = fopen(HEAD_PATH, "r");
     if (!head_ptr)
     {
@@ -64,7 +62,7 @@ time_t getHeadCommitTime()
         return 0;
     }
     struct dirent *file;
-    char fullpath[1024];
+    char fullpath[2048];
     struct stat st;
     while ((file = readdir(commit_ptr)) != NULL)
     {
@@ -389,10 +387,4 @@ void status(int argc, char *argv[])
     default:
         break;
     }
-}
-
-int main(int argc, char *argv[])
-{
-    status(argc, argv);
-    return 0;
 }

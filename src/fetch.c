@@ -1,5 +1,4 @@
-#include "../include/chizel.h"
-#include "../include/chzdb.h"
+#include "../include/headers/fetch.h"
 #include <dirent.h>
 
 #ifdef _WIN32
@@ -166,7 +165,6 @@ bool preFetch(){
         printf(FETCH_ERROR_MSG_START"ERROR OPENING ORIGIN FILE"MSG_END);
         whatIsTheError();
         return NULL;
-        break;
     }
     char origin[256];
     rewind(file);
@@ -210,11 +208,3 @@ bool fetch(int argc, char* argv[])
             break;
     }
 }
-
-/*
-int main(int argc, char* argv[])
-{
-    fetch(argc, argv);
-    return 0;
-}
-*/

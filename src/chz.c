@@ -1,15 +1,4 @@
-#include "add.c"
-#include "branch.c"
-#include "checkout.c"
-#include "clone.c"
-#include "fetch.c"
-#include "init.c"
-#include "log.c"
-#include "merge.c"
-#include "pull.c"
-#include "push.c"
-#include "status.c"
-#include "tag.c"
+#include "../include/chz.h"
 
 int main(int argc, char *argv[]){
     if(argc<2)
@@ -23,47 +12,50 @@ int main(int argc, char *argv[]){
     }
 
     else if(strcmp(argv[1], "add")==0){
-        return add(argc, argv);
+        add(argc, argv);
     }
 
     else if(strcmp(argv[1], "branch")==0){
-        return branch(argc, argv);
+        branch(argc, argv);
     }
 
     else if(strcmp(argv[1], "checkout")==0){
-        return checkout(argc, argv);
+        checkout(argc, argv);
     }
 
     else if(strcmp(argv[1], "commit")==0){
-        return commit(argc, argv);
-    }
-
-    else if(strcmp(argv[1], "describe")==0){
-        return describe(argc, argv);
+        commit(argc, argv);
     }
 
     else if(strcmp(argv[1], "fetch")==0){
         return fetch(argc, argv);
     }
 
+    else if(strcmp(argv[1], "log")==0){
+        logs(argc, argv);
+    }
+
     else if(strcmp(argv[1], "merge")==0){
-        return merge(argc, argv);
+        merge(argc, argv);
     }
 
     else if(strcmp(argv[1], "pull")==0){
-        return pull(argc, argv);
+        pull(argc, argv);
+    }
+
+    else if(strcmp(argv[1], "push")==0){
+        push(argc, argv);
     }
 
     else if(strcmp(argv[1], "status")==0){
-        return status(argc, argv);
+        status(argc, argv);
     }
 
     else if(strcmp(argv[1], "tag")==0){
-        return tag(argc, argv);
+        tag(argc, argv);
     }
 
     printf(CHZ_ERROR_MSG_START"Invalid Command"MSG_END);
     return 1;
 }
-//gcc main.c init.c -o chz
-//! shi requires a lot of work :/
+//gcc *.c ../include/chizel.c ../include/chzdb.c -o chz -lcrypto -lz -lpq -lcjson

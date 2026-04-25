@@ -1,7 +1,6 @@
-#include "../include/chizel.h"
-#include "../include/chzdb.h"
-#include "../src/init.c"
-#include "../src/fetch.c"
+#include "../include/headers/clone.h"
+#include "../include/headers/init.h"
+#include "../include/headers/fetch.h"
 
 //~ help function
 void cloneHelp()
@@ -48,10 +47,4 @@ void clone(int argc, char* argv[])
             return;
             break;
     }
-}
-
-int main(int argc, char* argv[])
-{
-    clone(argc, argv);
-    return 0;
 }
