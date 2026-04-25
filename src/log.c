@@ -314,3 +314,8 @@ bool logs(int argc, char* argv[]){
             break;
     }
 }
+
+int main(int argc, char* argv[]){
+    logs(argc, argv);
+    return 0;
+}

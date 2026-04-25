@@ -418,3 +418,8 @@ void update_branch_ref(const char* new_commit_hash)
     fprintf(f_ptr, "%s\n", new_commit_hash);
     fclose(f_ptr);
 }
+
+int main(int argc, char* argv[]){
+    commit(argc, argv);
+    return 0;
+}

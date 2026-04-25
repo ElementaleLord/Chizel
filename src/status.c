@@ -140,11 +140,9 @@ Lines getModifiedFileList(time_t commitTime, Lines fileList)
         dynamic_append(&stagingList, strdup(" "));
     }
     getcwd(dirPath, 512);
-    for (size_t i = 0; i < fileList.size; i++)
-    {
-        for (size_t j = 0; j < stagingList.size; j++)
-        {
-            // printf("%s | %.f\n", fileList.content[i], difftime(st.st_ctime, commitTime));
+    for (size_t i= 0; i < fileList.size; i++){
+        for (size_t j= 0; j < stagingList.size; j++){
+            // printf("%s | %.f\n", fileList.content[i], difftime(st.st_mtime, commitTime));
 
             sprintf(path, "%s\\%s", dirPath, stagingList.content[j]);
             path[strlen(path) - 1] = '\0';
@@ -153,7 +151,7 @@ Lines getModifiedFileList(time_t commitTime, Lines fileList)
             if (strcmp(fileList.content[i], path) != 0)
             {
                 stat(fileList.content[i], &st);
-                if (difftime(st.st_ctime, commitTime) < 0)
+                if (difftime(st.st_mtime, commitTime) < 0) 
                 {
                     dynamic_append(&modList, strdup(fileList.content[i]));
                     break;
