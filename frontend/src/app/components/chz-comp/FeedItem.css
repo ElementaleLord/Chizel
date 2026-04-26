@@ -9,7 +9,7 @@
 }
 
 .feed-item:hover {
-  border-color: rgba(88, 166, 255, 0.3);
+  border-color: #fda410;
 }
 
 .feed-item-inner {
@@ -55,7 +55,7 @@
 
 .feed-repo-link {
   font-size: 0.875rem;
-  color: #58a6ff;
+  color: #fda410;
   text-decoration: none;
   transition: text-decoration 0.2s;
 }

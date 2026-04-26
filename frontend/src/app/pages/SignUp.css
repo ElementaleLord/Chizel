@@ -1,0 +1,139 @@
+/* SignUp Page Container */
+.signup-container {
+  min-height: 100vh;
+  background-color: #0d1117;
+}
+
+.signup-main {
+  padding: 4rem 1rem;
+}
+
+.signup-wrapper {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 28rem;
+}
+
+/* Card */
+.signup-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #30363d;
+  background-color: #161b22;
+  padding: 2rem;
+}
+
+/* Header */
+.signup-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.signup-logo {
+  margin-left: auto;
+  margin-right: auto;
+  width: fit-content;
+}
+
+.signup-title {
+  font-size: 1.5rem;
+  color: #f0f6fc;
+}
+
+/* Form */
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.signup-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.signup-label {
+  font-size: 0.875rem;
+  color: #f0f6fc;
+}
+
+.signup-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background-color: #0d1117;
+  color: #f0f6fc;
+  border: 1px solid #30363d;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.signup-input::placeholder {
+  color: #7d8590;
+}
+
+.signup-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #58a6ff;
+}
+
+.signup-input-hint {
+  font-size: 0.75rem;
+  color: #c9d1d9;
+  margin-top: 0.25rem;
+}
+
+/* Error Alert */
+.signup-error-alert {
+  border-radius: 0.375rem;
+  border: 1px solid rgba(241, 81, 81, 0.4);
+  background-color: rgba(241, 81, 81, 0.1);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: #f15151;
+}
+
+/* Submit Button */
+.signup-submit-btn {
+  width: 100%;
+  border-radius: 0.375rem;
+  background-color: #fda410;
+  padding: 0.625rem 1rem;
+  font-weight: 500;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.signup-submit-btn:hover:not(:disabled) {
+  background-color: #e38c05;
+}
+
+.signup-submit-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Footer */
+.signup-footer {
+  text-align: center;
+  font-size: 0.875rem;
+  color: #c9d1d9;
+}
+
+.signup-footer-link {
+  color: #fda410;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.signup-footer-link:hover {
+  text-decoration: underline;
+  color: #e38c05;
+}

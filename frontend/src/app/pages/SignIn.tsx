@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { useAuth } from '../components/auth/AuthContext';
 // COMPONENT
+import { useAuth } from '../components/auth/AuthContext';
 import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { BrandLogo } from '../components/layout/BrandLogo';
 

@@ -1,0 +1,131 @@
+/* Repository File Card */
+.repo-file-card {
+  border-radius: 0.5rem;
+  border: 1px solid #30363d;
+  background-color: #0d1117;
+  overflow: hidden;
+}
+
+.repo-file-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-bottom: 1px solid #30363d;
+  background-color: #161b22;
+  flex-wrap: wrap;
+}
+
+.repo-file-avatar {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #58a6ff, #79c0ff);
+  flex-shrink: 0;
+}
+
+.repo-file-author {
+  font-size: 0.875rem;
+  color: #c9d1d9;
+  font-weight: 500;
+}
+
+.repo-file-message {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.875rem;
+  color: #58a6ff;
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+
+.repo-file-message:hover {
+  color: #79c0ff;
+  text-decoration: underline;
+}
+
+.repo-file-time {
+  font-size: 0.75rem;
+  color: #8b949e;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+
+.repo-file-time:hover {
+  color: #c9d1d9;
+}
+
+/* File List */
+.repo-file-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.repo-file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #30363d;
+  background-color: transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  width: 100%;
+  text-align: left;
+}
+
+.repo-file-item:last-child {
+  border-bottom: none;
+}
+
+.repo-file-item:hover {
+  background-color: rgba(33, 38, 45, 0.5);
+}
+
+.repo-file-item-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.repo-file-icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  color: #8b949e;
+}
+
+.repo-file-icon-folder {
+  color: #79c0ff;
+}
+
+.repo-file-icon-file {
+  color: #8b949e;
+}
+
+.repo-file-name {
+  font-size: 0.875rem;
+  color: #58a6ff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+
+.repo-file-item:hover .repo-file-name {
+  color: #79c0ff;
+}
+
+.repo-file-updated {
+  font-size: 0.75rem;
+  color: #8b949e;
+  white-space: nowrap;
+  margin-left: 1rem;
+}

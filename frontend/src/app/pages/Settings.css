@@ -1,0 +1,481 @@
+/* Settings Page Container */
+.settings-page-container {
+  min-height: 100vh;
+  background-color: #0d1117;
+}
+
+.settings-page-main {
+  padding-left: 0;
+  padding-top: 3.5rem;
+}
+
+@media (min-width: 1024px) {
+  .settings-page-main {
+    padding-left: 16rem;
+  }
+}
+
+.settings-page-wrapper {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 80rem;
+  padding: 2rem 1rem;
+}
+
+.settings-page-title {
+  color: #f0f6fc;
+  margin-bottom: 1.5rem;
+}
+
+/* Layout Grid */
+.settings-layout {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .settings-layout {
+    grid-template-columns: 200px 1fr;
+  }
+}
+
+/* Sidebar Navigation */
+.settings-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.settings-nav-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.settings-nav-btn-active {
+  background-color: #21262d;
+  color: #f0f6fc;
+}
+
+.settings-nav-btn-inactive {
+  color: #c9d1d9;
+}
+
+.settings-nav-btn-inactive:hover {
+  color: #f0f6fc;
+  background-color: rgba(33, 38, 45, 0.5);
+}
+
+.settings-nav-icon {
+  height: 1rem;
+  width: 1rem;
+}
+
+/* Content Panel */
+.settings-content-panel {
+  border-radius: 0.5rem;
+  border: 1px solid #30363d;
+  background-color: #161b22;
+  padding: 1.5rem;
+}
+
+/* Section Heading */
+.settings-section-heading {
+  color: #f0f6fc;
+  margin-bottom: 1rem;
+}
+
+/* Form Groups */
+.settings-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.settings-label {
+  font-size: 0.875rem;
+  color: #f0f6fc;
+}
+
+.settings-input,
+.settings-textarea {
+  width: 100%;
+  border-radius: 0.375rem;
+  border: 1px solid #30363d;
+  background-color: #0d1117;
+  padding: 0.5rem 0.75rem;
+  color: #f0f6fc;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.settings-input::placeholder,
+.settings-textarea::placeholder {
+  color: #7d8590;
+}
+
+.settings-input:focus,
+.settings-textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #58a6ff;
+}
+
+.settings-textarea {
+  resize: vertical;
+  font-family: inherit;
+}
+
+/* Profile Picture Section */
+.settings-profile-pic-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.settings-profile-pic {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 5rem;
+  width: 5rem;
+  border-radius: 9999px;
+  background-image: linear-gradient(to bottom right, #e38c05, #fda410);
+  font-size: 1.5rem;
+  color: white;
+}
+
+.settings-upload-btn {
+  border-radius: 0.375rem;
+  background-color: #21262d;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  color: #f0f6fc;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.settings-upload-btn:hover {
+  background-color: #30363d;
+}
+
+/* Connected Accounts */
+.settings-connected-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 0.375rem;
+  background-color: #21262d;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.settings-connected-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.settings-connected-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 2rem;
+  width: 2rem;
+  border-radius: 9999px;
+  background-color: #161b22;
+}
+
+.settings-connected-icon svg {
+  height: 1rem;
+  width: 1rem;
+  color: #f0f6fc;
+}
+
+.settings-connected-label {
+  font-size: 0.875rem;
+  color: #f0f6fc;
+}
+
+.settings-connected-status {
+  font-size: 0.75rem;
+  color: #fda410;
+}
+
+.settings-connect-btn {
+  font-size: 0.75rem;
+  color: #c9d1d9;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.settings-connect-btn:hover {
+  color: #f0f6fc;
+}
+
+/* Password Form */
+.settings-security-box {
+  border-radius: 0.5rem;
+  border: 1px solid #30363d;
+  background-color: rgba(33, 38, 45, 0.3);
+  padding: 1rem;
+}
+
+.settings-security-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .settings-security-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.settings-security-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #f0f6fc;
+}
+
+.settings-security-desc {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: #8b949e;
+}
+
+.settings-security-btn {
+  border-radius: 0.375rem;
+  background-color: #fda410;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.settings-security-btn:hover {
+  background-color: #e38c05;
+}
+
+.settings-password-form {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.settings-error-alert {
+  border-radius: 0.375rem;
+  border: 1px solid rgba(241, 81, 81, 0.4);
+  background-color: rgba(241, 81, 81, 0.1);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: #f15151;
+}
+
+.settings-success-alert {
+  border-radius: 0.375rem;
+  border: 1px solid rgba(63, 185, 80, 0.3);
+  background-color: rgba(63, 185, 80, 0.1);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: #3fb950;
+  margin-top: 1rem;
+}
+
+/* 2FA Section */
+.settings-2fa-section {
+  border-top: 1px solid #30363d;
+  padding-top: 1rem;
+}
+
+.settings-2fa-title {
+  color: #f0f6fc;
+  margin-bottom: 0.75rem;
+}
+
+.settings-2fa-desc {
+  font-size: 0.875rem;
+  color: #c9d1d9;
+  margin-bottom: 1rem;
+}
+
+/* Notifications */
+.settings-notification-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+}
+
+.settings-notification-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #f0f6fc;
+}
+
+.settings-notification-desc {
+  font-size: 0.75rem;
+  color: #c9d1d9;
+}
+
+/* Toggle Switch */
+.settings-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.settings-toggle-input {
+  display: none;
+}
+
+.settings-toggle-slider {
+  width: 2.75rem;
+  height: 1.5rem;
+  background-color: #21262d;
+  border-radius: 9999px;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.settings-toggle-slider::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  background-color: white;
+  height: 1.25rem;
+  width: 1.25rem;
+  border-radius: 9999px;
+  transition: all 0.2s;
+}
+
+.settings-toggle-input:checked + .settings-toggle-slider {
+  background-color: #fda410;
+}
+
+.settings-toggle-input:checked + .settings-toggle-slider::after {
+  transform: translateX(1.25rem);
+}
+
+/* Theme Selection */
+.settings-theme-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+}
+
+.settings-theme-btn {
+  border-radius: 0.5rem;
+  border: 2px solid #30363d;
+  padding: 1rem;
+  background-color: transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.settings-theme-btn:hover {
+  border-color: rgba(48, 54, 61, 0.6);
+}
+
+.settings-theme-btn-active {
+  border-color: #fda410;
+}
+
+.settings-theme-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 3rem;
+  width: 100%;
+  border-radius: 0.375rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid #e5e7eb;
+}
+
+.settings-theme-label {
+  font-size: 0.75rem;
+  color: #f0f6fc;
+}
+
+/* Danger Zone */
+.settings-danger-zone {
+  margin-top: 2rem;
+  border-top: 1px solid #f15151;
+  padding-top: 1.5rem;
+}
+
+.settings-danger-title {
+  color: #f15151;
+  margin-bottom: 0.5rem;
+}
+
+.settings-danger-desc {
+  font-size: 0.875rem;
+  color: #c9d1d9;
+  margin-bottom: 1rem;
+}
+
+.settings-delete-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 0.375rem;
+  background-color: rgba(241, 81, 81, 0.1);
+  padding: 0.5rem 1rem;
+  color: #f15151;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.settings-delete-btn:hover {
+  background-color: rgba(241, 81, 81, 0.2);
+}
+
+.settings-delete-icon {
+  height: 1rem;
+  width: 1rem;
+}
+
+/* Save Button */
+.settings-save-btn {
+  border-radius: 0.375rem;
+  background-color: #fda410;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.settings-save-btn:hover {
+  background-color: #e38c05;
+}
+
+/* Section Divider */
+.settings-divider {
+  border-top: 1px solid #30363d;
+  padding-top: 1rem;
+  margin-top: 1rem;
+}

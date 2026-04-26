@@ -1,8 +1,10 @@
-import { Menu, Search, Plus, Bell, GitPullRequest, CircleDot, X , Star, House, BookMarked, DoorOpen } from 'lucide-react';
-import { useAuth } from '../auth/AuthContext';
-import { Link } from 'react-router';
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router';
+import { Menu, Search, Plus, Bell, GitPullRequest, CircleDot, X , Star, House, BookMarked, DoorOpen } from 'lucide-react';
+// COMPONENTS
+import { useAuth } from '../auth/AuthContext';
 import { BrandLogo } from '../layout/BrandLogo';
+
 import './ChzHeader.css';
 
 export function ChzHeader({ pageTitle }: { pageTitle: string }){
@@ -67,9 +69,9 @@ export function ChzHeader({ pageTitle }: { pageTitle: string }){
               }
               <div className="chz-header-right">
                 { user && <>
-                <button className="chz-icon-btn">
+                <Link to="./repositories" className="chz-icon-btn">
                   <Plus />
-                </button>
+                </Link>
                 <Link to="/issues" className="chz-icon-btn">
                   <CircleDot />
                 </Link>

@@ -56,8 +56,8 @@
 
 .repo-sidebar-search:focus {
   outline: none;
-  ring: 1px solid #58a6ff;
-  box-shadow: 0 0 0 1px #58a6ff;
+  ring: 1px solid #fda410;
+  box-shadow: 0 0 0 1px #fda410;
 }
 
 /* Repository List */

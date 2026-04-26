@@ -1,15 +1,20 @@
 import { useMemo, useState } from 'react';
-import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { Star, GitFork, Search } from 'lucide-react';
 import { Link } from 'react-router';
+// COMPONENTS
+import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { RepositoryStarButton } from '../components/repository/RepositoryStarButton';
 import { useAppState } from '../components/state/AppStateContext';
+// DATA
 import { formatStarCount, getLanguageColor, getRepositoriesByIds } from '../data/repositories';
+
+import './Stars.css';
 
 export function Stars() {
   const { starredRepositories } = useAppState();
   const [searchTerm, setSearchTerm] = useState('');
   const [visibleRepositoryIds, setVisibleRepositoryIds] = useState<string[]>(() => starredRepositories);
+  
   const starredRepos = useMemo(
     () =>
       getRepositoriesByIds(visibleRepositoryIds).filter((repository) =>
@@ -19,71 +24,84 @@ export function Stars() {
   );
 
   return (
-    <div className="min-h-screen bg-background dark">
-      <ChzHeader pageTitle="Stars" /*isLoggedIn={false}*/ />
+    <div className="stars-container">
+      <ChzHeader pageTitle="Stars" />
 
-      <main className="lg:pl-64 pt-14">
-        <div className="container max-w-6xl px-4 py-8">
-          <div className="mb-6 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Star className="h-6 w-6 text-[#fda410]" />
-              <h1 className="text-foreground">Starred repositories</h1>
+      <main className="stars-main">
+        <div className="stars-wrapper">
+          {/* Header Section */}
+          <div className="stars-header">
+            <div className="stars-header-left">
+              <Star className="stars-header-icon" />
+              <h1 className="stars-header-title">Starred repositories</h1>
             </div>
           </div>
 
-          <div className="mb-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#c9d1d9]" />
+          {/* Search Section */}
+          <div className="stars-search-wrapper">
+            <div className="stars-search-container">
+              <Search className="stars-search-icon" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Search starred repositories..."
-                className="w-full pl-9 pr-4 py-2 text-foreground placeholder:text-[#7d8590] bg-secondary border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+                className="stars-search-input"
               />
             </div>
           </div>
 
-          <div className="space-y-4">
+          {/* Repository List */}
+          <div className="stars-list">
             {starredRepos.map((repo) => (
-              <div key={repo.id} className="p-5 bg-card border border-border rounded-lg hover:border-border/60 transition-colors">
-                <div className="mb-2 flex items-start justify-between gap-4">
-                  <div className="flex-1">
+              <div key={repo.id} className="stars-repo-card">
+                <div className="stars-repo-header">
+                  <div className="stars-repo-header-left">
                     <Link
                       to={`/repository/${repo.owner}/${repo.name}`}
-                      className="text-[#fda410] hover:underline font-medium"
+                      className="stars-repo-link"
                     >
                       {repo.owner}/{repo.name}
                     </Link>
-                    <p className="mt-1 text-sm text-[#c9d1d9]">{repo.description}</p>
+                    <p className="stars-repo-description">{repo.description}</p>
                   </div>
-                  <RepositoryStarButton
-                    isStarred={true}
-                    compact
-                    onToggle={() =>
-                      setVisibleRepositoryIds((current) => current.filter((repositoryId) => repositoryId !== repo.id))
-                    }
-                  />
+                  <div className="stars-repo-star-button">
+                    <RepositoryStarButton
+                      isStarred={true}
+                      compact
+                      onToggle={() =>
+                        setVisibleRepositoryIds((current) => 
+                          current.filter((repositoryId) => repositoryId !== repo.id)
+                        )
+                      }
+                    />
+                  </div>
                 </div>
-                <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-[#c9d1d9]">
-                  <div className="flex items-center gap-1">
-                    <div className={`w-3 h-3 rounded-full ${getLanguageColor(repo.language)}`}></div>
+
+                {/* Repository Meta */}
+                <div className="stars-repo-meta">
+                  <div className="stars-repo-meta-item">
+                    <div 
+                      className={`stars-repo-language-dot ${getLanguageColor(repo.language)}`}
+                    ></div>
                     <span>{repo.language}</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4" />
+                  <div className="stars-repo-meta-item">
+                    <Star className="stars-repo-meta-icon" />
                     <span>{formatStarCount(repo.stars)}</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <GitFork className="h-4 w-4" />
+                  <div className="stars-repo-meta-item">
+                    <GitFork className="stars-repo-meta-icon" />
                     <span>{formatStarCount(repo.forks)}</span>
                   </div>
-                  <span className="ml-auto">Updated {repo.updated}</span>
+                  <span className="stars-repo-updated">Updated {repo.updated}</span>
                 </div>
               </div>
             ))}
+
+            {/* Empty State */}
             {starredRepos.length === 0 && (
-              <div className="rounded-lg border border-dashed border-border bg-card px-5 py-8 text-center text-sm text-muted-foreground">
+              <div className="stars-empty-state">
                 No starred repositories are visible with the current search or temporary un-star actions.
               </div>
             )}

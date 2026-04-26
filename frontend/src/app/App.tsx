@@ -23,7 +23,7 @@ import { RepositoryPullRequests } from './pages/RepositoryPullRequests';
 import { RepositoryIssues } from './pages/RepositoryIssues';
 import { RepositoryInsights } from './pages/RepositoryInsights';
 import { RepositorySettings } from './pages/RepositorySettings';
-import { RepositoryFile } from './pages/RepositoryFile';
+import { RepositoryFileExplorer } from './pages/RepositoryFileExplorer';
 import { Profile } from './pages/Profile';
 import { Settings } from './pages/Settings';
 import axios from 'axios';
@@ -94,8 +94,8 @@ export default function App() {
               <Route path="/repository/:owner/:repo/issues" element={withProtectedRoute(<RepositoryIssues />)} />
               <Route path="/repository/:owner/:repo/insights" element={withProtectedRoute(<RepositoryInsights />)} />
               <Route path="/repository/:owner/:repo/settings" element={withProtectedRoute(<RepositorySettings />)} />
-              <Route path="/repository/:owner/:repo/blob/:branch/*" element={withProtectedRoute(<RepositoryFile />)} />
-              <Route path="/repository/:owner/:repo/tree/*" element={withProtectedRoute(<RepositoryFile />)} />
+              <Route path="/repository/:owner/:repo/blob/:branch/*" element={withProtectedRoute(<RepositoryFileExplorer />)} />
+              <Route path="/repository/:owner/:repo/tree/*" element={withProtectedRoute(<RepositoryFileExplorer />)} />
               <Route path="/profile" element={withProtectedRoute(<Profile />)} />
               <Route path="/settings" element={withProtectedRoute(<Settings />)} />
               <Route path="*" element={<Navigate to="/" replace />} />

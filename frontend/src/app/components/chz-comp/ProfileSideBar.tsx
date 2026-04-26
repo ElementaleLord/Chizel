@@ -1,5 +1,7 @@
 import { MapPin, Link as LinkIcon, Calendar } from 'lucide-react';
 
+import './ProfileSideBar.css';
+
 interface ProfileProp{
     name: string,
     username: string,
