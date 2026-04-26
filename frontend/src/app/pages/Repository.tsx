@@ -1,32 +1,42 @@
-import type { CSSProperties, ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useParams, useNavigate } from 'react-router';
 import { BookOpen, ChevronDown, FileText, GitCommit, Package, Scale, Tag,} from 'lucide-react';
 // COMPENENTS
 import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { RepositoryLayout } from '../components/chz-comp/RepositoryLayout';
 import { RepositoryFileList } from '../components/chz-comp/RepositoryFileList';
-// DATA
-import { fileStructure } from '../data/fileExplorerData';
-import { latestCommit, readmeContent } from '../data/repositoryData';
+import { ensureRepoReady, fetchRepoFile, fetchRepoMeta, fetchRepoTree, type RepoMeta, type RepoNode } from '../lib/repoApi';
+import { formatRelativeTime } from '../lib/time';
 
 import './Repository.css';
+
+function getErrorMessage(error: unknown, fallback: string) {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'response' in error &&
+    typeof error.response === 'object' &&
+    error.response !== null &&
+    'data' in error.response &&
+    typeof error.response.data === 'object' &&
+    error.response.data !== null &&
+    'error' in error.response.data &&
+    typeof error.response.data.error === 'string'
+  ) {
+    return error.response.data.error;
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return fallback;
+}
 
 type RepositorySidebarSectionProps = {
   title: string;
   children: ReactNode;
   trailing?: ReactNode;
-};
-
-type Contributor = {
-  name: string;
-  initials: string;
-  accent: string;
-};
-
-type Language = {
-  name: string;
-  percentage: number;
-  color: string;
 };
 
 function RepositorySidebarSection({ title, children, trailing }: RepositorySidebarSectionProps) {
@@ -48,33 +58,75 @@ function RepositorySidebarSection({ title, children, trailing }: RepositorySideb
 export function Repository() {
   const { owner = 'sarahdev', repo = 'web-app' } = useParams();
   const navigate = useNavigate();
-  const repositoryDescription =
-    'Collaborative repository for the graduation platform, with repository browsing, README docs, and shared developer workflows.';
-  const aboutLinks = [
-    { label: 'README', icon: BookOpen },
-    { label: 'MIT License', icon: Scale },
-    { label: 'Report repository', icon: FileText },
-  ];
-  const contributors: Contributor[] = [
-    { name: 'Sarah Dev', initials: 'SD', accent: '#f78166' },
-    { name: 'Lina Khoury', initials: 'LK', accent: '#58a6ff' },
-    { name: 'Omar Haddad', initials: 'OH', accent: '#3fb950' },
-    { name: 'Maya Nassar', initials: 'MN', accent: '#d2a8ff' },
-  ];
-  const languages: Language[] = [
-    { name: 'TypeScript', percentage: 48, color: '#3178c6' },
-    { name: 'CSS', percentage: 26, color: '#563d7c' },
-    { name: 'C#', percentage: 18, color: '#9b4f96' },
-    { name: 'SQL', percentage: 8, color: '#e38c05' },
-  ];
+  const [repoTree, setRepoTree] = useState<RepoNode | null>(null);
+  const [repoReadme, setRepoReadme] = useState<RepoNode | null>(null);
+  const [repoMeta, setRepoMeta] = useState<RepoMeta | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleFileClick = (file: { type: 'file' | 'folder'; name: string }) => {
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function loadRepository() {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const repoId = await ensureRepoReady(owner, repo);
+        const [meta, tree] = await Promise.all([
+          fetchRepoMeta(repoId),
+          fetchRepoTree(repoId, '.'),
+        ]);
+        const readme = meta.readmePath
+          ? await fetchRepoFile(repoId, meta.readmePath).catch(() => null)
+          : null;
+
+        if (isCancelled) {
+          return;
+        }
+
+        setRepoMeta(meta);
+        setRepoTree(tree);
+        setRepoReadme(readme);
+      } catch (loadError) {
+        if (isCancelled) {
+          return;
+        }
+        console.error(loadError);
+        setError(getErrorMessage(loadError, 'Unable to load repository contents.'));
+      } finally {
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadRepository();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [owner, repo]);
+
+  const handleFileClick = (file: RepoNode) => {
+    const targetPath = file.path.replace(/^\//, '');
+    const activeBranch = repoMeta?.currentBranch || 'main';
     if (file.type === 'folder') {
-      navigate(`/repository/${owner}/${repo}/tree/${file.name}`);
+      navigate(`/repository/${owner}/${repo}/tree/${targetPath}`);
     } else {
-      navigate(`/repository/${owner}/${repo}/blob/main/${file.name}`);
+      navigate(`/repository/${owner}/${repo}/blob/${activeBranch}/${targetPath}`);
     }
   };
+
+  const repositoryDescription = repoMeta?.description?.trim()
+    || (repoMeta?.url ? `Source synchronized from ${repoMeta.url}.` : 'No repository description provided.');
+  const repoFacts = [
+    { label: 'Branches', value: String(repoMeta?.branchCount ?? 0) },
+    { label: 'Tags', value: String(repoMeta?.tagCount ?? 0) },
+    { label: 'Stars', value: String(repoMeta?.stats.stars ?? 0) },
+    { label: 'Watchers', value: String(repoMeta?.stats.watchers ?? 0) },
+    { label: 'Forks', value: String(repoMeta?.stats.forks ?? 0) },
+  ];
 
   return (
     <>
@@ -92,14 +144,14 @@ export function Repository() {
                         to={`/repository/${owner}/${repo}/branches`}
                         className="repo-branch-btn"
                       >
-                        <span>main</span>
+                        <span>{repoMeta?.currentBranch || 'main'}</span>
                         <ChevronDown className="repo-branch-btn-icon" />
                       </Link>
                       <Link to={`/repository/${owner}/${repo}/branches`} className="repo-branch-info">
-                        <span className="repo-branch-info-count">24</span> branches
+                        <span className="repo-branch-info-count">{repoMeta?.branchCount ?? 0}</span> branches
                       </Link>
                       <span className="repo-branch-tags">
-                        <span className="repo-branch-tags-count">8</span> tags
+                        <span className="repo-branch-tags-count">{repoMeta?.tagCount ?? 0}</span> tags
                       </span>
                     </div>
                     <Link
@@ -112,34 +164,44 @@ export function Repository() {
                   </div>
 
                   {/* File Browser */}
-                  <RepositoryFileList
-                    structure={fileStructure}
-                    owner={owner}
-                    repo={repo}
-                    onFileSelect={handleFileClick}
-                    latestCommit={latestCommit}
-                  />
+                  {isLoading ? (
+                    <div className="repo-file-card">
+                      <div className="repo-file-list">
+                        <div className="repo-file-item">Loading repository files...</div>
+                      </div>
+                    </div>
+                  ) : error || !repoTree ? (
+                    <div className="repo-file-card">
+                      <div className="repo-file-list">
+                        <div className="repo-file-item">{error || 'Repository contents unavailable.'}</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <RepositoryFileList
+                      structure={repoTree}
+                      owner={owner}
+                      repo={repo}
+                      onFileSelect={handleFileClick}
+                      latestCommit={{
+                        message: repoMeta?.latestCommit?.message || (repoMeta?.cached ? 'Local repo cache ready' : 'Repository snapshot'),
+                        time: formatRelativeTime(repoMeta?.latestCommit?.timestamp || repoMeta?.updatedAt),
+                      }}
+                    />
+                  )}
 
                   {/* README Section */}
                   <div className="repo-readme-card">
                     <div className="repo-readme-header">
-                      <h3 className="repo-readme-title">README.md</h3>
+                      <h3 className="repo-readme-title">{repoReadme?.name || 'README.md'}</h3>
                     </div>
                     <div className="repo-readme-content">
-                      <h2 className="repo-readme-h2">{readmeContent.title}</h2>
-                      <p className="repo-readme-p">
-                        {readmeContent.description}
-                      </p>
-                      <h3 className="repo-readme-h3">Features</h3>
-                      <ul className="repo-readme-list">
-                        {readmeContent.features.map((feature) => (
-                          <li key={feature}>{feature}</li>
-                        ))}
-                      </ul>
-                      <h3 className="repo-readme-h3">Getting Started</h3>
-                      <pre className="repo-readme-code">
-                        <code>{readmeContent.gettingStarted}</code>
-                      </pre>
+                      {repoReadme?.content ? (
+                        <pre className="repo-readme-code">
+                          <code>{repoReadme.content}</code>
+                        </pre>
+                      ) : (
+                        <p className="repo-readme-p">No README in place.</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -153,12 +215,18 @@ export function Repository() {
                       <div className="repo-sidebar-about">
                         <p className="repo-sidebar-description">{repositoryDescription}</p>
                         <div className="repo-sidebar-meta-list">
-                          {aboutLinks.map(({ label, icon: Icon }) => (
-                            <button key={label} type="button" className="repo-sidebar-meta-item">
-                              <Icon className="repo-sidebar-meta-icon" />
-                              <span>{label}</span>
-                            </button>
-                          ))}
+                          <div className="repo-sidebar-meta-item">
+                            <BookOpen className="repo-sidebar-meta-icon" />
+                            <span>{repoMeta?.readmePath || 'No README detected'}</span>
+                          </div>
+                          <div className="repo-sidebar-meta-item">
+                            <Scale className="repo-sidebar-meta-icon" />
+                            <span>{repoMeta?.currentBranch ? `Current branch: ${repoMeta.currentBranch}` : 'No active branch'}</span>
+                          </div>
+                          <div className="repo-sidebar-meta-item">
+                            <FileText className="repo-sidebar-meta-icon" />
+                            <span>{repoMeta?.updatedAt ? `Updated ${formatRelativeTime(repoMeta.updatedAt)}` : 'No activity yet'}</span>
+                          </div>
                         </div>
                       </div>
                     </RepositorySidebarSection>
@@ -182,54 +250,38 @@ export function Repository() {
                     </RepositorySidebarSection>
 
                     <RepositorySidebarSection
-                      title="Contributors"
-                      trailing={<span className="repo-sidebar-count-pill">{contributors.length}</span>}
+                      title="Repository Facts"
+                      trailing={<span className="repo-sidebar-count-pill">{repoFacts.length}</span>}
                     >
-                      <ul className="repo-contributors-list">
-                        {contributors.map((contributor) => (
-                          <li key={contributor.name} className="repo-contributor-item">
-                            <div
-                              className="repo-contributor-avatar"
-                              style={{ '--avatar-accent': contributor.accent } as CSSProperties}
-                              aria-hidden="true"
-                            >
-                              {contributor.initials}
-                            </div>
-                            <div className="repo-contributor-copy">
-                              <span className="repo-contributor-name">{contributor.name}</span>
-                            </div>
+                      <ul className="repo-facts-list">
+                        {repoFacts.map((fact) => (
+                          <li key={fact.label} className="repo-fact-item">
+                            <span className="repo-fact-label">{fact.label}</span>
+                            <span className="repo-fact-value">{fact.value}</span>
                           </li>
                         ))}
                       </ul>
                     </RepositorySidebarSection>
 
-                    <RepositorySidebarSection title="Languages">
-                      <div className="repo-language-bar" aria-hidden="true">
-                        {languages.map((language) => (
-                          <span
-                            key={language.name}
-                            className="repo-language-bar-segment"
-                            style={{
-                              width: `${language.percentage}%`,
-                              backgroundColor: language.color,
-                            }}
-                          />
-                        ))}
-                      </div>
-                      <ul className="repo-language-list">
-                        {languages.map((language) => (
-                          <li key={language.name} className="repo-language-item">
-                            <div className="repo-language-label-group">
-                              <span
-                                className="repo-language-dot"
-                                style={{ backgroundColor: language.color }}
-                                aria-hidden="true"
-                              />
-                              <span className="repo-language-name">{language.name}</span>
-                            </div>
-                            <span className="repo-language-percent">{language.percentage}%</span>
+                    <RepositorySidebarSection title="References">
+                      <ul className="repo-facts-list">
+                        {repoMeta?.branches.slice(0, 4).map((branch) => (
+                          <li key={branch.id} className="repo-fact-item">
+                            <span className="repo-fact-label">{branch.isCurrent ? `${branch.name} (current)` : branch.name}</span>
+                            <span className="repo-fact-value">{formatRelativeTime(branch.lastModified)}</span>
                           </li>
                         ))}
+                        {repoMeta?.tags.slice(0, 2).map((tagRef) => (
+                          <li key={tagRef.id} className="repo-fact-item">
+                            <span className="repo-fact-label">tag: {tagRef.name}</span>
+                            <span className="repo-fact-value">{formatRelativeTime(tagRef.lastModified)}</span>
+                          </li>
+                        ))}
+                        {!repoMeta?.branches.length && !repoMeta?.tags.length && (
+                          <li className="repo-fact-item">
+                            <span className="repo-fact-label">No refs detected</span>
+                          </li>
+                        )}
                       </ul>
                     </RepositorySidebarSection>
                   </div>

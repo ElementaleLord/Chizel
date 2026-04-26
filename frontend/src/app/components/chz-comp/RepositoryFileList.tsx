@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 // DATA
 import type { FileItem } from '../../data/fileExplorerData';
+import { formatRelativeTime } from '../../lib/time';
 
 import './RepositoryFileList.css';
 
@@ -72,7 +73,7 @@ export function RepositoryFileList({
               )}
               <span className="repo-file-name">{file.name}</span>
             </div>
-            <span className="repo-file-updated">{file.lastModified || 'N/A'}</span>
+            <span className="repo-file-updated">{formatRelativeTime(file.lastModified)}</span>
           </button>
         ))}
       </div>

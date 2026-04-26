@@ -59,7 +59,7 @@ export function Home() {
             <h2 className="feed-title">Feed</h2>
             <div className="feed-list">
               {feedItems.map((item, i) => (
-                <FeedItem item= {item} index= {i} />
+                <FeedItem key={`${item.repo}-${item.title}-${i}`} item= {item} index= {i} />
               ))}
             </div>
           </div>

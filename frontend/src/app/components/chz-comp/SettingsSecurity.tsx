@@ -1,6 +1,6 @@
 import type { FormEvent } from 'react';
 
-import './pages/SettingsBase.css';
+import './SettingsBase.css';
 import './SettingsSecurity.css';
 
 interface SettingsSecurityProps {

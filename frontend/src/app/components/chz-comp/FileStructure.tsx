@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ChevronDown, File, Folder } from 'lucide-react';
 // DATA
 import type { FileItem } from '../../data/fileExplorerData';
@@ -9,6 +9,7 @@ interface FileStructureProps {
   structure: FileItem;
   onSelectItem: (item: FileItem) => void;
   selectedId: string | null;
+  selectedPath?: string | null;
 }
 
 // Recursive Component for file tree nodes
@@ -16,6 +17,7 @@ interface FileTreeNodeProps {
   item: FileItem;
   onSelectItem: (item: FileItem) => void;
   selectedId: string | null;
+  selectedPath?: string | null;
   level?: number;
 }
 
@@ -23,10 +25,22 @@ function FileTreeNode({
   item,
   onSelectItem,
   selectedId,
+  selectedPath,
   level = 0,
 }: FileTreeNodeProps) {
-  const [isExpanded, setIsExpanded] = useState(level === 0);
+  const shouldAutoExpand =
+    level === 0 ||
+    (selectedPath != null &&
+      (selectedPath === item.path ||
+        selectedPath.startsWith(`${item.path === '/' ? '' : item.path}/`)));
+  const [isExpanded, setIsExpanded] = useState(shouldAutoExpand);
   const hasChildren = item.type === 'folder' && item.children && item.children.length > 0;
+
+  useEffect(() => {
+    if (shouldAutoExpand) {
+      setIsExpanded(true);
+    }
+  }, [shouldAutoExpand]);
 
   const handleSelect = () => {
     onSelectItem(item);
@@ -72,6 +86,7 @@ function FileTreeNode({
               item={child}
               onSelectItem={onSelectItem}
               selectedId={selectedId}
+              selectedPath={selectedPath}
               level={level + 1}
             />
           ))}
@@ -81,7 +96,7 @@ function FileTreeNode({
   );
 }
 
-export function FileStructure({ structure, onSelectItem, selectedId }: FileStructureProps) {
+export function FileStructure({ structure, onSelectItem, selectedId, selectedPath }: FileStructureProps) {
   return (
     <div className="file-structure-sidebar">
       <div className="file-structure-header">
@@ -93,6 +108,7 @@ export function FileStructure({ structure, onSelectItem, selectedId }: FileStruc
           item={structure}
           onSelectItem={onSelectItem}
           selectedId={selectedId}
+          selectedPath={selectedPath}
           level={0}
         />
       </div>

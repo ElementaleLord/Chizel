@@ -1,6 +1,7 @@
 import { Copy, Download } from 'lucide-react';
 // DATA
 import type { FileItem } from '../../data/fileExplorerData';
+import { formatRelativeTime } from '../../lib/time';
 
 import './FileViewer.css';
 
@@ -123,7 +124,7 @@ export function FileViewer({ file }: FileViewerProps) {
           <div className="file-viewer-meta">
             {file.lastModified && (
               <div className="file-viewer-meta-item">
-                <span>Modified: {file.lastModified}</span>
+                <span>Modified {formatRelativeTime(file.lastModified)}</span>
               </div>
             )}
             {file.size && (

@@ -20,7 +20,7 @@
   width: 1.5rem;
   height: 1.5rem;
   border-radius: 9999px;
-  background: linear-gradient(135deg, #58a6ff, #79c0ff);
+  background: linear-gradient(135deg, #fda410, #e38c05);
   flex-shrink: 0;
 }
 
@@ -34,7 +34,7 @@
   flex: 1;
   min-width: 0;
   font-size: 0.875rem;
-  color: #58a6ff;
+  color: #fda410;
   text-decoration: none;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -43,7 +43,7 @@
 }
 
 .repo-file-message:hover {
-  color: #79c0ff;
+  color: #e38c05;
   text-decoration: underline;
 }
 
@@ -103,7 +103,7 @@
 }
 
 .repo-file-icon-folder {
-  color: #79c0ff;
+  color: #fda410;
 }
 
 .repo-file-icon-file {
@@ -112,7 +112,7 @@
 
 .repo-file-name {
   font-size: 0.875rem;
-  color: #58a6ff;
+  color: #fda410;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -120,7 +120,7 @@
 }
 
 .repo-file-item:hover .repo-file-name {
-  color: #79c0ff;
+  color: #fda410;
 }
 
 .repo-file-updated {

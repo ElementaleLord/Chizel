@@ -24,7 +24,7 @@
 }
 
 .settings-breadcrumb-link {
-  color: #58a6ff;
+  color: #fda410;
   text-decoration: none;
   transition: text-decoration 0.2s;
 }
@@ -106,7 +106,7 @@
 .settings-textarea:focus,
 .settings-select:focus {
   outline: none;
-  box-shadow: 0 0 0 2px #58a6ff;
+  box-shadow: 0 0 0 2px #fda410;
 }
 
 .settings-textarea {
@@ -187,7 +187,7 @@
 }
 
 .settings-toggle-input:focus + .settings-toggle-slider {
-  box-shadow: 0 0 0 2px #58a6ff;
+  box-shadow: 0 0 0 2px #fda410;
 }
 
 /* Access Section */

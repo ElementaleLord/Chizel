@@ -16,7 +16,7 @@ interface FeedItemProps{
 
 export function FeedItem( { item, index } : { item : FeedItemProps; index: number } ){
     return (
-        <div key={index} className="feed-item">
+        <div className="feed-item">
             <div className="feed-item-inner">
                 <div className="feed-avatar">
                     {item.avatar}

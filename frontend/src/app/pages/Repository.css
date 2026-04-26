@@ -71,7 +71,7 @@
 }
 
 .repo-branch-info:hover {
-  color: #58a6ff;
+  color: #fda410;
 }
 
 .repo-branch-info-count {
@@ -124,7 +124,7 @@
 }
 
 .repo-file-message:hover {
-  color: #58a6ff;
+  color: #fda410;
 }
 
 .repo-file-time {
@@ -176,7 +176,7 @@
 }
 
 .repo-file-icon-folder {
-  color: #58a6ff;
+  color: #fda410;
 }
 
 .repo-file-icon-file {
@@ -185,7 +185,7 @@
 
 .repo-file-name {
   font-size: 0.875rem;
-  color: #58a6ff;
+  color: #fda410;
   text-decoration: none;
   transition: text-decoration 0.2s;
   overflow: hidden;
@@ -241,7 +241,8 @@
 .repo-readme-commits-btn:hover,
 .repo-toolbar-commits-btn:hover {
   background-color: #30363d;
-  border-color: #58a6ff;
+  border-color: #fda410;
+  color: #fda410 ;
 }
 
 .repo-readme-content {
@@ -399,7 +400,7 @@
 
 .repo-sidebar-meta-item:hover,
 .repo-sidebar-link-button:hover {
-  color: #58a6ff;
+  color: #fda410;
 }
 
 .repo-sidebar-meta-icon,
@@ -416,14 +417,16 @@
 }
 
 .repo-contributors-list,
-.repo-language-list {
+.repo-language-list,
+.repo-facts-list {
   display: flex;
   flex-direction: column;
   gap: 0.625rem;
 }
 
 .repo-contributor-item,
-.repo-language-item {
+.repo-language-item,
+.repo-fact-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -506,6 +509,21 @@
 
 .repo-language-percent {
   color: #8b949e;
+  white-space: nowrap;
+}
+
+.repo-fact-label,
+.repo-fact-value {
+  font-size: 0.8125rem;
+}
+
+.repo-fact-label {
+  color: #c9d1d9;
+}
+
+.repo-fact-value {
+  color: #f0f6fc;
+  font-weight: 600;
   white-space: nowrap;
 }
 

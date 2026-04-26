@@ -1,6 +1,7 @@
 import { File, Folder } from 'lucide-react';
 // DATA
 import type { FileItem } from '../../data/fileExplorerData';
+import { formatRelativeTime } from '../../lib/time';
 
 import './FolderViewer.css';
 
@@ -56,7 +57,7 @@ function FolderItem({ item, onSelectItem }: FolderItemProps) {
         <span className="folder-item-name">{item.name}</span>
         <div className="folder-item-meta">
           {item.type === 'file' && item.lastModified && (
-            <span>{item.lastModified}</span>
+            <span>{formatRelativeTime(item.lastModified)}</span>
           )}
           {item.type === 'file' && item.size && (
             <span>{formatFileSize(item.size)}</span>
