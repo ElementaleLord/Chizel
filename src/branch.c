@@ -1,6 +1,5 @@
-#include "../include/chizel.h"
+#include "../include/headers/branch.h"  
 #include <dirent.h>
-#include <sys/stat.h>
 
 #ifdef _WIN32
 #include <direct.h>
@@ -80,6 +79,7 @@ void cloneLatestCommit(char* branch){
         cont = false;
         fputs(line, flog);
     }
+    fputc('\n', flog);
 
     fclose(f);
     fclose(flog);
@@ -133,12 +133,12 @@ bool createBranch(char* branchName)
     char packPath[1024];
     snprintf(packPath, sizeof(packPath), "%s/%s/data.pack", DATA_PATH, branchName);
 
-    FILE* dataFile = fopen(packPath, "w");
+    FILE* dataFile = fopen(packPath, "wb");
     if(!dataFile){ return false; }
 
     char headPack[1024];
     snprintf(headPack, sizeof(headPack), "%s/%s/data.pack", DATA_PATH, getHead());
-    FILE* headData = fopen(headPack, "r");
+    FILE* headData = fopen(headPack, "rb");
     if(!headData){ return false; }
 
     char bufferData[4096];
@@ -287,7 +287,7 @@ void branchHelp()
     printf("chz branch -m <old-branch-name> <new-branch-name>");
 }
 
-bool branch(int argc, char* argv[])
+void branch(int argc, char* argv[])
 {
     char path[1024];
     
@@ -360,8 +360,4 @@ bool branch(int argc, char* argv[])
             printf(CHZ_ERROR_MSG_START"Invalid Command"MSG_END);
             break;
     }
-}
-
-int main(int argc, char* argv[]){
-    branch(argc, argv);
 }

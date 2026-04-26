@@ -1,7 +1,5 @@
-#include "../include/chzdb.h"
-#include "../include/chizel.h"
-#include "commit.c"
-#include <unistd.h>
+#include "../include/headers/push.h"
+#include "../include/headers/commit.h"
 
 void pushHelp()
 {
@@ -61,9 +59,4 @@ int push(int argc, char *argv[])
         printf(CHZ_ERROR_MSG_START "Invalid Command" MSG_END);
         break;
     }
-}
-
-int main(int argc, char *argv[])
-{
-    push(argc, argv);
 }

@@ -1,7 +1,5 @@
-#include "../include/chizel.h"
-#include "../include/chzdb.h"
-#include "fetch.c"
-//#include "merge.c"
+#include "../include/headers/pull.h"
+#include "../include/headers/fetch.h"
 
 void pullHelp(){
     printf(PULL_REPORT_MSG_START"\nUsage: chz pull | chz pull -h"MSG_END);
@@ -15,15 +13,14 @@ void pull(int argc, char* argv[]){
             if(!fetch(argc, argv)){
                 return;
             }
-            //merge(argc, argv);
             
-            /*          //& O: probably in some aspect of merge?
+            //& O: this is the worst possible outcome, but i cant do anything else as far as my brainpower goes
             int r = restorePack(".chz/objects/restored/pulled.pack", ".");
             if(r < 0){
                 printf(PULL_ERROR_MSG_START"Could not unpack restored content"MSG_END);
                 return;
             }
-            */
+            
             break;
 
         //@ chz pull <arg>
@@ -37,8 +34,12 @@ void pull(int argc, char* argv[]){
                 if(!fetch(argc, argv)){
                     return;
                 }
-                //merge(argc, argv); // + data
-                break;
+
+                int r = restorePack(".chz/objects/restored/pulled.pack", ".");
+                if(r < 0){
+                    printf(PULL_ERROR_MSG_START"Could not unpack restored content"MSG_END);
+                    return;
+                }
             }
             break;
 
@@ -46,8 +47,4 @@ void pull(int argc, char* argv[]){
             printf(CHZ_ERROR_MSG_START"Invalid Command"MSG_END);
             break;
     }
-}
-
-int main(int argc, char* argv[]){
-    pull(argc, argv);
 }

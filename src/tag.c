@@ -1,7 +1,5 @@
-#include "../include/chizel.h"
+#include "../include/headers/tag.h"
 #include <dirent.h>
-#include <fcntl.h>
-#include <sys/stat.h>
 
 #ifdef _WIN32
 #include <direct.h>
@@ -232,8 +230,44 @@ void tag(int argc, char* argv[])
     closedir(p_dir);
 }
 
-int main(int argc, char* argv[])
+//~ Set the next tag name usable by zipDirectory(CHZ_TAG)
+int setTag(char *tagName)
 {
-    tag(argc, argv);
-    return 0;
+    FILE *f = fopen(TAG_NAME_FILE, "w");
+    if (!f)
+    {
+        return -1;
+    }
+
+    fputs(tagName, f);
+    fclose(f);
+    return 1;
+}
+
+char *getTag()
+{
+    FILE *f = fopen(TAG_NAME_FILE, "r");
+    if (!f)
+    {
+        return NULL;
+    }
+
+    char *tag = malloc(256);
+    if (!tag)
+    {
+        fclose(f);
+        return NULL;
+    }
+
+    if (!fgets(tag, 256, f))
+    {
+        free(tag);
+        fclose(f);
+        return NULL;
+    }
+
+    fclose(f);
+    tag[strcspn(tag, "\n")] = '\0';
+
+    return tag;
 }

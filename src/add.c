@@ -1,11 +1,89 @@
+#include "../include/headers/add.h"
 #include <dirent.h>
-#include <sys/stat.h>
-#include "../include/chizel.h"
 
 #ifdef _WIN32
 #include <direct.h>
 #define mkdir(dir) _mkdir(dir)
 #endif
+
+int checkStagingArea()
+{
+    FILE *staging_area = fopen(STAGING_AREA_PATH, "r");
+    FILE *temp_file;
+    char line[1024];
+    struct stat st;
+    if (staging_area == NULL)
+    {
+        printf(ADD_ERROR_MSG_START "Could Not Open Stage Area" MSG_END);
+        whatIsTheError();
+        return 0;
+    }
+    temp_file = fopen(".chz/staging_area.tmp", "w");
+    if (temp_file == NULL)
+    {
+        printf(ADD_ERROR_MSG_START "Could Not Create Temp Stage Area" MSG_END);
+        whatIsTheError();
+        fclose(staging_area);
+        return 0;
+    }
+    while (fgets(line, sizeof(line), staging_area) != NULL)
+    {
+        line[strcspn(line, "\n")] = '\0';
+        if (line[0] == '\0')
+        {
+            continue;
+        }
+        if (stat(line, &st) == 0)
+        {
+            //# FILE EXISTS, WRITE
+            fprintf(temp_file, "%s\n", line);
+        }
+        else
+        {   
+            //# FILE DOESNT EXIST, DONT WRITE
+            continue;
+        }
+    }
+    fclose(staging_area);
+    fclose(temp_file);
+    remove(STAGING_AREA_PATH);
+    rename(".chz/staging_area.tmp", STAGING_AREA_PATH);
+    return 1;
+}
+
+FILE* getStagingArea()
+{
+    FILE* staging_area = fopen(STAGING_AREA_PATH, "r");
+    if(staging_area == NULL){
+        printf("No Files In Staging Area"MSG_END);
+        return NULL;
+    }
+    return staging_area;
+}
+
+Lines readStagingArea()
+{
+    Lines index_content = {0};
+    FILE *f_ptr = fopen(INDEX_PATH, "r");
+    char line[256];
+    while(fgets(line,sizeof(line), f_ptr))
+    {
+        dynamic_append(&index_content, strdup(line));
+    }
+    return index_content;
+}
+
+bool clearStagingArea()
+{
+    FILE* staging_area = fopen(STAGING_AREA_PATH, "w");
+    if(staging_area != NULL){
+        fclose(staging_area);
+        printf("Cleared staging area.\n");
+        return true;
+    }else{
+        return false;
+    }
+}
 
 //~ checks if the file already exists in the staging area
 bool checkDup(FILE* staging_area, char* file){
@@ -198,10 +276,4 @@ void add(int argc, char* argv[])
             printf(CHZ_ERROR_MSG_START"Invalid Command"MSG_END);
             break;
     }
-}
-
-int main(int argc, char* argv[])
-{
-    add(argc, argv);
-    return 0;
 }
