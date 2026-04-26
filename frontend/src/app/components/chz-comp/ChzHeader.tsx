@@ -63,7 +63,6 @@ export function ChzHeader({ pageTitle }: { pageTitle: string }){
                       placeholder="Search or jump to..."
                       className="chz-search-input"
                     />
-                    <kbd className="chz-search-kbd">/</kbd>
                   </div>
                 </div>
               }

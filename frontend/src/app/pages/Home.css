@@ -107,6 +107,7 @@
 
 .composer-btn-secondary:hover {
   background-color: #30363d;
+  color: #fda410;
 }
 
 .composer-btn svg {

@@ -4,17 +4,6 @@
   background-color: #0d1117;
 }
 
-.pullrequests-main {
-  padding-left: 0;
-  padding-top: 3.5rem;
-}
-
-@media (min-width: 1024px) {
-  .pullrequests-main {
-    padding-left: 16rem;
-  }
-}
-
 .pullrequests-wrapper {
   margin-left: auto;
   margin-right: auto;

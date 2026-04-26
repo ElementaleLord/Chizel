@@ -4,14 +4,14 @@
   background-color: #0d1117;
 }
 
-.repos-main {
-  padding-left: 0;
+.repos-layout {
+  display: flex;
+  align-items: flex-start;
 }
 
-@media (min-width: 1024px) {
-  .repos-main {
-    padding-left: 16rem;
-  }
+.repos-main {
+  flex: 1;
+  min-width: 0;
 }
 
 .repos-wrapper {
@@ -39,7 +39,7 @@
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
-  background-color: rgba(253, 164, 16, 0.44);
+  background-color: #fda410;
   color: white;
   border: none;
   cursor: not-allowed;
@@ -48,7 +48,7 @@
 }
 
 .repos-new-btn:hover {
-  background-color: rgba(253, 164, 16, 0.56);
+  background-color: #e38c05;
 }
 
 .repos-new-btn-icon {
@@ -101,7 +101,7 @@
 
 .repos-search-input:focus {
   outline: none;
-  box-shadow: 0 0 0 2px #58a6ff;
+  box-shadow: 0 0 0 2px #fda410;
 }
 
 .repos-filter-buttons {
@@ -132,6 +132,7 @@
 
 .repos-filter-btn-inactive:hover {
   background-color: rgba(33, 38, 45, 0.8);
+  color: #fda410;
 }
 
 .repos-language-select {
@@ -147,7 +148,7 @@
 
 .repos-language-select:focus {
   outline: none;
-  box-shadow: 0 0 0 2px #58a6ff;
+  box-shadow: 0 0 0 2px #fda410;
 }
 
 /* Repository List */
@@ -251,4 +252,10 @@
   text-align: center;
   font-size: 0.875rem;
   color: #8b949e;
+}
+
+@media (max-width: 1023px) {
+  .repos-layout {
+    flex-direction: column;
+  }
 }

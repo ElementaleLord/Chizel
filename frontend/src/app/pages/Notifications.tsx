@@ -32,7 +32,7 @@ export function Notifications() {
           {/* Notifications Section */}
           <section className="notifications-section">
             <div className="notifications-section-header">
-              <h2 className="notifications-section-title">Recent notifications</h2>
+              <h2 className="notifications-section-title">Recent Notifications</h2>
             </div>
             <div className="notifications-section-list">
               {notifications.map((notification) => (

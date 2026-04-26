@@ -16,6 +16,7 @@ import { Notifications } from './pages/Notifications';
 import { Repositories } from './pages/Repositories';
 import { PullRequests } from './pages/PullRequests';
 import { Stars } from './pages/Stars';
+import { Issues } from './pages/Issues';
 import { Repository } from './pages/Repository';
 import { RepositoryCommits } from './pages/RepositoryCommits';
 import { RepositoryBranches } from './pages/RepositoryBranches';
@@ -87,6 +88,7 @@ export default function App() {
               <Route path="/pull-requests" element={withProtectedRoute(<PullRequests />)} />
               <Route path="/repositories" element={withProtectedRoute(<Repositories />)} />
               <Route path="/stars" element={withProtectedRoute(<Stars />)} />
+              <Route path="/issues" element={withProtectedRoute(<Issues />)} />
               <Route path="/repository/:owner/:repo" element={withProtectedRoute(<Repository />)} />
               <Route path="/repository/:owner/:repo/commits" element={withProtectedRoute(<RepositoryCommits />)} />
               <Route path="/repository/:owner/:repo/branches" element={withProtectedRoute(<RepositoryBranches />)} />

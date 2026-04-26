@@ -95,7 +95,7 @@
 
 .signin-input:focus {
   outline: none;
-  box-shadow: 0 0 0 2px #58a6ff;
+  box-shadow: 0 0 0 2px #fda410;
 }
 
 /* Error Message */

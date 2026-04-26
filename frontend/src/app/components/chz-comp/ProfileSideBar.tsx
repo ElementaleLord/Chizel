@@ -24,7 +24,7 @@ export function ProfileSideBar( {profileUser} : { profileUser : ProfileProp}){
             <h1 className="profile-name">{profileUser.name}</h1>
             <p className="profile-username">{profileUser.username}</p>
             <button className="profile-edit-btn">
-                Edit profile
+                Edit Profile
             </button>
             </div>
 

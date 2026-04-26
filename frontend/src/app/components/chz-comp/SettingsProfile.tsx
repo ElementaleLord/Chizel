@@ -18,16 +18,16 @@ export function SettingsProfile({ profileData }: SettingsProfileProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="settings-section-heading">Public profile</h2>
+        <h2 className="settings-section-heading">Public Profile</h2>
         <div className="space-y-4">
           <div className="settings-form-group">
-            <label className="settings-label">Profile picture</label>
+            <label className="settings-label">Profile Picture</label>
             <div className="settings-profile-pic-group">
               <div className="settings-profile-pic">
                 {profileData.avatar}
               </div>
               <button className="settings-upload-btn">
-                Upload new picture
+                Upload New Picture
               </button>
             </div>
           </div>
@@ -80,7 +80,7 @@ export function SettingsProfile({ profileData }: SettingsProfileProps) {
       </div>
       <div className="settings-divider">
         <button className="settings-save-btn">
-          Save changes
+          Save Changes
         </button>
       </div>
     </div>

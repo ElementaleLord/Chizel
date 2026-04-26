@@ -28,7 +28,7 @@ export function ForgotPassword() {
             {/* Form */}
             <form className="forgot-password-form">
               <div className="forgot-password-form-group">
-                <label htmlFor="email" className="forgot-password-label">Email address</label>
+                <label htmlFor="email" className="forgot-password-label">Email Address</label>
                 <input
                   id="email"
                   type="email"
@@ -40,7 +40,7 @@ export function ForgotPassword() {
                 type="submit"
                 className="forgot-password-submit-btn"
               >
-                Send reset link
+                Send Reset Link
               </button>
             </form>
 
@@ -50,7 +50,7 @@ export function ForgotPassword() {
               className="forgot-password-back-link"
             >
               <ArrowLeft className="forgot-password-back-icon" />
-              Back to sign in
+              Back To Sign In
             </Link>
           </div>
         </div>
