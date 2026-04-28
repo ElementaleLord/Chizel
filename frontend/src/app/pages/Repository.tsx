@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useParams, useNavigate } from 'react-router';
 import { BookOpen, ChevronDown, FileText, GitCommit, Package, Scale, Tag,} from 'lucide-react';
-// COMPENENTS
+// COMPONENTS
 import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { RepositoryLayout } from '../components/chz-comp/RepositoryLayout';
 import { RepositoryFileList } from '../components/chz-comp/RepositoryFileList';
@@ -123,10 +123,13 @@ export function Repository() {
   const repoFacts = [
     { label: 'Branches', value: String(repoMeta?.branchCount ?? 0) },
     { label: 'Tags', value: String(repoMeta?.tagCount ?? 0) },
-    { label: 'Stars', value: String(repoMeta?.stats.stars ?? 0) },
-    { label: 'Watchers', value: String(repoMeta?.stats.watchers ?? 0) },
-    { label: 'Forks', value: String(repoMeta?.stats.forks ?? 0) },
+    { label: 'Stars', value: String(repoMeta?.stats?.stars ?? 0) },
+    { label: 'Watchers', value: String(repoMeta?.stats?.watchers ?? 0) },
+    { label: 'Forks', value: String(repoMeta?.stats?.forks ?? 0) },
+    { label: 'Issues', value: String(repoMeta?.stats?.issues ?? 0) },
+    { label: 'Pull Requests', value: String(repoMeta?.stats?.pullRequests ?? 0) },
   ];
+
 
   return (
     <>
@@ -210,7 +213,7 @@ export function Repository() {
                   <div className="repo-sidebar-card">
                     <RepositorySidebarSection
                       title="About"
-                      trailing={<span className="repo-sidebar-badge">Public</span>}
+                      trailing={<span className="repo-sidebar-badge">{repoMeta?.visibility || 'Public'}</span>}
                     >
                       <div className="repo-sidebar-about">
                         <p className="repo-sidebar-description">{repositoryDescription}</p>

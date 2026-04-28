@@ -111,23 +111,14 @@ export async function getRepoData(id: BigInt) {
 
 export async function getRepoByOwnerAndName(owner: string, repo: string) {
     try{
-        const basePath = `${owner}/${repo}`;
+        const basePath = `chizel.com/${owner}/${repo}`;
         const cmd = `
             SELECT *
             FROM repositories
             WHERE r_url = $1
-               OR r_url = $2
-               OR r_url = $3
-               OR r_url = $4
             LIMIT 1;
         `;
-        const candidates = [
-            `chizel.com/${basePath}`,
-            `https://chizel.com/${basePath}`,
-            `http://chizel.com/${basePath}`,
-            basePath,
-        ];
-        const res = await pool.query(cmd, candidates);
+        const res = await pool.query(cmd, [basePath]);
         return res.rows[0] ?? null;
     }catch(err){
         console.error(err);
@@ -176,101 +167,43 @@ export async function getUserRepos(name: string) {
     }
 }
 
-export interface RepoInteractionSummary {
-    stars: number;
-    watchers: number;
-    forks: number;
-    viewerHasStarred: boolean;
-    viewerIsWatching: boolean;
-}
-
-let repoInteractionSchemaPromise: Promise<void> | null = null;
-
-function coerceMetricSeed(value: unknown): number {
-    if (typeof value === "number" && Number.isFinite(value)) {
-        return Math.max(0, Math.trunc(value));
-    }
-
-    if (typeof value === "string") {
-        const parsed = Number.parseInt(value, 10);
-        if (Number.isFinite(parsed)) {
-            return Math.max(0, parsed);
-        }
-    }
-
-    return 0;
-}
-
-function getRepoMetricSeed(repoData: Record<string, unknown> | null | undefined, keys: string[]) {
-    if (!repoData) {
-        return 0;
-    }
-
-    for (const key of keys) {
-        if (key in repoData) {
-            return coerceMetricSeed(repoData[key]);
-        }
-    }
-
-    return 0;
-}
-
-async function ensureRepoInteractionSchema() {
+export async function getUserId(user: string): Promise<BigInt | null>{
     try{
-        if (!repoInteractionSchemaPromise) {
-            const cmd = `
-                CREATE TABLE IF NOT EXISTS repository_metrics (
-                    repo_id BIGINT PRIMARY KEY REFERENCES repositories(r_id) ON DELETE CASCADE,
-                    stars_count INTEGER NOT NULL DEFAULT 0,
-                    watchers_count INTEGER NOT NULL DEFAULT 0,
-                    forks_count INTEGER NOT NULL DEFAULT 0,
-                    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-                );
+        const cmd = `SELECT a_id FROM accounts WHERE a_username = $1;`;
+        const res = await pool.query(cmd, [user]);
+        return res.rows[0]?.a_id ?? null;
 
-                CREATE TABLE IF NOT EXISTS repository_stars (
-                    repo_id BIGINT NOT NULL REFERENCES repositories(r_id) ON DELETE CASCADE,
-                    user_id BIGINT NOT NULL REFERENCES accounts(a_id) ON DELETE CASCADE,
-                    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-                    PRIMARY KEY (repo_id, user_id)
-                );
-
-                CREATE TABLE IF NOT EXISTS repository_watchers (
-                    repo_id BIGINT NOT NULL REFERENCES repositories(r_id) ON DELETE CASCADE,
-                    user_id BIGINT NOT NULL REFERENCES accounts(a_id) ON DELETE CASCADE,
-                    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-                    PRIMARY KEY (repo_id, user_id)
-                );
-            `;
-
-            repoInteractionSchemaPromise = pool.query(cmd).then(() => undefined);
-        }
-
-        return await repoInteractionSchemaPromise;
-    }catch(err){
-        repoInteractionSchemaPromise = null;
+    } catch(err){
         console.error(err);
         return null;
     }
 }
 
-async function ensureRepoMetricsRow(repoId: bigint | number | string, repoData?: Record<string, unknown> | null) {
+export async function getRepoMetrics(rid: number){
     try{
-        await ensureRepoInteractionSchema();
+        const cmd = `SELECT * FROM repository_metrics WHERE repo_id = $1 LIMIT 1;`
+        const res = await pool.query(cmd, [rid]);
 
-        const starsSeed = getRepoMetricSeed(repoData, ["r_stars", "r_star_count", "stars", "stars_count"]);
-        const watchersSeed = getRepoMetricSeed(repoData, ["r_watchers", "r_watch_count", "watchers", "watchers_count"]);
-        const forksSeed = getRepoMetricSeed(repoData, ["r_forks", "r_fork_count", "forks", "forks_count"]);
+        return res.rows[0] ?? null;
+    }catch(err){
+        console.log(err);
+        return null;
+    }
+}
+
+export async function ensureRepoMetricsRow(rid: number) {
+    try{
         const cmd = `
-            INSERT INTO repository_metrics (repo_id, stars_count, watchers_count, forks_count)
-            VALUES ($1, $2, $3, $4)
-            ON CONFLICT (repo_id) DO UPDATE SET
-                stars_count = GREATEST(repository_metrics.stars_count, EXCLUDED.stars_count),
-                watchers_count = GREATEST(repository_metrics.watchers_count, EXCLUDED.watchers_count),
-                forks_count = GREATEST(repository_metrics.forks_count, EXCLUDED.forks_count),
-                updated_at = NOW();
+            INSERT INTO repository_metrics (repo_id, r_stars, r_watchers, r_forks, r_pullRequests, r_issues)
+            SELECT $1, 0, 0, 0, 0, 0
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM repository_metrics
+                WHERE repo_id = $1
+            );
         `;
 
-        await pool.query(cmd, [repoId, starsSeed, watchersSeed, forksSeed]);
+        await pool.query(cmd, [rid]);
         return true;
     }catch(err){
         console.error(err);
@@ -278,199 +211,149 @@ async function ensureRepoMetricsRow(repoId: bigint | number | string, repoData?:
     }
 }
 
-export async function getRepoInteractionSummary(
-    repoId: bigint | number | string,
-    userId?: number,
-    repoData?: Record<string, unknown> | null
-): Promise<RepoInteractionSummary> {
+export async function isStarredRepo(uid: number, rid: number): Promise<boolean>{
     try{
-        await ensureRepoMetricsRow(repoId, repoData);
-        const metricsCmd = `
-            SELECT stars_count, watchers_count, forks_count
-            FROM repository_metrics
-            WHERE repo_id = $1;
-        `;
-        const viewerCmd = `
-            SELECT
-                EXISTS (
-                    SELECT 1
-                    FROM repository_stars
-                    WHERE repo_id = $1 AND user_id = $2
-                ) AS starred,
-                EXISTS (
-                    SELECT 1
-                    FROM repository_watchers
-                    WHERE repo_id = $1 AND user_id = $2
-                ) AS watching;
-        `;
-        const metricsPromise = pool.query(metricsCmd, [repoId]);
-        const viewerPromise = userId
-            ? pool.query(viewerCmd, [repoId, userId])
-            : Promise.resolve({ rows: [{ starred: false, watching: false }] });
-        const [metricsResult, viewerResult] = await Promise.all([metricsPromise, viewerPromise]);
-        const metrics = metricsResult.rows[0];
-        const viewer = viewerResult.rows[0];
+        const cmd = `SELECT 1 FROM repository_stars WHERE user_id = $1 AND repo_id = $2;`;
+        const res = await pool.query(cmd, [uid, rid]);
+        
+        return (res.rowCount ?? 0) > 0;
 
-        return {
-            stars: coerceMetricSeed(metrics?.stars_count),
-            watchers: coerceMetricSeed(metrics?.watchers_count),
-            forks: coerceMetricSeed(metrics?.forks_count),
-            viewerHasStarred: Boolean(viewer?.starred),
-            viewerIsWatching: Boolean(viewer?.watching),
-        };
-    } catch (err) {
+    } catch(err){
         console.error(err);
-        return {
-            stars: 0,
-            watchers: 0,
-            forks: 0,
-            viewerHasStarred: false,
-            viewerIsWatching: false,
-        };
+        return false;
     }
 }
 
-export async function toggleRepoStar(
-    repoId: bigint | number | string,
-    userId: number,
-    repoData?: Record<string, unknown> | null
-): Promise<RepoInteractionSummary> {
+export async function isWatchedRepo(uid: number, rid: number): Promise<boolean>{
     try{
-        await ensureRepoMetricsRow(repoId, repoData);
+        const cmd = `SELECT 1 FROM repository_watchers WHERE user_id = $1 AND repo_id = $2;`;
+        const res = await pool.query(cmd, [uid, rid]);
+        
+        return (res.rowCount ?? 0) > 0;
 
-        const client = await pool.connect();
-
-        try{
-            const beginCmd = "BEGIN";
-            const insertCmd = `
-                INSERT INTO repository_stars (repo_id, user_id)
-                VALUES ($1, $2)
-                ON CONFLICT DO NOTHING
-                RETURNING repo_id;
-            `;
-            const incrementCmd = `
-                UPDATE repository_metrics
-                SET stars_count = stars_count + 1,
-                    updated_at = NOW()
-                WHERE repo_id = $1;
-            `;
-            const deleteCmd = `
-                DELETE FROM repository_stars
-                WHERE repo_id = $1 AND user_id = $2;
-            `;
-            const decrementCmd = `
-                UPDATE repository_metrics
-                SET stars_count = GREATEST(stars_count - 1, 0),
-                    updated_at = NOW()
-                WHERE repo_id = $1;
-            `;
-            const commitCmd = "COMMIT";
-            const rollbackCmd = "ROLLBACK";
-
-            await client.query(beginCmd);
-
-            const insertResult = await client.query(insertCmd, [repoId, userId]);
-
-            if ((insertResult.rowCount ?? 0) > 0) {
-                await client.query(incrementCmd, [repoId]);
-            } else {
-                const deleteResult = await client.query(deleteCmd, [repoId, userId]);
-
-                if ((deleteResult.rowCount ?? 0) > 0) {
-                    await client.query(decrementCmd, [repoId]);
-                }
-            }
-
-            await client.query(commitCmd);
-        }catch(err){
-            await client.query(rollbackCmd);
-            throw err;
-        }finally{
-            client.release();
-        }
-
-        return await getRepoInteractionSummary(repoId, userId, repoData);
-    }catch(err){
+    } catch(err){
         console.error(err);
-        return {
-            stars: 0,
-            watchers: 0,
-            forks: 0,
-            viewerHasStarred: false,
-            viewerIsWatching: false,
-        };
+        return false;
     }
 }
 
-export async function toggleRepoWatch(
-    repoId: bigint | number | string,
-    userId: number,
-    repoData?: Record<string, unknown> | null
-): Promise<RepoInteractionSummary> {
+export async function starRepo(uid: number, rid: number){
+    const client = await pool.connect();
     try{
-        await ensureRepoMetricsRow(repoId, repoData);
+        await ensureRepoMetricsRow(rid);
+        await client.query("BEGIN");
 
-        const client = await pool.connect();
+        const alreadyStarred = await client.query(
+            `SELECT 1 FROM repository_stars WHERE user_id = $1 AND repo_id = $2;`,
+            [uid, rid]
+        );
 
-        try{
-            const beginCmd = "BEGIN";
-            const insertCmd = `
-                INSERT INTO repository_watchers (repo_id, user_id)
-                VALUES ($1, $2)
-                ON CONFLICT DO NOTHING
-                RETURNING repo_id;
-            `;
-            const incrementCmd = `
-                UPDATE repository_metrics
-                SET watchers_count = watchers_count + 1,
-                    updated_at = NOW()
-                WHERE repo_id = $1;
-            `;
-            const deleteCmd = `
-                DELETE FROM repository_watchers
-                WHERE repo_id = $1 AND user_id = $2;
-            `;
-            const decrementCmd = `
-                UPDATE repository_metrics
-                SET watchers_count = GREATEST(watchers_count - 1, 0),
-                    updated_at = NOW()
-                WHERE repo_id = $1;
-            `;
-            const commitCmd = "COMMIT";
-            const rollbackCmd = "ROLLBACK";
+        let viewerHasStarred: boolean;
 
-            await client.query(beginCmd);
-
-            const insertResult = await client.query(insertCmd, [repoId, userId]);
-
-            if ((insertResult.rowCount ?? 0) > 0) {
-                await client.query(incrementCmd, [repoId]);
-            } else {
-                const deleteResult = await client.query(deleteCmd, [repoId, userId]);
-
-                if ((deleteResult.rowCount ?? 0) > 0) {
-                    await client.query(decrementCmd, [repoId]);
-                }
-            }
-
-            await client.query(commitCmd);
-        }catch(err){
-            await client.query(rollbackCmd);
-            throw err;
-        }finally{
-            client.release();
+        if((alreadyStarred.rowCount ?? 0) === 0){
+            await client.query(
+                `INSERT INTO repository_stars (user_id, repo_id) VALUES ($1, $2);`,
+                [uid, rid]
+            );
+            await client.query(
+                `UPDATE repository_metrics
+                 SET r_stars = COALESCE(r_stars, 0) + 1
+                 WHERE repo_id = $1;`,
+                [rid]
+            );
+            viewerHasStarred = true;
+        }else{
+            await client.query(
+                `DELETE FROM repository_stars WHERE user_id = $1 AND repo_id = $2;`,
+                [uid, rid]
+            );
+            await client.query(
+                `UPDATE repository_metrics
+                 SET r_stars = GREATEST(COALESCE(r_stars, 0) - 1, 0)
+                 WHERE repo_id = $1;`,
+                [rid]
+            );
+            viewerHasStarred = false;
         }
 
-        return await getRepoInteractionSummary(repoId, userId, repoData);
-    }catch(err){
-        console.error(err);
+        const metricsRes = await client.query(
+            `SELECT * FROM repository_metrics WHERE repo_id = $1 LIMIT 1;`,
+            [rid]
+        );
+
+        await client.query("COMMIT");
+
         return {
-            stars: 0,
-            watchers: 0,
-            forks: 0,
-            viewerHasStarred: false,
-            viewerIsWatching: false,
+            ...(metricsRes.rows[0] ?? {}),
+            viewerHasStarred,
+            viewerIsWatching: await isWatchedRepo(uid, rid),
         };
+    }catch(err){
+        await client.query("ROLLBACK");
+        console.error(err);
+        return null;
+    }finally{
+        client.release();
+    }
+}
+
+export async function watchRepo(uid: number, rid: number){
+    const client = await pool.connect();
+    try{
+        await ensureRepoMetricsRow(rid);
+        await client.query("BEGIN");
+
+        const alreadyWatching = await client.query(
+            `SELECT 1 FROM repository_watchers WHERE user_id = $1 AND repo_id = $2;`,
+            [uid, rid]
+        );
+
+        let viewerIsWatching: boolean;
+
+        if((alreadyWatching.rowCount ?? 0) === 0){
+            await client.query(
+                `INSERT INTO repository_watchers (user_id, repo_id) VALUES ($1, $2);`,
+                [uid, rid]
+            );
+            await client.query(
+                `UPDATE repository_metrics
+                 SET r_watchers = COALESCE(r_watchers, 0) + 1
+                 WHERE repo_id = $1;`,
+                [rid]
+            );
+            viewerIsWatching = true;
+        }else{
+            await client.query(
+                `DELETE FROM repository_watchers WHERE user_id = $1 AND repo_id = $2;`,
+                [uid, rid]
+            );
+            await client.query(
+                `UPDATE repository_metrics
+                 SET r_watchers = GREATEST(COALESCE(r_watchers, 0) - 1, 0)
+                 WHERE repo_id = $1;`,
+                [rid]
+            );
+            viewerIsWatching = false;
+        }
+
+        const metricsRes = await client.query(
+            `SELECT * FROM repository_metrics WHERE repo_id = $1 LIMIT 1;`,
+            [rid]
+        );
+
+        await client.query("COMMIT");
+
+        return {
+            ...(metricsRes.rows[0] ?? {}),
+            viewerHasStarred: await isStarredRepo(uid, rid),
+            viewerIsWatching,
+        };
+    }catch(err){
+        await client.query("ROLLBACK");
+        console.error(err);
+        return null;
+    }finally{
+        client.release();
     }
 }
 

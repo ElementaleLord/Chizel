@@ -6,10 +6,13 @@ import { authGuard, AuthenticatedRequest } from "../middleware/authGuard";
 import {
   getRepoByOwnerAndName,
   getRepoData,
-  getRepoInteractionSummary,
-  toggleRepoStar,
-  toggleRepoWatch,
+  getRepoMetrics,
+  isStarredRepo,
+  isWatchedRepo,
+  starRepo,
+  watchRepo,
 } from "./database";
+import { get } from "http";
 
 const router = Router();
 
@@ -540,12 +543,23 @@ router.get("/repos/:repoId/meta", authGuard, async (req: AuthenticatedRequest, r
     const latestCommit = currentBranch
       ? readBranchCommits(repoRoot, currentBranch)[0] ?? null
       : null;
-    const stats = await getRepoInteractionSummary(repoId, req.user?.id, repo);
+    const numericRepoId = Number(repoId);
+    const metrics = await getRepoMetrics(numericRepoId);
+    const viewerId = req.user?.id ?? null;
+    const stats = {
+      ...(metrics ?? {}),
+      viewerHasStarred: viewerId ? await isStarredRepo(viewerId, numericRepoId) : false,
+      viewerIsWatching: viewerId ? await isWatchedRepo(viewerId, numericRepoId) : false,
+    };
 
     res.json({
       repoId,
       name: typeof repo["r_name"] === "string" && repo["r_name"].trim() ? repo["r_name"] : `repo-${repoId}`,
       url: typeof repo["r_url"] === "string" ? repo["r_url"] : "",
+      visibility:
+        typeof repo["r_visibility"] === "boolean"
+          ? (repo["r_visibility"] ? "Public" : "Private")
+          : "Public",
       description:
         typeof repo["r_description"] === "string"
           ? repo["r_description"]
@@ -697,7 +711,7 @@ router.post("/repos/:repoId/checkout", authGuard, async (req: AuthenticatedReque
 
 router.post("/repos/:repoId/star", authGuard, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const repoId = Array.isArray(req.params.repoId) ? req.params.repoId[0] : req.params.repoId;
+    const repoId = Number(Array.isArray(req.params.repoId) ? req.params.repoId[0] : req.params.repoId);
     const userId = req.user?.id;
 
     if (!userId) {
@@ -711,7 +725,12 @@ router.post("/repos/:repoId/star", authGuard, async (req: AuthenticatedRequest, 
       return;
     }
 
-    const stats = await toggleRepoStar(repoId, userId, repo);
+    const stats = await starRepo(userId, repoId);
+
+    if (!stats) {
+      res.status(500).json({ error: "Failed to toggle star" });
+      return;
+    }
 
     res.json({
       ok: true,
@@ -728,7 +747,7 @@ router.post("/repos/:repoId/star", authGuard, async (req: AuthenticatedRequest, 
 
 router.post("/repos/:repoId/watch", authGuard, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const repoId = Array.isArray(req.params.repoId) ? req.params.repoId[0] : req.params.repoId;
+    const repoId = Number(Array.isArray(req.params.repoId) ? req.params.repoId[0] : req.params.repoId);
     const userId = req.user?.id;
 
     if (!userId) {
@@ -742,7 +761,12 @@ router.post("/repos/:repoId/watch", authGuard, async (req: AuthenticatedRequest,
       return;
     }
 
-    const stats = await toggleRepoWatch(repoId, userId, repo);
+    const stats = await watchRepo(userId, repoId);
+
+    if (!stats) {
+      res.status(500).json({ error: "Failed to toggle watch" });
+      return;
+    }
 
     res.json({
       ok: true,

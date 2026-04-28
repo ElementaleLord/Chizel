@@ -3,7 +3,7 @@ const jwt = require ("jsonwebtoken");
 
 export interface AuthPayload{
   id: number;
-  usernmae: string;
+  username: string;
 }
 
 export interface AuthenticatedRequest extends Request{

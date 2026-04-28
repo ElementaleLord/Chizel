@@ -9,6 +9,8 @@ export interface RepoStats {
   stars: number;
   watchers: number;
   forks: number;
+  issues: number;
+  pullRequests: number;
   viewerHasStarred: boolean;
   viewerIsWatching: boolean;
 }
@@ -45,6 +47,7 @@ export interface RepoMeta {
   repoId: string;
   name: string;
   url: string;
+  visibility: string;
   description?: string | null;
   currentBranch: string | null;
   currentRef: {
@@ -60,6 +63,144 @@ export interface RepoMeta {
   latestCommit: RepoCommit | null;
   stats: RepoStats;
   cached: boolean;
+}
+
+const DEFAULT_REPO_STATS: RepoStats = {
+  stars: 0,
+  watchers: 0,
+  forks: 0,
+  issues: 0,
+  pullRequests: 0,
+  viewerHasStarred: false,
+  viewerIsWatching: false,
+};
+
+function toNumber(value: unknown) {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  return 0;
+}
+
+function toBoolean(value: unknown) {
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  if (typeof value === 'number') {
+    return value !== 0;
+  }
+
+  if (typeof value === 'string') {
+    return ['true', '1', 'yes'].includes(value.toLowerCase());
+  }
+
+  return false;
+}
+
+function normalizeRepoStats(raw: unknown): RepoStats {
+  if (!raw || typeof raw !== 'object') {
+    return DEFAULT_REPO_STATS;
+  }
+
+  const stats = raw as Record<string, unknown>;
+
+  return {
+    stars: toNumber(
+      stats.stars ??
+      stats.starCount ??
+      stats.star_count ??
+      stats.repo_stars ??
+      stats.r_stars
+    ),
+    watchers: toNumber(
+      stats.watchers ??
+      stats.watcherCount ??
+      stats.watchers_count ??
+      stats.watcher_count ??
+      stats.repo_watchers ??
+      stats.r_watchers
+    ),
+    forks: toNumber(
+      stats.forks ??
+      stats.forkCount ??
+      stats.forks_count ??
+      stats.fork_count ??
+      stats.repo_forks ??
+      stats.r_forks
+    ),
+    issues: toNumber(
+      stats.issues ??
+      stats.r_issues ??
+      stats.issueCount ??
+      stats.issue_count
+    ),
+    pullRequests: toNumber(
+      stats.pullRequests ??
+      stats.r_pullRequests ??
+      stats.pull_requests ??
+      stats.pullRequestCount ??
+      stats.pull_request_count ??
+      stats.prs ??
+      stats.pr_count
+    ),
+    viewerHasStarred: toBoolean(
+      stats.viewerHasStarred ??
+      stats.viewer_has_starred ??
+      stats.hasStarred ??
+      stats.starred
+    ),
+    viewerIsWatching: toBoolean(
+      stats.viewerIsWatching ??
+      stats.viewer_is_watching ??
+      stats.isWatching ??
+      stats.watching
+    ),
+  };
+}
+
+function normalizeRepoMeta(raw: unknown, repoId: string): RepoMeta {
+  const data = (raw ?? {}) as Record<string, unknown>;
+
+  return {
+    repoId: String(data.repoId ?? repoId),
+    name: typeof data.name === 'string' ? data.name : `repo-${repoId}`,
+    url: typeof data.url === 'string' ? data.url : '',
+    visibility: typeof data.visibility === 'string' && data.visibility.trim() ? data.visibility : 'Public',
+    description: typeof data.description === 'string' ? data.description : null,
+    currentBranch: typeof data.currentBranch === 'string' ? data.currentBranch : null,
+    currentRef:
+      data.currentRef && typeof data.currentRef === 'object'
+        ? {
+            type:
+              (data.currentRef as Record<string, unknown>).type === 'branch' ||
+              (data.currentRef as Record<string, unknown>).type === 'tag'
+                ? ((data.currentRef as Record<string, unknown>).type as 'branch' | 'tag')
+                : null,
+            name:
+              typeof (data.currentRef as Record<string, unknown>).name === 'string'
+                ? ((data.currentRef as Record<string, unknown>).name as string)
+                : null,
+          }
+        : { type: null, name: null },
+    branchCount: toNumber(data.branchCount),
+    tagCount: toNumber(data.tagCount),
+    branches: Array.isArray(data.branches) ? (data.branches as RepoRef[]) : [],
+    tags: Array.isArray(data.tags) ? (data.tags as RepoRef[]) : [],
+    readmePath: typeof data.readmePath === 'string' ? data.readmePath : null,
+    updatedAt: typeof data.updatedAt === 'string' ? data.updatedAt : null,
+    latestCommit: data.latestCommit && typeof data.latestCommit === 'object'
+      ? (data.latestCommit as RepoCommit)
+      : null,
+    stats: normalizeRepoStats(data.stats),
+    cached: Boolean(data.cached),
+  };
 }
 
 const resolvedRepoIdCache = new Map<string, string>();
@@ -193,8 +334,9 @@ export async function fetchRepoMeta(repoId: string): Promise<RepoMeta> {
   const metaPromise = apiClient
     .get(`/api/repos/${repoId}/meta`)
     .then(({ data }) => {
-      metaCache.set(repoId, data);
-      return data;
+      const normalized = normalizeRepoMeta(data, repoId);
+      metaCache.set(repoId, normalized);
+      return normalized;
     })
     .finally(() => {
       pendingMeta.delete(repoId);
@@ -304,30 +446,32 @@ export async function checkoutRepoRef(repoId: string, refName: string) {
 
 export async function toggleRepoStar(repoId: string): Promise<RepoStats> {
   const { data } = await apiClient.post(`/api/repos/${repoId}/star`);
+  const stats = normalizeRepoStats(data.stats);
   const cachedMeta = metaCache.get(repoId);
 
   if (cachedMeta) {
     metaCache.set(repoId, {
       ...cachedMeta,
-      stats: data.stats,
+      stats,
     });
   }
 
-  return data.stats;
+  return stats;
 }
 
 export async function toggleRepoWatch(repoId: string): Promise<RepoStats> {
   const { data } = await apiClient.post(`/api/repos/${repoId}/watch`);
+  const stats = normalizeRepoStats(data.stats);
   const cachedMeta = metaCache.get(repoId);
 
   if (cachedMeta) {
     metaCache.set(repoId, {
       ...cachedMeta,
-      stats: data.stats,
+      stats,
     });
   }
 
-  return data.stats;
+  return stats;
 }
 
 export async function ensureRepoReady(owner: string, repo: string) {

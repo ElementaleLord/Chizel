@@ -11,11 +11,13 @@ export function RepositoryLayout({ children }: { children: React.ReactNode }) {
   const [repoMeta, setRepoMeta] = useState<RepoMeta | null>(null);
   const [isUpdatingStar, setIsUpdatingStar] = useState(false);
   const [isUpdatingWatch, setIsUpdatingWatch] = useState(false);
+  const issuesCount = repoMeta?.stats?.issues ?? 0;
+  const pullRequestsCount = repoMeta?.stats?.pullRequests ?? 0;
 
   const tabs = [
     { id: 'code', label: 'Code', icon: Code, path: `/repository/${owner}/${repo}` },
-    { id: 'issues', label: 'Issues', icon: FileText, path: `/repository/${owner}/${repo}/issues`, badge: 12 },
-    { id: 'pulls', label: 'Pull Requests', icon: GitPullRequest, path: `/repository/${owner}/${repo}/pulls`, badge: 3 },
+    { id: 'issues', label: 'Issues', icon: FileText, path: `/repository/${owner}/${repo}/issues`, badge: issuesCount > 0 ? issuesCount : null },
+    { id: 'pulls', label: 'Pull Requests', icon: GitPullRequest, path: `/repository/${owner}/${repo}/pulls`, badge: pullRequestsCount > 0 ? pullRequestsCount : null },
     { id: 'insights', label: 'Insights', icon: BarChart3, path: `/repository/${owner}/${repo}/insights` },
     { id: 'settings', label: 'Settings', icon: Settings, path: `/repository/${owner}/${repo}/settings` },
   ];
@@ -110,29 +112,29 @@ export function RepositoryLayout({ children }: { children: React.ReactNode }) {
           </nav>
           <div className="repo-actions">
             <button
-              className={`repo-action-btn ${repoMeta?.stats.viewerIsWatching ? 'is-active' : ''}`}
+              className={`repo-action-btn ${repoMeta?.stats?.viewerIsWatching ? 'is-active' : ''}`}
               onClick={handleToggleWatch}
               disabled={isUpdatingWatch}
               type="button"
             >
               <Eye className="repo-action-icon" />
-              {repoMeta?.stats.viewerIsWatching ? 'Watching' : 'Watch'}
-              <span className="repo-action-count">{repoMeta?.stats.watchers ?? 0}</span>
+              {repoMeta?.stats?.viewerIsWatching ? 'Watching' : 'Watch'}
+              <span className="repo-action-count">{repoMeta?.stats?.watchers ?? 0}</span>
             </button>
             <button
-              className={`repo-action-btn ${repoMeta?.stats.viewerHasStarred ? 'is-active' : ''}`}
+              className={`repo-action-btn ${repoMeta?.stats?.viewerHasStarred ? 'is-active' : ''}`}
               onClick={handleToggleStar}
               disabled={isUpdatingStar}
               type="button"
             >
               <Star className="repo-action-icon" />
-              {repoMeta?.stats.viewerHasStarred ? 'Starred' : 'Star'}
-              <span className="repo-action-count">{repoMeta?.stats.stars ?? 0}</span>
+              {repoMeta?.stats?.viewerHasStarred ? 'Starred' : 'Star'}
+              <span className="repo-action-count">{repoMeta?.stats?.stars ?? 0}</span>
             </button>
             <button className="repo-action-btn" type="button" disabled>
               <GitFork className="repo-action-icon" />
               Fork
-              <span className="repo-action-count">{repoMeta?.stats.forks ?? 0}</span>
+              <span className="repo-action-count">{repoMeta?.stats?.forks ?? 0}</span>
             </button>
           </div>
         </div>
