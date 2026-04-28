@@ -80,7 +80,7 @@ bool tagExists(char *tag)
 {
     struct dirent *curDir;
     struct stat st;
-    DIR *branches = opendir(BRANCHES_PATH);
+    DIR *branches = opendir(REFS_TAGS_PATH);
 
     while ((curDir = readdir(branches)) != NULL)
     {
