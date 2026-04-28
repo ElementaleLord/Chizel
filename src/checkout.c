@@ -66,14 +66,13 @@ bool checkCurBranch(char *branchName)
     if (!head_ptr)
     {
         printf(STATUS_ERROR_MSG_START "Failed To Open HEAD File To Get Path" MSG_END);
-        // whatIsTheError();
-        //! P: make sure to add to header a prototype for whatIsTheError()
+        whatIsTheError();
         return true;
     }
     if (!fgets(path, 1024, head_ptr))
     {
         printf(STATUS_ERROR_MSG_START "Failed To Read Path From HEAD File" MSG_END);
-        // whatIsTheError();
+        whatIsTheError();
         return true;
     }
     fclose(head_ptr);
@@ -81,10 +80,43 @@ bool checkCurBranch(char *branchName)
     sprintf(curBranchPath, CHZ_PATH "/%s", path);
     sprintf(givenBranchPath, REFS_HEADS_PATH "/%s", branchName);
 
-    printf("cur= %s\n", curBranchPath);
-    printf("giv= %s\n", givenBranchPath);
+    // printf("cur= %s\n", curBranchPath);
+    // printf("giv= %s\n", givenBranchPath);
 
     if (strcmp(curBranchPath, givenBranchPath) == 0)
+        return true;
+    else
+        return false;
+}
+
+
+//~ helper used to check if the given branch is the same as current branch
+bool checkCurTag(char *tagName)
+{
+    char curTagPath[2048], path[1024], givenTagPath[1024];
+
+    FILE *head_ptr = fopen(HEAD_PATH, "r");
+    if (!head_ptr)
+    {
+        printf(STATUS_ERROR_MSG_START "Failed To Open HEAD File To Get Path" MSG_END);
+        whatIsTheError();
+        return true;
+    }
+    if (!fgets(path, 1024, head_ptr))
+    {
+        printf(STATUS_ERROR_MSG_START "Failed To Read Path From HEAD File" MSG_END);
+        whatIsTheError();
+        return true;
+    }
+    fclose(head_ptr);
+
+    sprintf(curTagPath, CHZ_PATH "/%s", path);
+    sprintf(givenTagPath, REFS_TAGS_PATH "/%s", tagName);
+
+    // printf("cur= %s\n", curTagPath);
+    // printf("giv= %s\n", givenTagPath);
+
+    if (strcmp(curTagPath, givenTagPath) == 0)
         return true;
     else
         return false;
@@ -200,6 +232,47 @@ bool alterHEAD(char *branchName)
 }
 
 //~ function used as interface to call needed functions
+void preCheckoutTag(char *tagName)
+{
+    if (checkChz())
+        if (tagExists(tagName))
+            if (!checkCurTag(tagName))
+                if (!checkForChanges())
+                {
+                    zipDirectory(STORE_DATA);
+                    if (alterHEAD(tagName))
+                    {
+                        removeDir(".");
+                        char dataPath[1024];
+                        sprintf(dataPath, ".chz/data/%s/data.pack", tagName);
+                        restorePack(dataPath, ".");
+                    }
+                    else
+                    {
+                        printf(CHECKOUT_ERROR_MSG_START "Failed To ReWrite Head" MSG_END);
+                        whatIsTheError();
+                    }
+                }
+                else
+                {
+                    printf(CHECKOUT_ERROR_MSG_START "There Is Uncommitted Changes" MSG_END);
+                    whatIsTheError();
+                    printf(CHECKOUT_REPORT_MSG_START "Use: chz commit" MSG_END);
+                }
+            else
+            {
+                printf(CHECKOUT_ERROR_MSG_START "Your Already On %s Branch" MSG_END, branchName);
+                whatIsTheError();
+            }
+        else
+        {
+            printf(CHECKOUT_ERROR_MSG_START "Branch %s Does Not Exist" MSG_END, branchName);
+            whatIsTheError();
+            printf(CHECKOUT_REPORT_MSG_START "Use: chz checkout -b %s or chz branch %s" MSG_END, branchName, branchName);
+        }
+}
+
+//~ function used as interface to call needed functions
 void preCheckout(char *branchName, int needsIgnore)
 {
     if (checkChz())
@@ -280,7 +353,7 @@ void checkout(int argc, char *argv[])
         { //% chz checkout -b <branch-name>
             if (checkChz())
             {
-                callBranch(argv[ARG_BASE + 3]); //! replace with proper func
+                callBranch(argv[ARG_BASE + 3]);
                 preCheckout(argv[ARG_BASE + 3], NO_IGNORED);
             }
         }
@@ -289,6 +362,13 @@ void checkout(int argc, char *argv[])
             if (checkChz())
             {
                 preCheckout(argv[ARG_BASE + 3], GET_IGNORED);
+            }
+        }
+        else if (strcmp(argv[ARG_BASE + 2], "-t") == 0)
+        { //% chz checkout -i <branch-name>
+            if (checkChz())
+            {
+                preCheckoutTag(argv[ARG_BASE + 3]);
             }
         }
         break;

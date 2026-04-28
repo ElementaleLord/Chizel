@@ -108,6 +108,7 @@
     bool checkForFile(char *file);
     bool dirExists(const char *path);
     bool branchExists(char *branch);
+    bool tagExists(char *tag);
 
     int isDir(const char *path);
     int isBinary(const char *path);

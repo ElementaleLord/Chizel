@@ -76,6 +76,27 @@ bool dirExists(const char *path)
 }
 
 //~ Checks if a branch exists
+bool tagExists(char *tag)
+{
+    struct dirent *curDir;
+    struct stat st;
+    DIR *branches = opendir(BRANCHES_PATH);
+
+    while ((curDir = readdir(branches)) != NULL)
+    {
+        if (strcmp(curDir->d_name, ".") != 0 && strcmp(curDir->d_name, "..") != 0)
+        {
+            if (strcmp(curDir->d_name, tag) == 0)
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+//~ Checks if a branch exists
 bool branchExists(char *branch)
 {
     struct dirent *curDir;
