@@ -1,11 +1,12 @@
-import { Star, GitFork, Search, Plus } from 'lucide-react';
+import { Star, GitFork, Search, Plus, X } from 'lucide-react';
 import { Link } from 'react-router';
+import { useForm } from 'react-hook-form';
 import { useMemo, useState } from 'react';
 // COMPONENTS
 import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { RepoSideBar } from '../components/chz-comp/RepoSideBar';
 // DATA
-import { formatStarCount, getLanguageColor, getRepositoriesByIds, userRepositoryIds } from '../data/repositories';
+import { formatStarCount, getLanguageColor, getRepositoriesByIds, userRepositoryIds, type RepositorySummary } from '../data/repositories';
 import { TopRepos } from '../data/topRepos.ts';
 
 import './Repositories.css';
@@ -13,6 +14,7 @@ import './Repositories.css';
 export function Repositories() {
   const [visibilityFilter, setVisibilityFilter] = useState<'all' | 'public' | 'private'>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showNewForm, setshowNewForm] = useState(false);
   const [languageFilter, setLanguageFilter] = useState('all');
   const repositories = getRepositoriesByIds(userRepositoryIds);
   const languageOptions = useMemo(
@@ -29,6 +31,22 @@ export function Repositories() {
     return matchesVisibility && matchesSearch && matchesLanguage;
   });
 
+  const defRepoData : RepositorySummary = {
+    id: '',// not sure how youll get this one
+    owner: '',// gonna have to figure out a way to let the pages access user info for this
+    name: '',// input
+    description: '',// input
+    language: '',// input ? maybe blank
+    stars: 0,// as is
+    forks: 0,// as is
+    updated: '0',// as is ? not sure what this value is for
+    visibility: 'Private',// default is private ig
+  }
+  const {register, handleSubmit} = useForm<RepositorySummary>({ defaultValues : defRepoData});
+  const onSubmit = (data : RepositorySummary) =>{ 
+    console.log(data)
+  };
+
   return (
     <div className="repos-container">
       <ChzHeader pageTitle="Repositories" />
@@ -43,12 +61,27 @@ export function Repositories() {
                 type="button"
                 className="repos-new-btn"
                 title="New repository flow is not wired up yet."
+                onClick={() => setshowNewForm(true)}
               >
                 <Plus className="repos-new-btn-icon" />
                 New repository
               </button>
             </div>
-
+            {showNewForm &&
+            <>
+              <div className='repos-new-backdrop' onClick={() => setshowNewForm(false)} />
+              <div className='repos-new-container'>
+                <button  className='repos-new-close-btn'  onClick={() => setshowNewForm(false)}>
+                  <X  className='repos-new-close-icon'/>
+                </button>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                  <input {...register('name')} placeholder="Repository Name" />
+                  <input {...register('description')} placeholder="Description" />
+                  <button className='repos-new-create-btn' >Create Repository</button>
+                </form>
+              </div>
+            </>
+            }
             {/* Search and Filters */}
             <div className="repos-controls">
               <div className="repos-search-container">
