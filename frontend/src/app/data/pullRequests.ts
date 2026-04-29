@@ -1,4 +1,14 @@
-export const pullRequests = [
+export interface pullRequestsSummary{
+    number?: number,
+    title: string,
+    author: string,
+    status: string,
+    comments?: number,
+    time?: string,
+    labels?: Array<string>,
+}
+
+export const pullRequests : pullRequestsSummary[] = [
   {
     number: 42,
     title: 'App crashes on iOS 17 devices',

@@ -1,15 +1,32 @@
 import { useParams, Link } from 'react-router';
-import { CircleDot, MessageSquare, Check, Plus, Search, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+import { CircleDot, MessageSquare, Check, Plus, Search, ChevronRight, X } from 'lucide-react';
+import { useForm } from 'react-hook-form';
 // COMPONENTS
 import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { RepositoryLayout } from '../components/chz-comp/RepositoryLayout';
 //DATA
-import { pullRequests } from '../data/pullRequests';
+import { pullRequests, type pullRequestsSummary } from '../data/pullRequests';
 
 import './RepositoryPullRequests.css';
 
 export function RepositoryPullRequests() {
   const { owner, repo } = useParams();
+
+  const [showNewForm, setshowNewForm] = useState(false);
+  const defReqData : pullRequestsSummary = {
+    number: -1,
+    title: '',
+    author: '',
+    status: '',
+    comments: 0,
+    time: 'Recently',
+    labels: [],
+  }
+  const {register, handleSubmit} = useForm<pullRequestsSummary>({ defaultValues : defReqData});
+  const onSubmit = (data : pullRequestsSummary) =>{ 
+    console.log(data)
+  };
 
   return (
     <>
@@ -27,13 +44,27 @@ export function RepositoryPullRequests() {
               </div>
               <div className="pullreq-title-section">
                 <h1 className="pullreq-title">Pull Requests</h1>
-                <button className="pullreq-new-btn">
+                <button className="pullreq-new-btn" onClick={() => setshowNewForm(true)}>
                   <Plus className="pullreq-new-btn-icon" />
                   New Pull Request
                 </button>
               </div>
             </div>
 
+            {showNewForm &&
+            <>
+              <div className='pullreq-new-backdrop' onClick={() => setshowNewForm(false)} />
+              <div className='pullreq-new-container'>
+                <button  className='pullreq-new-close-btn'  onClick={() => setshowNewForm(false)}>
+                  <X  className='pullreq-new-close-icon'/>
+                </button>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                  <input {...register('title')} placeholder="Pull Request Title" />
+                  <button className='pullreq-new-create-btn' >Create Pull Request</button>
+                </form>
+              </div>
+            </>
+            }
             <div className="pullreq-search-section">
               <div className="pullreq-search-wrapper">
                 <Search className="pullreq-search-icon" />
@@ -72,7 +103,7 @@ export function RepositoryPullRequests() {
                     </h3>
                     <div className="pullreq-item-meta">
                       <span>opened {request.time} by {request.author}</span>
-                      {request.comments > 0 && (
+                      {(request.comments || -1) > 0 && (
                         <>
                           <span>•</span>
                           <div className="pullreq-item-comment">
@@ -83,7 +114,7 @@ export function RepositoryPullRequests() {
                       )}
                     </div>
                     <div className="pullreq-item-labels">
-                      {request.labels.map((label) => (
+                      {request.labels?.map((label) => (
                         <span key={label} className="pullreq-label">
                           {label}
                         </span>

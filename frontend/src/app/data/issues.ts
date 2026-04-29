@@ -1,3 +1,13 @@
+export interface issuesSummary{
+    number: number,
+    title: string,
+    author: string,
+    status: string,
+    comments: number,
+    time: string,
+    labels: Array<string>,
+}
+
 export const issues = [
   {
     number: 42,

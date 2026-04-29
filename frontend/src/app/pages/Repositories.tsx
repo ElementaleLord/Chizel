@@ -14,7 +14,6 @@ import './Repositories.css';
 export function Repositories() {
   const [visibilityFilter, setVisibilityFilter] = useState<'all' | 'public' | 'private'>('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [showNewForm, setshowNewForm] = useState(false);
   const [languageFilter, setLanguageFilter] = useState('all');
   const repositories = getRepositoriesByIds(userRepositoryIds);
   const languageOptions = useMemo(
@@ -30,7 +29,8 @@ export function Repositories() {
     const matchesLanguage = languageFilter === 'all' || repository.language === languageFilter;
     return matchesVisibility && matchesSearch && matchesLanguage;
   });
-
+  
+  const [showNewForm, setshowNewForm] = useState(false);
   const defRepoData : RepositorySummary = {
     id: '',// not sure how youll get this one
     owner: '',// gonna have to figure out a way to let the pages access user info for this
