@@ -4,15 +4,26 @@ import path from "path";
 import fs from "fs";
 import { authGuard, AuthenticatedRequest } from "../middleware/authGuard";
 import {
+  createRepoIssue,
+  createRepoPullRequest,
+  deleteRepoIssue,
+  deleteRepoPullRequest,
   getRepoByOwnerAndName,
   getRepoData,
+  getRepoIssueById,
+  getRepoIssues,
   getRepoMetrics,
+  getRepoOwnerId,
+  getRepoPullRequestById,
+  getRepoPullRequests,
   isStarredRepo,
   isWatchedRepo,
   starRepo,
+  type PullRequestStatus,
+  updateRepoIssue,
+  updateRepoPullRequest,
   watchRepo,
 } from "./database";
-import { get } from "http";
 
 const router = Router();
 
@@ -59,6 +70,36 @@ type RepoCommit = {
   message: string;
   branch: string;
 };
+
+function toNonEmptyString(value: unknown) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function normalizeOptionalText(value: unknown) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  return trimmed ? trimmed : null;
+}
+
+function normalizePullRequestStatus(value: unknown, isOpen: boolean): PullRequestStatus {
+  if (isOpen) {
+    return "Null";
+  }
+
+  return (value === "Accepted" || value === "Rejected" || value === "Merged") ? value : "Null";
+}
+
+async function canManageRepoWorkItem(repoId: number, userId: number, authorId: number) {
+  if (userId === authorId) {
+    return true;
+  }
+
+  const repoOwnerId = await getRepoOwnerId(repoId);
+  return repoOwnerId === userId;
+}
 
 function getHttpStatusFromErrorMessage(message: string) {
   if (message === "Repository not found") {
@@ -778,6 +819,289 @@ router.post("/repos/:repoId/watch", authGuard, async (req: AuthenticatedRequest,
     res.status(status).json({
       error: message,
     });
+  }
+});
+
+router.get("/repos/:repoId/pulls", authGuard, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const repoId = Number(Array.isArray(req.params.repoId) ? req.params.repoId[0] : req.params.repoId);
+    const repo = await getRepoData(BigInt(repoId));
+
+    if (!repo) {
+      res.status(404).json({ error: "Repository not found" });
+      return;
+    }
+
+    const items = await getRepoPullRequests(BigInt(repoId));
+    res.json({
+      repoId,
+      items: items ?? [],
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to load pull requests";
+    res.status(500).json({ error: message });
+  }
+});
+
+router.post("/repos/:repoId/pulls", authGuard, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const repoId = Number(Array.isArray(req.params.repoId) ? req.params.repoId[0] : req.params.repoId);
+    const userId = req.user?.id;
+    const title = toNonEmptyString(req.body?.title);
+    const message = normalizeOptionalText(req.body?.message);
+
+    if (!userId) {
+      res.status(401).json({ error: "Authentication required" });
+      return;
+    }
+
+    if (!title) {
+      res.status(400).json({ error: "Title is required" });
+      return;
+    }
+
+    const repo = await getRepoData(BigInt(repoId));
+    if (!repo) {
+      res.status(404).json({ error: "Repository not found" });
+      return;
+    }
+
+    const createdId = await createRepoPullRequest(repoId, userId, title, message);
+    if (!createdId) {
+      res.status(500).json({ error: "Failed to create pull request" });
+      return;
+    }
+
+    const created = await getRepoPullRequestById(repoId, Number(createdId));
+    res.status(201).json({
+      ok: true,
+      item: created,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to create pull request";
+    res.status(500).json({ error: message });
+  }
+});
+
+router.patch("/repos/:repoId/pulls/:pullRequestId", authGuard, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const repoId = Number(Array.isArray(req.params.repoId) ? req.params.repoId[0] : req.params.repoId);
+    const pullRequestId = Number(Array.isArray(req.params.pullRequestId) ? req.params.pullRequestId[0] : req.params.pullRequestId);
+    const userId = req.user?.id;
+
+    if (!userId) {
+      res.status(401).json({ error: "Authentication required" });
+      return;
+    }
+
+    const existing = await getRepoPullRequestById(repoId, pullRequestId);
+    if (!existing) {
+      res.status(404).json({ error: "Pull request not found" });
+      return;
+    }
+
+    const canManage = await canManageRepoWorkItem(repoId, userId, Number(existing.acc_id));
+    if (!canManage) {
+      res.status(403).json({ error: "You do not have permission to manage this pull request" });
+      return;
+    }
+
+    const title = toNonEmptyString(req.body?.title) ?? existing.pr_name;
+    const message = typeof req.body?.message === "string" ? normalizeOptionalText(req.body.message) : existing.pr_msg;
+    const isOpen = typeof req.body?.isOpen === "boolean" ? req.body.isOpen : existing.pr_isopen;
+    const status = normalizePullRequestStatus(req.body?.status ?? existing.pr_status, isOpen);
+
+    const updated = await updateRepoPullRequest(repoId, pullRequestId, title, message, isOpen, status);
+    if (!updated) {
+      res.status(500).json({ error: "Failed to update pull request" });
+      return;
+    }
+
+    const item = await getRepoPullRequestById(repoId, pullRequestId);
+    res.json({
+      ok: true,
+      item,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to update pull request";
+    res.status(500).json({ error: message });
+  }
+});
+
+router.delete("/repos/:repoId/pulls/:pullRequestId", authGuard, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const repoId = Number(Array.isArray(req.params.repoId) ? req.params.repoId[0] : req.params.repoId);
+    const pullRequestId = Number(Array.isArray(req.params.pullRequestId) ? req.params.pullRequestId[0] : req.params.pullRequestId);
+    const userId = req.user?.id;
+
+    if (!userId) {
+      res.status(401).json({ error: "Authentication required" });
+      return;
+    }
+
+    const existing = await getRepoPullRequestById(repoId, pullRequestId);
+    if (!existing) {
+      res.status(404).json({ error: "Pull request not found" });
+      return;
+    }
+
+    const canManage = await canManageRepoWorkItem(repoId, userId, Number(existing.acc_id));
+    if (!canManage) {
+      res.status(403).json({ error: "You do not have permission to delete this pull request" });
+      return;
+    }
+
+    const deleted = await deleteRepoPullRequest(repoId, pullRequestId);
+    if (!deleted) {
+      res.status(500).json({ error: "Failed to delete pull request" });
+      return;
+    }
+
+    res.json({ ok: true });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to delete pull request";
+    res.status(500).json({ error: message });
+  }
+});
+
+router.get("/repos/:repoId/issues", authGuard, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const repoId = Number(Array.isArray(req.params.repoId) ? req.params.repoId[0] : req.params.repoId);
+    const repo = await getRepoData(BigInt(repoId));
+
+    if (!repo) {
+      res.status(404).json({ error: "Repository not found" });
+      return;
+    }
+
+    const items = await getRepoIssues(repoId);
+    res.json({
+      repoId,
+      items: items ?? [],
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to load issues";
+    res.status(500).json({ error: message });
+  }
+});
+
+router.post("/repos/:repoId/issues", authGuard, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const repoId = Number(Array.isArray(req.params.repoId) ? req.params.repoId[0] : req.params.repoId);
+    const userId = req.user?.id;
+    const title = toNonEmptyString(req.body?.title);
+    const message = normalizeOptionalText(req.body?.message);
+
+    if (!userId) {
+      res.status(401).json({ error: "Authentication required" });
+      return;
+    }
+
+    if (!title) {
+      res.status(400).json({ error: "Title is required" });
+      return;
+    }
+
+    const repo = await getRepoData(BigInt(repoId));
+    if (!repo) {
+      res.status(404).json({ error: "Repository not found" });
+      return;
+    }
+
+    const createdId = await createRepoIssue(repoId, userId, title, message);
+    if (!createdId) {
+      res.status(500).json({ error: "Failed to create issue" });
+      return;
+    }
+
+    const created = await getRepoIssueById(repoId, Number(createdId));
+    res.status(201).json({
+      ok: true,
+      item: created,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to create issue";
+    res.status(500).json({ error: message });
+  }
+});
+
+router.patch("/repos/:repoId/issues/:issueId", authGuard, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const repoId = Number(Array.isArray(req.params.repoId) ? req.params.repoId[0] : req.params.repoId);
+    const issueId = Number(Array.isArray(req.params.issueId) ? req.params.issueId[0] : req.params.issueId);
+    const userId = req.user?.id;
+
+    if (!userId) {
+      res.status(401).json({ error: "Authentication required" });
+      return;
+    }
+
+    const existing = await getRepoIssueById(repoId, issueId);
+    if (!existing) {
+      res.status(404).json({ error: "Issue not found" });
+      return;
+    }
+
+    const canManage = await canManageRepoWorkItem(repoId, userId, Number(existing.acc_id));
+    if (!canManage) {
+      res.status(403).json({ error: "You do not have permission to manage this issue" });
+      return;
+    }
+
+    const title = toNonEmptyString(req.body?.title) ?? existing.i_name;
+    const message = typeof req.body?.message === "string" ? normalizeOptionalText(req.body.message) : existing.i_msg;
+    const isOpen = typeof req.body?.isOpen === "boolean" ? req.body.isOpen : existing.i_open;
+
+    const updated = await updateRepoIssue(repoId, issueId, title, message, isOpen);
+    if (!updated) {
+      res.status(500).json({ error: "Failed to update issue" });
+      return;
+    }
+
+    const item = await getRepoIssueById(repoId, issueId);
+    res.json({
+      ok: true,
+      item,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to update issue";
+    res.status(500).json({ error: message });
+  }
+});
+
+router.delete("/repos/:repoId/issues/:issueId", authGuard, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const repoId = Number(Array.isArray(req.params.repoId) ? req.params.repoId[0] : req.params.repoId);
+    const issueId = Number(Array.isArray(req.params.issueId) ? req.params.issueId[0] : req.params.issueId);
+    const userId = req.user?.id;
+
+    if (!userId) {
+      res.status(401).json({ error: "Authentication required" });
+      return;
+    }
+
+    const existing = await getRepoIssueById(repoId, issueId);
+    if (!existing) {
+      res.status(404).json({ error: "Issue not found" });
+      return;
+    }
+
+    const canManage = await canManageRepoWorkItem(repoId, userId, Number(existing.acc_id));
+    if (!canManage) {
+      res.status(403).json({ error: "You do not have permission to delete this issue" });
+      return;
+    }
+
+    const deleted = await deleteRepoIssue(repoId, issueId);
+    if (!deleted) {
+      res.status(500).json({ error: "Failed to delete issue" });
+      return;
+    }
+
+    res.json({ ok: true });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to delete issue";
+    res.status(500).json({ error: message });
   }
 });
 

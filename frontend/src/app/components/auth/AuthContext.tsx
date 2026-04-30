@@ -10,6 +10,8 @@ interface User {
   id: string;
   email: string;
   username: string;
+  displayname?: string | null;
+  avatarUrl?: string | null;
 }
 
 interface AuthContextType {
@@ -17,6 +19,7 @@ interface AuthContextType {
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, username: string) => Promise<void>;
+  updateUser: (user: User, token?: string | null) => void;
   signOut: () => void;
 }
 
@@ -58,61 +61,56 @@ function clearStoredSession() {
   localStorage.removeItem(LEGACY_USER_STORAGE_KEY);
 }
 
-function createMockSession(email: string, username?: string): AuthSession {
+function normalizeSessionUser(raw: any): User {
   return {
-    user: {
-      id: `mock-${username ?? email}`,
-      email,
-      username: username ?? email.split('@')[0],
-    },
-    token: 'mock-session-token',
+    id: String(raw.id),
+    email: raw.email,
+    username: raw.username,
+    displayname: typeof raw.displayname === 'string' ? raw.displayname : null,
+    avatarUrl: typeof raw.avatarUrl === 'string' ? raw.avatarUrl : null,
   };
 }
 
 export async function requestAuthSession(
-    endpoint: 'signin' | 'signup',
-    payload: { email: string; password: string; username?: string }
+  endpoint: 'signin' | 'signup',
+  payload: { email: string; password: string; username?: string }
 ): Promise<AuthSession> {
 
-    if(!payload.email.trim() || !payload.password.trim()){
-        throw new Error("email and password are required.");
+  if (!payload.email.trim() || !payload.password.trim()) {
+    throw new Error("email and password are required.");
+  }
+
+  if (endpoint === 'signup') {
+    if (!payload.username?.trim()) {
+      throw new Error("Username is required.");
     }
 
-    if(endpoint === 'signup'){
-        if(!payload.username?.trim()){
-            throw new Error("Username is required.");
-        }
+    if (payload.password.length < 8) {
+      throw new Error("Password needs to be at least 8 characters.");
+    }
+  }
 
-        if(payload.password.length < 8){
-            throw new Error("Password needs to be at least 8 characters.");
-        }
+  try {
+    const response = await axios.post(`${API_URL}/auth/${endpoint}`, payload);
+    const data = response.data;
+
+    if (!data.user || !data.token) {
+      throw new Error('Authentication succeeded but the server response was malformed');
     }
 
-    try{
-        const response  = await axios.post(`${API_URL}/auth/${endpoint}`, payload);
-        const data = response.data;
+    return {
+      user: normalizeSessionUser(data.user),
+      token: data.token,
+    };
 
-        if(!data.user || !data.token){
-            throw new Error('Authentication succeeded but the server response was malformed');
-        }
+  } catch (error: any) {
 
-        return {
-            user: {
-                id: String(data.user.id),
-                email: data.user.email,
-                username: data.user.username,
-            },
-            token: data.token,
-        };
-
-    } catch(error: any) {
-
-        if(error.response && error.response.data && error.response.data.message){
-            throw new Error(error.response.data.message);
-        }
-
-        throw new Error('Authentication failed. Please check your connection and try again.');
+    if (error.response && error.response.data && error.response.data.message) {
+      throw new Error(error.response.data.message);
     }
+
+    throw new Error('Authentication failed. Please check your connection and try again.');
+  }
 }
 
 
@@ -140,13 +138,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     persistSession(session);
   };
 
+  const updateUser = (nextUser: User, token?: string | null) => {
+    setUser(nextUser);
+    persistSession({
+      user: nextUser,
+      token: token ?? readStoredSession()?.token ?? null,
+    });
+  };
+
   const signOut = () => {
     setUser(null);
     clearStoredSession();
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, isLoading, signIn, signUp, updateUser, signOut }}>
       {children}
     </AuthContext.Provider>
   );

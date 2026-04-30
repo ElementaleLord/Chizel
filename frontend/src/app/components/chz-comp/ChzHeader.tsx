@@ -87,7 +87,11 @@ export function ChzHeader({ pageTitle }: { pageTitle: string }){
                     onClick={() => setShowUserMenu(!showUserMenu)}
                     className="chz-user-avatar-btn"
                   >
-                    {user?.username?.charAt(0).toUpperCase() || 'U'}
+                    {user?.avatarUrl ? (
+                      <img src={user.avatarUrl} alt={`${user.username} avatar`} className="chz-user-avatar-image" />
+                    ) : (
+                      user?.username?.charAt(0).toUpperCase() || 'U'
+                    )}
                   </button>
                   {showUserMenu && (
                     <div className="chz-user-menu">

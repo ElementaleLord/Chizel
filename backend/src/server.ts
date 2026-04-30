@@ -8,7 +8,8 @@ import { getRepoData, getRepoId, getRepoPullRequests, getUserPasswordEmail, getU
 const app = express();
 
 app.use(cors({origin: process.env.VITE_API_URL, credentials: true}));
-app.use(express.json());
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: true, limit: '5mb'}));
 app.use("/api", cEngine);
 app.use("/auth", authRoutes);
 
@@ -76,5 +77,5 @@ app.get("/api/user/repos/:username", async (req, res) =>{
     }
 });
 
-
+console.log("Database connection acknowledgable");
 app.listen(3000, () => console.log("server running on port 3000"));

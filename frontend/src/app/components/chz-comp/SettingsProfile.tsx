@@ -1,22 +1,41 @@
+import type { ChangeEvent, FormEvent } from 'react';
+
 import './SettingsBase.css';
 import './SettingsProfile.css';
 
 interface ProfileData {
-  name: string;
+  displayname: string;
   username: string;
   bio: string;
-  website: string;
-  location: string;
-  avatar: string;
+  avatarFallback: string;
+  avatarUrl?: string | null;
 }
 
 interface SettingsProfileProps {
   profileData: ProfileData;
+  isSaving: boolean;
+  error?: string | null;
+  success?: string | null;
+  ondisplaynameChange: (value: string) => void;
+  onBioChange: (value: string) => void;
+  onAvatarSelect: (event: ChangeEvent<HTMLInputElement>) => void;
+  onAvatarRemove: () => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }
 
-export function SettingsProfile({ profileData }: SettingsProfileProps) {
+export function SettingsProfile({
+  profileData,
+  isSaving,
+  error,
+  success,
+  ondisplaynameChange,
+  onBioChange,
+  onAvatarSelect,
+  onAvatarRemove,
+  onSubmit,
+}: SettingsProfileProps) {
   return (
-    <div className="space-y-6">
+    <form className="space-y-6" onSubmit={onSubmit}>
       <div>
         <h2 className="settings-section-heading">Public profile</h2>
         <div className="space-y-4">
@@ -24,11 +43,32 @@ export function SettingsProfile({ profileData }: SettingsProfileProps) {
             <label className="settings-label">Profile picture</label>
             <div className="settings-profile-pic-group">
               <div className="settings-profile-pic">
-                {profileData.avatar}
+                {profileData.avatarUrl ? (
+                  <img
+                    src={profileData.avatarUrl}
+                    alt={`${profileData.username} avatar`}
+                    className="settings-profile-pic-image"
+                  />
+                ) : (
+                  profileData.avatarFallback
+                )}
               </div>
-              <button className="settings-upload-btn">
-                Upload new picture
-              </button>
+              <div className="settings-profile-pic-actions">
+                <label className="settings-upload-btn">
+                  Upload new picture
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/gif,image/webp"
+                    className="settings-hidden-file-input"
+                    onChange={onAvatarSelect}
+                  />
+                </label>
+                {profileData.avatarUrl && (
+                  <button type="button" className="settings-upload-btn" onClick={onAvatarRemove}>
+                    Remove picture
+                  </button>
+                )}
+              </div>
             </div>
           </div>
           <div className="settings-form-group">
@@ -36,16 +76,8 @@ export function SettingsProfile({ profileData }: SettingsProfileProps) {
             <input
               id="name"
               type="text"
-              defaultValue={profileData.name}
-              className="settings-input"
-            />
-          </div>
-          <div className="settings-form-group">
-            <label htmlFor="username" className="settings-label">Username</label>
-            <input
-              id="username"
-              type="text"
-              defaultValue={profileData.username}
+              value={profileData.displayname}
+              onChange={(event) => ondisplaynameChange(event.target.value)}
               className="settings-input"
             />
           </div>
@@ -54,35 +86,20 @@ export function SettingsProfile({ profileData }: SettingsProfileProps) {
             <textarea
               id="bio"
               rows={3}
-              defaultValue={profileData.bio}
+              value={profileData.bio}
+              onChange={(event) => onBioChange(event.target.value)}
               className="settings-textarea"
-            />
-          </div>
-          <div className="settings-form-group">
-            <label htmlFor="website" className="settings-label">Website</label>
-            <input
-              id="website"
-              type="url"
-              defaultValue={profileData.website}
-              className="settings-input"
-            />
-          </div>
-          <div className="settings-form-group">
-            <label htmlFor="location" className="settings-label">Location</label>
-            <input
-              id="location"
-              type="text"
-              defaultValue={profileData.location}
-              className="settings-input"
             />
           </div>
         </div>
       </div>
+      {error && <div className="settings-profile-message settings-profile-message-error">{error}</div>}
+      {success && <div className="settings-profile-message settings-profile-message-success">{success}</div>}
       <div className="settings-divider">
-        <button className="settings-save-btn">
-          Save changes
+        <button type="submit" className="settings-save-btn" disabled={isSaving}>
+          {isSaving ? 'Saving...' : 'Save changes'}
         </button>
       </div>
-    </div>
+    </form>
   );
 }

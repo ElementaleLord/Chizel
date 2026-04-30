@@ -225,6 +225,18 @@ function getNodeCacheKey(repoId: string, repoPath: string) {
   return `${repoId}:${repoPath}`;
 }
 
+export function updateCachedRepoStats(repoId: string, stats: RepoStats) {
+  const cachedMeta = metaCache.get(repoId);
+  if (!cachedMeta) {
+    return;
+  }
+
+  metaCache.set(repoId, {
+    ...cachedMeta,
+    stats,
+  });
+}
+
 export function clearRepoCaches(repoId: string) {
   syncedRepoIds.delete(repoId);
   metaCache.delete(repoId);
@@ -447,30 +459,14 @@ export async function checkoutRepoRef(repoId: string, refName: string) {
 export async function toggleRepoStar(repoId: string): Promise<RepoStats> {
   const { data } = await apiClient.post(`/api/repos/${repoId}/star`);
   const stats = normalizeRepoStats(data.stats);
-  const cachedMeta = metaCache.get(repoId);
-
-  if (cachedMeta) {
-    metaCache.set(repoId, {
-      ...cachedMeta,
-      stats,
-    });
-  }
-
+  updateCachedRepoStats(repoId, stats);
   return stats;
 }
 
 export async function toggleRepoWatch(repoId: string): Promise<RepoStats> {
   const { data } = await apiClient.post(`/api/repos/${repoId}/watch`);
   const stats = normalizeRepoStats(data.stats);
-  const cachedMeta = metaCache.get(repoId);
-
-  if (cachedMeta) {
-    metaCache.set(repoId, {
-      ...cachedMeta,
-      stats,
-    });
-  }
-
+  updateCachedRepoStats(repoId, stats);
   return stats;
 }
 
