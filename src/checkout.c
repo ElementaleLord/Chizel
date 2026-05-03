@@ -210,7 +210,7 @@ void callBranch(char *branchName)
 }
 
 //~ function used to overwrite HEAD with the given branch path to make it the Current Branch
-bool alterHEAD(char *branchName)
+bool alterHEAD(char *branchName, bool isTag)
 {
     char path[1024];
 
@@ -222,7 +222,12 @@ bool alterHEAD(char *branchName)
         //! P: make sure to add to header a prototype for whatIsTheError()
         return false;
     }
-    sprintf(path, "refs/heads/%s", branchName);
+    if(!isTag){
+        sprintf(path, "refs/heads/%s", branchName);
+    }else{
+        sprintf(path, "refs/tags/%s", branchName);
+    }
+    
 
     fputs(path, head_ptr);
     fclose(head_ptr);
@@ -239,12 +244,15 @@ void preCheckoutTag(char *tagName)
             if (!checkCurTag(tagName))
                 if (!checkForChanges())
                 {
-                    zipDirectory(STORE_DATA);
-                    if (alterHEAD(tagName))
+                    if(!isHeadTag()){
+                        zipDirectory(STORE_DATA);
+                    }
+
+                    if (alterHEAD(tagName, true))
                     {
                         removeDir(".");
                         char dataPath[1024];
-                        sprintf(dataPath, ".chz/data/%s/data.pack", tagName);
+                        sprintf(dataPath, ".chz/data/tags/%s/data.pack", tagName);
                         restorePack(dataPath, ".");
                     }
                     else
@@ -261,14 +269,13 @@ void preCheckoutTag(char *tagName)
                 }
             else
             {
-                printf(CHECKOUT_ERROR_MSG_START "Your Already On %s Branch" MSG_END, branchName);
+                printf(CHECKOUT_ERROR_MSG_START "Your Already On %s Tag" MSG_END, tagName);
                 whatIsTheError();
             }
         else
         {
-            printf(CHECKOUT_ERROR_MSG_START "Branch %s Does Not Exist" MSG_END, branchName);
+            printf(CHECKOUT_ERROR_MSG_START "Tag %s Does Not Exist" MSG_END, tagName);
             whatIsTheError();
-            printf(CHECKOUT_REPORT_MSG_START "Use: chz checkout -b %s or chz branch %s" MSG_END, branchName, branchName);
         }
 }
 
@@ -280,8 +287,10 @@ void preCheckout(char *branchName, int needsIgnore)
             if (!checkCurBranch(branchName))
                 if (!checkForChanges())
                 {
-                    zipDirectory(STORE_DATA);
-                    if (alterHEAD(branchName))
+                    if(!isHeadTag()){
+                        zipDirectory(STORE_DATA);
+                    }
+                    if (alterHEAD(branchName, false))
                     {
                         removeDir(".");
                         char dataPath[1024];
@@ -365,7 +374,7 @@ void checkout(int argc, char *argv[])
             }
         }
         else if (strcmp(argv[ARG_BASE + 2], "-t") == 0)
-        { //% chz checkout -i <branch-name>
+        { //% chz checkout -t <tag-name>
             if (checkChz())
             {
                 preCheckoutTag(argv[ARG_BASE + 3]);

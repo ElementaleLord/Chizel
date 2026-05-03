@@ -707,7 +707,7 @@ void curMerge(char *head, char *branch)
         }
     }
 
-    zipDirectory(STORE_DATA);
+    if(!isHeadTag()) zipDirectory(STORE_DATA);
 
     char headPack[1024], branchPack[1024];
     snprintf(headPack, sizeof(headPack), "%s/%s/data.pack", DATA_PATH, head);
@@ -771,6 +771,11 @@ void mergeHelp()
 //~ handles cases based on arguments to call needed functions
 void merge(int argc, char *argv[])
 {
+    if(isHeadTag()){
+        printf(CHZ_ERROR_MSG_START"Prohibited from utilising this command whilst on a tag"MSG_END);
+        return;
+    }
+    
     switch (argc)
     {
     //@ chz merge <arg>

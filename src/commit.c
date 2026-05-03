@@ -349,6 +349,12 @@ void commitHelp()
 
 void commit(int argc, char* argv[])
 {
+    if(isHeadTag())
+    {
+        printf(CHZ_ERROR_MSG_START"Prohibited from utilising this command whilst on a tag"MSG_END);
+        return;
+    }
+
     switch(argc)
     {
         case ARG_BASE + 3:
@@ -390,7 +396,7 @@ void commit(int argc, char* argv[])
                 free(index.content);
 
                 addLogEntry(parent_hash, commit_hash);
-                zipDirectory(STORE_DATA);
+                if(!isHeadTag()) zipDirectory(STORE_DATA);
             }
             break;
 

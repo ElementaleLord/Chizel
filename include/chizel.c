@@ -42,6 +42,33 @@ int isBinary(const char *path)
     return (nonprintable > n * 0.3);
 }
 
+//~ Checks if the current head is a tag directory, used to prevent modifications on tags
+bool isHeadTag(){
+    static char head[256];
+    FILE *f = fopen(HEAD_PATH, "r");
+    if (!f)
+    {
+        printf(CHZ_ERROR_MSG_START "Error opening HEAD" MSG_END);
+        return NULL;
+    }
+
+    if (fgets(head, sizeof(head), f) == NULL)
+    {
+        printf(CHZ_ERROR_MSG_START "Error reading HEAD" MSG_END);
+        return NULL;
+    }
+    fclose(f);
+
+    char *prefix = "refs/tags/";
+
+    if (strncmp(head, prefix, strlen(prefix)) == 0)
+    {
+        return true;
+    }
+
+    return false; 
+}
+
 //~ Reverses a string, log reads from end to beginning of line
 void reverseString(char *s)
 {

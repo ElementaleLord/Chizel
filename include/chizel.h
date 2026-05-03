@@ -112,6 +112,7 @@
 
     int isDir(const char *path);
     int isBinary(const char *path);
+    bool isHeadTag();
     bool checkIgnore(char *file, const char *relative_path);
 
     char *getHead();

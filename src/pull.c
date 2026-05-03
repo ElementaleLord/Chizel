@@ -7,6 +7,11 @@ void pullHelp(){
 
 void pull(int argc, char* argv[]){
 
+    if(isHeadTag()){
+        printf(CHZ_ERROR_MSG_START"Prohibited from utilising this command whilst on a tag"MSG_END);
+        return;
+    }
+    
     switch(argc){
         //@ chz pull
         case ARG_BASE + 2:

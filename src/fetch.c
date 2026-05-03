@@ -176,6 +176,10 @@ bool preFetch(){
 //~ main runner function used to determine case and call appropriate function
 bool fetch(int argc, char* argv[])
 {
+    if(isHeadTag()){
+        printf(CHZ_ERROR_MSG_START"Prohibited from utilising this command whilst on a tag"MSG_END);
+        return false;
+    }
     
     switch(argc)
     {

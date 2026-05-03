@@ -9,6 +9,6 @@
     #define GET_IGNORED 0
     #define NO_IGNORED 1
 
-    bool alterHEAD(char *branchName);
+    bool alterHEAD(char *branchName, bool isTag);
 
 #endif

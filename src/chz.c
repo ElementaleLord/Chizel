@@ -23,6 +23,10 @@ int main(int argc, char *argv[]){
         checkout(argc, argv);
     }
 
+    else if(strcmp(argv[1], "clone")==0){
+        clone(argc, argv);
+    }
+
     else if(strcmp(argv[1], "commit")==0){
         commit(argc, argv);
     }
@@ -58,4 +62,7 @@ int main(int argc, char *argv[]){
     printf(CHZ_ERROR_MSG_START"Invalid Command"MSG_END);
     return 1;
 }
-//gcc *.c ../include/chizel.c ../include/chzdb.c -o chz -lcrypto -lz -lpq -lcjson
+
+/*
+gcc *.c ../include/chizel.c ../include/chzdb.c -o chz -lcrypto -lz -lpq
+*/
