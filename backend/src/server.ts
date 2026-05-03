@@ -15,11 +15,6 @@ app.use("/auth", authRoutes);
 
 console.log("C engine router mounted correctly");
 
-//git command sanitzation, WIP
-//app.post('/git-command', authGuard, (req, res) => {
-//    res.json({ message: `Executing command for ${req.user?.username}` });
-//});
-
 app.get("/api/password/username/:username", async (req, res) =>{
     try{
         const pass = await getUserPasswordName(req.params.username);
