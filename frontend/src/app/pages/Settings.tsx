@@ -1,6 +1,6 @@
 import type { ChangeEvent, FormEvent } from 'react';
 import { useEffect, useState } from 'react';
-import { User, Bell, Shield, Palette, Key, Trash2 } from 'lucide-react';
+import { User, Bell, Shield, Palette, Trash2 } from 'lucide-react';
 // COMPONENTS
 import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { useAuth } from '../components/auth/AuthContext';
@@ -11,7 +11,7 @@ import { SettingsSecurity } from '../components/chz-comp/SettingsSecurity';
 import { SettingsNotifications } from '../components/chz-comp/SettingsNotifications';
 import { SettingsAppearance } from '../components/chz-comp/SettingsAppearance';
 // DATA
-import { type SettingsTab, notificationPreferences, connectedAccounts } from '../data/settingsData';
+import { type SettingsTab, notificationPreferences, connectedAccounts, accountData } from '../data/settingsData';
 import { fetchMyProfile, updateMyProfile } from '../lib/profileApi';
 
 import './Settings.css';

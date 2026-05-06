@@ -1,27 +1,16 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Link, useParams } from 'react-router';
-import { Check, ChevronRight, CircleDot, Plus, Search, Trash2 } from 'lucide-react';
-import { ChzHeader } from '../components/chz-comp/ChzHeader';
-import { RepositoryLayout } from '../components/chz-comp/RepositoryLayout';
-import { useAuth } from '../components/auth/AuthContext';
-import { ensureRepoReady } from '../lib/repoApi';
-import {
-  createRepoIssue,
-  deleteRepoIssue,
-  fetchRepoIssues,
-  updateRepoIssue,
-  type RepoIssueItem,
-} from '../lib/repoWorkApi';
-import { formatRelativeTime } from '../lib/time';
+import { CircleDot, Check, Plus, Search, ChevronRight, X, Trash2 } from 'lucide-react';
 import { useParams, Link } from 'react-router';
-import { CircleDot, MessageSquare, Check, Plus, Search, ChevronRight, X } from 'lucide-react';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 // COMPONENTS
 import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { RepositoryLayout } from '../components/chz-comp/RepositoryLayout';
+import { useAuth } from '../components/auth/AuthContext';
+import { ensureRepoReady } from '../lib/repoApi';
+import { createRepoIssue, deleteRepoIssue, fetchRepoIssues, updateRepoIssue, type RepoIssueItem, } from '../lib/repoWorkApi';
+import { formatRelativeTime } from '../lib/time';
 // DATA
-import { issues, type issuesSummary} from '../data/issues';
+import { type issuesSummary} from '../data/issues';
 
 import './RepositoryWorkItems.css';
 
@@ -146,7 +135,7 @@ export function RepositoryIssues() {
     setError(null);
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmitASYNC(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!repoId) {
@@ -260,6 +249,8 @@ export function RepositoryIssues() {
                 </div>
                 <button type="button" className="repo-work-primary-btn" onClick={startCreate}>
                   <Plus className="repo-work-btn-icon" />
+                </button>
+              </div>
               <div className="issues-title-section">
                 <h1 className="issues-title">Issues</h1>
                 <button className="issues-new-btn" onClick={() => setshowNewForm(true)}>
@@ -281,20 +272,22 @@ export function RepositoryIssues() {
               <div className="repo-work-metric-card">
                 <span className="repo-work-metric-label">Total</span>
                 <strong>{items.length}</strong>
-            {showNewForm &&
-            <>
-              <div className='issues-new-backdrop' onClick={() => setshowNewForm(false)} />
-              <div className='issues-new-container'>
-                <button  className='issues-new-close-btn'  onClick={() => setshowNewForm(false)}>
-                  <X  className='issues-new-close-icon'/>
-                </button>
-                <form onSubmit={handleSubmit(onSubmit)}>
-                  <input {...register('title')} placeholder="Issue Title" />
-                  <button className='issues-new-create-btn' >Create Issue</button>
-                </form>
               </div>
-            </>
-            }
+              {showNewForm &&
+              <>
+                <div className='issues-new-backdrop' onClick={() => setshowNewForm(false)} />
+                <div className='issues-new-container'>
+                  <button  className='issues-new-close-btn'  onClick={() => setshowNewForm(false)}>
+                    <X  className='issues-new-close-icon'/>
+                  </button>
+                  <form onSubmit={handleSubmit(onSubmit)}>
+                    <input {...register('title')} placeholder="Issue Title" />
+                    <button className='issues-new-create-btn' >Create Issue</button>
+                  </form>
+                </div>
+              </>
+              }
+            </div>
             <div className="issues-search-section">
               <div className="issues-search-wrapper">
                 <Search className="issues-search-icon" />
@@ -307,7 +300,7 @@ export function RepositoryIssues() {
             </div>
 
             {isComposerOpen && (
-              <form className="repo-work-composer" onSubmit={handleSubmit}>
+              <form className="repo-work-composer" onSubmit={handleSubmitASYNC}>
                 <div className="repo-work-composer-header">
                   <h2>{editingId ? `Edit Issue #${editingId}` : 'Open a new issue'}</h2>
                   <button type="button" className="repo-work-secondary-btn" onClick={resetComposer}>

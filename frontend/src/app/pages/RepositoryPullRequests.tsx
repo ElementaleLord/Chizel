@@ -1,28 +1,17 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { Link, useParams } from 'react-router';
-import { Check, ChevronRight, CircleDot, GitMerge, Plus, Search, Trash2, XCircle } from 'lucide-react';
-import { ChzHeader } from '../components/chz-comp/ChzHeader';
-import { RepositoryLayout } from '../components/chz-comp/RepositoryLayout';
+import { useForm } from 'react-hook-form';
+import { CircleDot, Check, Plus, Search, ChevronRight, X, Trash2, XCircle, GitMerge } from 'lucide-react';
+import { useParams, Link } from 'react-router';
+// COMPONENTS
 import { useAuth } from '../components/auth/AuthContext';
 import { ensureRepoReady } from '../lib/repoApi';
-import {
-  createRepoPullRequest,
-  deleteRepoPullRequest,
-  fetchRepoPullRequests,
-  updateRepoPullRequest,
-  type PullRequestStatus,
-  type RepoPullRequestItem,
-} from '../lib/repoWorkApi';
+import { createRepoPullRequest, deleteRepoPullRequest, fetchRepoPullRequests, updateRepoPullRequest, 
+  type PullRequestStatus, type RepoPullRequestItem, } from '../lib/repoWorkApi';
 import { formatRelativeTime } from '../lib/time';
-import { useParams, Link } from 'react-router';
-import { useState } from 'react';
-import { CircleDot, MessageSquare, Check, Plus, Search, ChevronRight, X } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-// COMPONENTS
 import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { RepositoryLayout } from '../components/chz-comp/RepositoryLayout';
 //DATA
-import { pullRequests, type pullRequestsSummary } from '../data/pullRequests';
+import { type pullRequestsSummary } from '../data/pullRequests';
 
 import './RepositoryWorkItems.css';
 
@@ -152,7 +141,7 @@ export function RepositoryPullRequests() {
     setError(null);
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmitASYNC(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!repoId) {
@@ -267,12 +256,14 @@ export function RepositoryPullRequests() {
                 </div>
                 <button type="button" className="repo-work-primary-btn" onClick={startCreate}>
                   <Plus className="repo-work-btn-icon" />
-              <div className="pullreq-title-section">
-                <h1 className="pullreq-title">Pull Requests</h1>
-                <button className="pullreq-new-btn" onClick={() => setshowNewForm(true)}>
-                  <Plus className="pullreq-new-btn-icon" />
-                  New Pull Request
                 </button>
+                <div className="pullreq-title-section">
+                  <h1 className="pullreq-title">Pull Requests</h1>
+                  <button className="pullreq-new-btn" onClick={() => setshowNewForm(true)}>
+                    <Plus className="pullreq-new-btn-icon" />
+                    New Pull Request
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -288,6 +279,8 @@ export function RepositoryPullRequests() {
               <div className="repo-work-metric-card">
                 <span className="repo-work-metric-label">Merged</span>
                 <strong>{mergedCount}</strong>
+              </div>
+            </div>
             {showNewForm &&
             <>
               <div className='pullreq-new-backdrop' onClick={() => setshowNewForm(false)} />
@@ -314,7 +307,7 @@ export function RepositoryPullRequests() {
             </div>
 
             {isComposerOpen && (
-              <form className="repo-work-composer" onSubmit={handleSubmit}>
+              <form className="repo-work-composer" onSubmit={handleSubmitASYNC}>
                 <div className="repo-work-composer-header">
                   <h2>{editingId ? `Edit Pull Request #${editingId}` : 'Open a new pull request'}</h2>
                   <button type="button" className="repo-work-secondary-btn" onClick={resetComposer}>
@@ -376,138 +369,145 @@ export function RepositoryPullRequests() {
             {error && <div className="repo-work-alert">{error}</div>}
 
             <div className="repo-work-list">
-              {isLoading ? (
-                <div className="repo-work-empty">Loading pull requests...</div>
-              ) : filteredItems.length === 0 ? (
-                <div className="repo-work-empty">
-                  {filter === 'open' ? 'No open pull requests match your search.' : 'No closed pull requests match your search.'}
-            <div className="pullreq-list">
-              {pullRequests.map((request, i) => (
-                <div key={i} className="pullreq-item">
-                  <div className="pullreq-status-icon">
-                    <div className={`pullreq-status-icon-container ${request.status === 'open' ? 'pullreq-status-open' : 'pullreq-status-closed'}`}>
-                      {request.status === 'open' ? (
-                        <CircleDot className="pullreq-status-open-icon" />
-                      ) : (
-                        <Check className="pullreq-status-closed-icon" />
-                      )}
-                    </div>
+              {isLoading ? 
+                ( 
+                  <div className="repo-work-empty">Loading pull requests...</div>
+                )
+                : 
+                filteredItems.length === 0 ? 
+                (
+                  <div className="repo-work-empty">
+                    { filter === 'open' ? 'No open pull requests match your search.' : 'No closed pull requests match your search.'}
                   </div>
-                  <div className="pullreq-content">
-                    <h3 className="pullreq-item-title">
-                      {request.title} <span className="pullreq-item-number">#{request.number}</span>
-                    </h3>
-                    <div className="pullreq-item-meta">
-                      <span>opened {request.time} by {request.author}</span>
-                      {(request.comments || -1) > 0 && (
-                        <>
-                          <span>•</span>
-                          <div className="pullreq-item-comment">
-                            <MessageSquare className="pullreq-item-comment-icon" />
-                            <span>{request.comments}</span>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                    <div className="pullreq-item-labels">
-                      {request.labels?.map((label) => (
-                        <span key={label} className="pullreq-label">
-                          {label}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                filteredItems.map((item) => {
-                  const isOpen = item.pr_isopen;
-                  const isAuthor = user?.username === item.author_username;
+                ) 
+                :
+                <div className="pullreq-list">
+                  { 
+                  // pullRequests.map((request, i) => (
+                  //   <div key={i} className="pullreq-item">
+                  //     <div className="pullreq-status-icon">
+                  //       <div className={`pullreq-status-icon-container ${request.status === 'open' ? 'pullreq-status-open' : 'pullreq-status-closed'}`}>
+                  //         {request.status === 'open' ? 
+                  //           ( <CircleDot className="pullreq-status-open-icon" /> ) 
+                  //           : ( <Check className="pullreq-status-closed-icon" /> )
+                  //         }
+                  //       </div>
+                  //     </div>
+                  //     <div className="pullreq-content">
+                  //       <h3 className="pullreq-item-title">
+                  //         {request.title} <span className="pullreq-item-number">#{request.number}</span>
+                  //       </h3>
+                  //       <div className="pullreq-item-meta">
+                  //         <span>opened {request.time} by {request.author}</span>
+                  //         {(request.comments || -1) > 0 && 
+                  //           ( <>
+                  //             <span>•</span>
+                  //             <div className="pullreq-item-comment">
+                  //               <MessageSquare className="pullreq-item-comment-icon" />
+                  //               <span>{request.comments}</span>
+                  //             </div>
+                  //           </> )
+                  //         }
+                  //       </div>
+                  //       <div className="pullreq-item-labels">
+                  //         {request.labels?.map(
+                  //           (label) => ( <span key={label} className="pullreq-label">{label}</span> )
+                  //           )
+                  //         }
+                  //       </div>
+                  //     </div>
+                  //   </div>
+                  // ) , (
+                    filteredItems.map
+                    (
+                      (item) => 
+                      {
+                        const isOpen = item.pr_isopen;
+                        const isAuthor = user?.username === item.author_username;
 
-                  return (
-                    <article key={item.pr_id} className="repo-work-item">
-                      <div className="repo-work-status-icon">
-                        <div className={`repo-work-status-badge ${isOpen ? 'repo-work-status-open' : 'repo-work-status-closed'}`}>
-                          {isOpen ? <CircleDot className="repo-work-status-svg" /> : <Check className="repo-work-status-svg" />}
-                        </div>
-                      </div>
-                      <div className="repo-work-item-body">
-                        <div className="repo-work-item-header">
-                          <h3 className="repo-work-item-title">
-                            {item.pr_name} <span className="repo-work-item-number">#{item.pr_id}</span>
-                          </h3>
-                          <span className={`repo-work-pill ${isOpen ? 'repo-work-pill-open' : 'repo-work-pill-closed'}`}>
-                            {isOpen ? 'Open' : item.pr_status}
-                          </span>
-                        </div>
-                        <p className="repo-work-item-meta">
-                          opened {formatRelativeTime(item.pr_creation_date)} by {item.author_username}
-                          {!isOpen && item.pr_resolve_date ? ` • resolved ${formatRelativeTime(item.pr_resolve_date)}` : ''}
-                        </p>
-                        {item.pr_msg && <p className="repo-work-item-message">{item.pr_msg}</p>}
-                        <div className="repo-work-action-row">
-                          <button type="button" className="repo-work-secondary-btn" onClick={() => startEdit(item)}>
-                            Edit
-                          </button>
-                          {isOpen ? (
-                            <>
-                              <button
-                                type="button"
-                                className="repo-work-secondary-btn"
-                                onClick={() => void handleStateChange(item, false, 'Merged')}
-                                disabled={isSaving}
-                              >
-                                <GitMerge className="repo-work-inline-icon" />
-                                Merge
-                              </button>
-                              <button
-                                type="button"
-                                className="repo-work-secondary-btn"
-                                onClick={() => void handleStateChange(item, false, 'Accepted')}
-                                disabled={isSaving}
-                              >
-                                <Check className="repo-work-inline-icon" />
-                                Accept
-                              </button>
-                              <button
-                                type="button"
-                                className="repo-work-secondary-btn"
-                                onClick={() => void handleStateChange(item, false, 'Rejected')}
-                                disabled={isSaving}
-                              >
-                                <XCircle className="repo-work-inline-icon" />
-                                Reject
-                              </button>
-                            </>
-                          ) : (
-                            <button
-                              type="button"
-                              className="repo-work-secondary-btn"
-                              onClick={() => void handleStateChange(item, true, 'Null')}
-                              disabled={isSaving}
-                            >
-                              Reopen
-                            </button>
-                          )}
-                          <button
-                            type="button"
-                            className="repo-work-danger-btn"
-                            onClick={() => void handleDelete(item)}
-                            disabled={isSaving}
-                          >
-                            <Trash2 className="repo-work-inline-icon" />
-                            Delete
-                          </button>
-                          {!isAuthor && (
-                            <span className="repo-work-helper-text">
-                              Owner actions are enforced by the backend if this isn’t yours.
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </article>
-                  );
-                })
-              )}
+                        return (
+                          <article key={item.pr_id} className="repo-work-item">
+                            <div className="repo-work-status-icon">
+                              <div className={`repo-work-status-badge ${isOpen ? 'repo-work-status-open' : 'repo-work-status-closed'}`}>
+                                {isOpen ? <CircleDot className="repo-work-status-svg" /> : <Check className="repo-work-status-svg" />}
+                              </div>
+                            </div>
+                            <div className="repo-work-item-body">
+                              <div className="repo-work-item-header">
+                                <h3 className="repo-work-item-title">
+                                  {item.pr_name} <span className="repo-work-item-number">#{item.pr_id}</span>
+                                </h3>
+                                <span className={`repo-work-pill ${isOpen ? 'repo-work-pill-open' : 'repo-work-pill-closed'}`}>
+                                  {isOpen ? 'Open' : item.pr_status}
+                                </span>
+                              </div>
+                              <p className="repo-work-item-meta">
+                                opened {formatRelativeTime(item.pr_creation_date)} by {item.author_username}
+                                {!isOpen && item.pr_resolve_date ? ` • resolved ${formatRelativeTime(item.pr_resolve_date)}` : ''}
+                              </p>
+                              {item.pr_msg && <p className="repo-work-item-message">{item.pr_msg}</p>}
+                              <div className="repo-work-action-row">
+                                <button type="button" className="repo-work-secondary-btn" onClick={() => startEdit(item)}>
+                                  Edit
+                                </button>
+                                {isOpen ? 
+                                  (
+                                    <>
+                                      <button type="button" className="repo-work-secondary-btn"
+                                        onClick={() => void handleStateChange(item, false, 'Merged')}
+                                        disabled={isSaving}
+                                      >
+                                        <GitMerge className="repo-work-inline-icon" />
+                                        Merge
+                                      </button>
+                                      <button type="button" className="repo-work-secondary-btn"
+                                        onClick={() => void handleStateChange(item, false, 'Accepted')}
+                                        disabled={isSaving}
+                                      >
+                                        <Check className="repo-work-inline-icon" />
+                                        Accept
+                                      </button>
+                                      <button type="button" className="repo-work-secondary-btn"
+                                        onClick={() => void handleStateChange(item, false, 'Rejected')}
+                                        disabled={isSaving}
+                                      >
+                                        <XCircle className="repo-work-inline-icon" />
+                                        Reject
+                                      </button>
+                                    </>
+                                  ) 
+                                  : (
+                                    <button type="button" className="repo-work-secondary-btn"
+                                      onClick={() => void handleStateChange(item, true, 'Null')}
+                                      disabled={isSaving}
+                                    >
+                                      Reopen
+                                    </button>
+                                  )
+                                }
+                                <button type="button" className="repo-work-danger-btn"
+                                  onClick={() => void handleDelete(item)}
+                                  disabled={isSaving}
+                                >
+                                  <Trash2 className="repo-work-inline-icon" />
+                                  Delete
+                                </button>
+                                {!isAuthor && 
+                                  (
+                                    <span className="repo-work-helper-text">
+                                      Owner actions are enforced by the backend if this isn’t yours.
+                                    </span>
+                                  )
+                                }
+                              </div>
+                            </div>
+                          </article>
+                        );//end of nested return
+                      }// end of function
+                    )// end of filter call
+                  }
+                </div>
+              }
             </div>
           </div>
         </div>

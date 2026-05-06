@@ -1,15 +1,6 @@
 import { GitFork, Star } from 'lucide-react';
-
+import { type UserProfileRepository } from '../../lib/profileApi';
 import './RepositoryEntry.css';
-
-interface RepoEntryProp {
-  name: string;
-  description: string;
-  language: string;
-  stars: number;
-  forks: number;
-  updated: string;
-}
 
 const getLanguageColor = (language: string) => {
   switch (language) {
@@ -22,7 +13,7 @@ const getLanguageColor = (language: string) => {
   }
 };
 
-export function RepositoryEntry({ repo }: { repo: RepoEntryProp }) {
+export function RepositoryEntry({ repo }: { repo: UserProfileRepository }) {
   return (
     <div key={repo.name} className="repo-entry-card">
       <div className="repo-entry-header">
@@ -46,7 +37,7 @@ export function RepositoryEntry({ repo }: { repo: RepoEntryProp }) {
           <GitFork className="repo-entry-meta-icon" />
           <span>{repo.forks}</span>
         </div>
-        <span>Updated {repo.updated}</span>
+        <span>Updated {repo.updatedAt}</span>
       </div>
     </div>
   );
