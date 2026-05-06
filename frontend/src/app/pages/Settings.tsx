@@ -7,7 +7,6 @@ import { useAuth } from '../components/auth/AuthContext';
 import { useTheme } from '../components/layout/ThemeProvider';
 import { useAppState } from '../components/state/AppStateContext';
 import { SettingsProfile } from '../components/chz-comp/SettingsProfile';
-import { SettingsAccount } from '../components/chz-comp/SettingsAccount';
 import { SettingsSecurity } from '../components/chz-comp/SettingsSecurity';
 import { SettingsNotifications } from '../components/chz-comp/SettingsNotifications';
 import { SettingsAppearance } from '../components/chz-comp/SettingsAppearance';
@@ -66,7 +65,6 @@ export function Settings() {
 
   const tabs = [
     { id: 'profile' as const, label: 'Profile', icon: User },
-    { id: 'account' as const, label: 'Account', icon: Key },
     { id: 'security' as const, label: 'Security', icon: Shield },
     { id: 'notifications' as const, label: 'Notifications', icon: Bell },
     { id: 'appearance' as const, label: 'Appearance', icon: Palette },
@@ -270,6 +268,7 @@ export function Settings() {
 
               {activeTab === 'security' && (
                 <SettingsSecurity
+                  accountData={accountData}
                   showPasswordForm={showPasswordForm}
                   onShowPasswordForm={setShowPasswordForm}
                   currentPassword={currentPassword}
@@ -307,7 +306,7 @@ export function Settings() {
                 </p>
                 <button className="settings-delete-btn">
                   <Trash2 className="settings-delete-icon" />
-                  Delete account
+                  Delete Account
                 </button>
               </div>
             </div>

@@ -33,7 +33,7 @@ export function Stars() {
           <div className="stars-header">
             <div className="stars-header-left">
               <Star className="stars-header-icon" />
-              <h1 className="stars-header-title">Starred repositories</h1>
+              <h1 className="stars-header-title">Starred Repositories</h1>
             </div>
           </div>
 

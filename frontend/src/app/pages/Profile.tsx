@@ -197,6 +197,39 @@ export function Profile() {
                       </div>
                     </div>
                   </div>
+            {/* Main Content */}
+            <div className="profile-content">
+              {/* Stats Grid */}
+              <div className="profile-stats-grid">
+                <div className="profile-stat-card">
+                  <div className="profile-stat-card-number">{profileStats.repositories}</div>
+                  <div className="profile-stat-card-label">Repositories</div>
+                </div>
+                <div className="profile-stat-card">
+                  <div className="profile-stat-card-number">{(profileStats.contributions / 1000).toFixed(1)}k</div>
+                  <div className="profile-stat-card-label">Contributions</div>
+                </div>
+                <div className="profile-stat-card">
+                  <div className="profile-stat-card-number">{profileStats.stars}</div>
+                  <div className="profile-stat-card-label">Stars</div>
+                </div>
+              </div>
+
+              {/* Repositories */}
+              <div>
+                <div className="profile-repos-header">
+                  <h2 className="profile-repos-title">Popular Repositories</h2>
+                  <input
+                    type="text"
+                    placeholder="Find a repository..."
+                    className="profile-search-input"
+                  />
+                </div>
+
+                <div className="profile-repos-list">
+                  {repositories.map((repo) => (
+                    <RepositoryEntry repo= {repo}/>
+                  ))}
                 </div>
               </div>
             </div>

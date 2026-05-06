@@ -68,7 +68,7 @@ export function SignUp() {
 
               {/* Email Field */}
               <div className="signup-form-group">
-                <label htmlFor="email" className="signup-label">Email address</label>
+                <label htmlFor="email" className="signup-label">Email Address</label>
                 <input
                   id="email"
                   type="email"
@@ -108,7 +108,7 @@ export function SignUp() {
                 disabled={isSubmitting}
                 className="signup-submit-btn"
               >
-                {isSubmitting ? 'Creating account...' : 'Create account'}
+                {isSubmitting ? 'Creating Account...' : 'Create Account'}
               </button>
             </form>
 

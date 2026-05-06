@@ -4,6 +4,7 @@ import './SettingsBase.css';
 import './SettingsSecurity.css';
 
 interface SettingsSecurityProps {
+  accountData: AccountData;
   showPasswordForm: boolean;
   onShowPasswordForm: (show: boolean) => void;
   currentPassword: string;
@@ -17,7 +18,16 @@ interface SettingsSecurityProps {
   onPasswordSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }
 
+interface AccountData {
+  email: string;
+}
+
+interface SettingsAccountProps {
+  accountData: AccountData;
+}
+
 export function SettingsSecurity({
+  accountData,
   showPasswordForm,
   onShowPasswordForm,
   currentPassword,
@@ -36,6 +46,15 @@ export function SettingsSecurity({
         <h2 className="settings-section-heading">Security settings</h2>
         <div className="settings-security-box">
           <div className="settings-security-header">
+            <div className="settings-form-group">
+            <label htmlFor="email" className="settings-label">Email</label>
+            <input
+              id="email"
+              type="email"
+              defaultValue={accountData.email}
+              className="settings-input"
+            />
+          </div>
             <div>
               <h3 className="settings-security-title">Password</h3>
               <p className="settings-security-desc">

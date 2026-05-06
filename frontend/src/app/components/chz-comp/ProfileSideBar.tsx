@@ -32,6 +32,9 @@ export function ProfileSideBar( {profileUser} : { profileUser : ProfileProp}){
             <Link to="/settings" className="profile-edit-btn">
                 Edit profile
             </Link>
+            <button className="profile-edit-btn">
+                Edit Profile
+            </button>
             </div>
 
             <div className="profile-bio-section">

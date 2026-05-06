@@ -37,10 +37,10 @@ export function SettingsProfile({
   return (
     <form className="space-y-6" onSubmit={onSubmit}>
       <div>
-        <h2 className="settings-section-heading">Public profile</h2>
+        <h2 className="settings-section-heading">Public Profile</h2>
         <div className="space-y-4">
           <div className="settings-form-group">
-            <label className="settings-label">Profile picture</label>
+            <label className="settings-label">Profile Picture</label>
             <div className="settings-profile-pic-group">
               <div className="settings-profile-pic">
                 {profileData.avatarUrl ? (
@@ -69,6 +69,9 @@ export function SettingsProfile({
                   </button>
                 )}
               </div>
+              <button className="settings-upload-btn">
+                Upload New Picture
+              </button>
             </div>
           </div>
           <div className="settings-form-group">
@@ -98,6 +101,8 @@ export function SettingsProfile({
       <div className="settings-divider">
         <button type="submit" className="settings-save-btn" disabled={isSaving}>
           {isSaving ? 'Saving...' : 'Save changes'}
+        <button className="settings-save-btn">
+          Save Changes
         </button>
       </div>
     </form>

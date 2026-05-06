@@ -4,17 +4,6 @@
   background-color: #0d1117;
 }
 
-.stars-main {
-  padding-left: 0;
-  padding-top: 3.5rem;
-}
-
-@media (min-width: 1024px) {
-  .stars-main {
-    padding-left: 16rem;
-  }
-}
-
 .stars-wrapper {
   margin-left: auto;
   margin-right: auto;
@@ -85,7 +74,7 @@
 
 .stars-search-input:focus {
   outline: none;
-  box-shadow: 0 0 0 2px #58a6ff;
+  box-shadow: 0 0 0 2px #fda410;
 }
 
 /* Repository List */

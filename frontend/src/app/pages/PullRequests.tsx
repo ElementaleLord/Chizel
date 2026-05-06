@@ -44,14 +44,14 @@ export function PullRequests() {
           {/* Sections */}
           <div className="pullrequests-sections">
             <PullRequestSection
-              title="Submitted by you"
+              title="Submitted By You"
               description="Your most recent pull requests, newest first."
               items={submitted}
               isExpanded={isSubmittedExpanded}
               onToggle={() => setIsSubmittedExpanded((current) => !current)}
             />
             <PullRequestSection
-              title="Received or assigned to you"
+              title="Received/Assigned To You"
               description="Pull requests where you are a reviewer, assignee, or direct recipient."
               items={assigned}
               isExpanded={isAssignedExpanded}

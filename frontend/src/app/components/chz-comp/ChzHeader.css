@@ -131,7 +131,7 @@
 .chz-search-input:focus {
   outline: none;
   ring: 2px solid #fda410;
-  border-color: transparent;
+  border: 2px solid #fda410;
 }
 
 .chz-search-kbd {

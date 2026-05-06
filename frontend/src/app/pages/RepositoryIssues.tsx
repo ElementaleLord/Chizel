@@ -13,6 +13,15 @@ import {
   type RepoIssueItem,
 } from '../lib/repoWorkApi';
 import { formatRelativeTime } from '../lib/time';
+import { useParams, Link } from 'react-router';
+import { CircleDot, MessageSquare, Check, Plus, Search, ChevronRight, X } from 'lucide-react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+// COMPONENTS
+import { ChzHeader } from '../components/chz-comp/ChzHeader';
+import { RepositoryLayout } from '../components/chz-comp/RepositoryLayout';
+// DATA
+import { issues, type issuesSummary} from '../data/issues';
 
 import './RepositoryWorkItems.css';
 
@@ -213,6 +222,21 @@ export function RepositoryIssues() {
     }
   }
 
+  const [showNewForm, setshowNewForm] = useState(false);
+  const defIssData : issuesSummary = {
+    number: -1,
+    title: '',
+    author: '',
+    status: '',
+    comments: 0,
+    time: 'Recently',
+    labels: [],
+  }
+  const {register, handleSubmit} = useForm<issuesSummary>({ defaultValues : defIssData});
+  const onSubmit = (data : issuesSummary) =>{ 
+    console.log(data)
+  };
+
   return (
     <>
       <ChzHeader pageTitle={`${owner} / ${repo}`} />
@@ -236,6 +260,10 @@ export function RepositoryIssues() {
                 </div>
                 <button type="button" className="repo-work-primary-btn" onClick={startCreate}>
                   <Plus className="repo-work-btn-icon" />
+              <div className="issues-title-section">
+                <h1 className="issues-title">Issues</h1>
+                <button className="issues-new-btn" onClick={() => setshowNewForm(true)}>
+                  <Plus className="issues-new-btn-icon" />
                   New Issue
                 </button>
               </div>
@@ -253,6 +281,28 @@ export function RepositoryIssues() {
               <div className="repo-work-metric-card">
                 <span className="repo-work-metric-label">Total</span>
                 <strong>{items.length}</strong>
+            {showNewForm &&
+            <>
+              <div className='issues-new-backdrop' onClick={() => setshowNewForm(false)} />
+              <div className='issues-new-container'>
+                <button  className='issues-new-close-btn'  onClick={() => setshowNewForm(false)}>
+                  <X  className='issues-new-close-icon'/>
+                </button>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                  <input {...register('title')} placeholder="Issue Title" />
+                  <button className='issues-new-create-btn' >Create Issue</button>
+                </form>
+              </div>
+            </>
+            }
+            <div className="issues-search-section">
+              <div className="issues-search-wrapper">
+                <Search className="issues-search-icon" />
+                <input
+                  type="text"
+                  placeholder="Search issues..."
+                  className="issues-search-input"
+                />
               </div>
             </div>
 

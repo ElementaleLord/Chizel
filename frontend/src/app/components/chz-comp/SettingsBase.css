@@ -4,17 +4,6 @@
   background-color: #0d1117;
 }
 
-.settings-page-main {
-  padding-left: 0;
-  padding-top: 3.5rem;
-}
-
-@media (min-width: 1024px) {
-  .settings-page-main {
-    padding-left: 16rem;
-  }
-}
-
 .settings-page-wrapper {
   margin-left: auto;
   margin-right: auto;
@@ -71,6 +60,7 @@
 .settings-nav-btn-inactive:hover {
   color: #f0f6fc;
   background-color: rgba(33, 38, 45, 0.5);
+  color: #fda410;
 }
 
 .settings-nav-icon {

@@ -4,17 +4,6 @@
   background-color: #0d1117;
 }
 
-.notifications-main {
-  padding-left: 0;
-  padding-top: 3.5rem;
-}
-
-@media (min-width: 1024px) {
-  .notifications-main {
-    padding-left: 16rem;
-  }
-}
-
 .notifications-wrapper {
   margin-left: auto;
   margin-right: auto;

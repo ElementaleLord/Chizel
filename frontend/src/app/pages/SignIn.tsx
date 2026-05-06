@@ -46,11 +46,11 @@ export function SignIn() {
                   showLabel={false}
                 />
               </div>
-              <h1 className="signin-title">Sign in to Chizel</h1>
+              <h1 className="signin-title">Sign In To Chizel</h1>
             </div> 
             <form className="signin-form" onSubmit={handleSubmit}>
               <div className="signin-form-group">
-                <label htmlFor="email" className="signin-label">Email address</label>
+                <label htmlFor="email" className="signin-label">Email Address</label>
                 <input
                   id="email"
                   type="email"
@@ -64,7 +64,7 @@ export function SignIn() {
                 <div className="signin-label-wrapper">
                   <label htmlFor="password" className="signin-label">Password</label>
                   <Link to="/forgot-password" className="signin-forgot-link">
-                    Forgot password?
+                    Forgot Password?
                   </Link>
                 </div>
                 <input
