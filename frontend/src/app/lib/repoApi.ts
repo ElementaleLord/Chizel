@@ -43,6 +43,28 @@ export interface RepoCommitHistory {
   commits: RepoCommit[];
 }
 
+export interface RepoContributor {
+  name: string;
+  initials: string;
+  commits: number;
+}
+
+export interface RepoLanguage {
+  name: string;
+  bytes: number;
+  percentage: number;
+}
+
+export interface CreatedRepository {
+  repoId: string;
+  owner: string;
+  name: string;
+  url: string;
+  description: string | null;
+  visibility: 'Public' | 'Private';
+  route: string;
+}
+
 export interface RepoMeta {
   repoId: string;
   name: string;
@@ -61,6 +83,8 @@ export interface RepoMeta {
   readmePath: string | null;
   updatedAt: string | null;
   latestCommit: RepoCommit | null;
+  contributors: RepoContributor[];
+  languages: RepoLanguage[];
   stats: RepoStats;
   cached: boolean;
 }
@@ -178,16 +202,16 @@ function normalizeRepoMeta(raw: unknown, repoId: string): RepoMeta {
     currentRef:
       data.currentRef && typeof data.currentRef === 'object'
         ? {
-            type:
-              (data.currentRef as Record<string, unknown>).type === 'branch' ||
+          type:
+            (data.currentRef as Record<string, unknown>).type === 'branch' ||
               (data.currentRef as Record<string, unknown>).type === 'tag'
-                ? ((data.currentRef as Record<string, unknown>).type as 'branch' | 'tag')
-                : null,
-            name:
-              typeof (data.currentRef as Record<string, unknown>).name === 'string'
-                ? ((data.currentRef as Record<string, unknown>).name as string)
-                : null,
-          }
+              ? ((data.currentRef as Record<string, unknown>).type as 'branch' | 'tag')
+              : null,
+          name:
+            typeof (data.currentRef as Record<string, unknown>).name === 'string'
+              ? ((data.currentRef as Record<string, unknown>).name as string)
+              : null,
+        }
         : { type: null, name: null },
     branchCount: toNumber(data.branchCount),
     tagCount: toNumber(data.tagCount),
@@ -198,6 +222,24 @@ function normalizeRepoMeta(raw: unknown, repoId: string): RepoMeta {
     latestCommit: data.latestCommit && typeof data.latestCommit === 'object'
       ? (data.latestCommit as RepoCommit)
       : null,
+    contributors: Array.isArray(data.contributors)
+      ? data.contributors
+        .filter((value): value is Record<string, unknown> => Boolean(value) && typeof value === 'object')
+        .map((contributor) => ({
+          name: typeof contributor.name === 'string' ? contributor.name : 'Unknown author',
+          initials: typeof contributor.initials === 'string' ? contributor.initials : '?',
+          commits: toNumber(contributor.commits),
+        }))
+      : [],
+    languages: Array.isArray(data.languages)
+      ? data.languages
+        .filter((value): value is Record<string, unknown> => Boolean(value) && typeof value === 'object')
+        .map((language) => ({
+          name: typeof language.name === 'string' ? language.name : 'Other',
+          bytes: toNumber(language.bytes),
+          percentage: toNumber(language.percentage),
+        }))
+      : [],
     stats: normalizeRepoStats(data.stats),
     cached: Boolean(data.cached),
   };
@@ -294,7 +336,7 @@ export async function resolveRepoId(owner: string, repo: string): Promise<string
   }
 
   const lookupPromise = apiClient
-    .get(`/api/repos/resolve/${owner}/${repo}`)
+    .get(`/api/reposresolve/${owner}/${repo}`)
     .then(({ data }) => {
       const repoId = String(data.repoId);
       resolvedRepoIdCache.set(cacheKey, repoId);
@@ -319,7 +361,7 @@ export async function syncRepo(repoId: string) {
   }
 
   const syncPromise = apiClient
-    .post(`/api/repos/${repoId}/sync`)
+    .post(`/rep/repos${repoId}/sync`)
     .then(({ data }) => {
       syncedRepoIds.add(repoId);
       return data;
@@ -344,7 +386,7 @@ export async function fetchRepoMeta(repoId: string): Promise<RepoMeta> {
   }
 
   const metaPromise = apiClient
-    .get(`/api/repos/${repoId}/meta`)
+    .get(`/rep/repos${repoId}/meta`)
     .then(({ data }) => {
       const normalized = normalizeRepoMeta(data, repoId);
       metaCache.set(repoId, normalized);
@@ -372,7 +414,7 @@ export async function fetchRepoTree(repoId: string, repoPath = '.'): Promise<Rep
   }
 
   const treePromise = apiClient
-    .get(`/api/repos/${repoId}/tree`, {
+    .get(`/rep/repos${repoId}/tree`, {
       params: { path: repoPath },
     })
     .then(({ data }) => {
@@ -401,7 +443,7 @@ export async function fetchRepoFile(repoId: string, repoPath: string): Promise<R
   }
 
   const filePromise = apiClient
-    .get(`/api/repos/${repoId}/file`, {
+    .get(`/rep/repos${repoId}/file`, {
       params: { path: repoPath },
     })
     .then(({ data }) => {
@@ -431,7 +473,7 @@ export async function fetchRepoCommits(repoId: string, branch?: string): Promise
   }
 
   const commitsPromise = apiClient
-    .get(`/api/repos/${repoId}/commits`, {
+    .get(`/rep/repos${repoId}/commits`, {
       params: branch ? { branch } : undefined,
     })
     .then(({ data }) => {
@@ -452,19 +494,19 @@ export async function fetchRepoCommits(repoId: string, branch?: string): Promise
 }
 
 export async function checkoutRepoRef(repoId: string, refName: string) {
-  await apiClient.post(`/api/repos/${repoId}/checkout`, { refName });
+  await apiClient.post(`/rep/repos${repoId}/checkout`, { refName });
   clearRepoCaches(repoId);
 }
 
 export async function toggleRepoStar(repoId: string): Promise<RepoStats> {
-  const { data } = await apiClient.post(`/api/repos/${repoId}/star`);
+  const { data } = await apiClient.post(`/rep/repos${repoId}/star`);
   const stats = normalizeRepoStats(data.stats);
   updateCachedRepoStats(repoId, stats);
   return stats;
 }
 
 export async function toggleRepoWatch(repoId: string): Promise<RepoStats> {
-  const { data } = await apiClient.post(`/api/repos/${repoId}/watch`);
+  const { data } = await apiClient.post(`/rep/repos${repoId}/watch`);
   const stats = normalizeRepoStats(data.stats);
   updateCachedRepoStats(repoId, stats);
   return stats;
@@ -472,4 +514,29 @@ export async function toggleRepoWatch(repoId: string): Promise<RepoStats> {
 
 export async function ensureRepoReady(owner: string, repo: string) {
   return resolveRepoId(owner, repo);
+}
+
+export async function createRepository(payload: {
+  name: string;
+  description?: string;
+  visibility?: 'Public' | 'Private';
+}): Promise<CreatedRepository> {
+  const { data } = await apiClient.post('/api/repos', payload);
+  const owner = typeof data.owner === 'string' ? data.owner : '';
+  const name = typeof data.name === 'string' ? data.name : payload.name;
+  const repoId = String(data.repoId ?? '');
+
+  if (owner && name && repoId) {
+    resolvedRepoIdCache.set(getRepoLookupKey(owner, name), repoId);
+  }
+
+  return {
+    repoId,
+    owner,
+    name,
+    url: typeof data.url === 'string' ? data.url : '',
+    description: typeof data.description === 'string' ? data.description : null,
+    visibility: data.visibility === 'Public' ? 'Public' : 'Private',
+    route: typeof data.route === 'string' ? data.route : `/repository/${owner}/${name}`,
+  };
 }

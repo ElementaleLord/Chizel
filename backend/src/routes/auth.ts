@@ -16,8 +16,6 @@ import type { DBUser } from './database';
 
 const router = express.Router();
 
-const mockDatabase: DBUser[] = [];
-
 console.log("AUTH ROUTER LOADED");
 
 //signup

@@ -1,5 +1,4 @@
 import type { ReactElement } from 'react';
-import { useState } from 'react';
 import "axios";
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import { ThemeProvider } from './components/layout/ThemeProvider';
@@ -27,8 +26,6 @@ import { RepositorySettings } from './pages/RepositorySettings';
 import { RepositoryFileExplorer } from './pages/RepositoryFileExplorer';
 import { Profile } from './pages/Profile';
 import { Settings } from './pages/Settings';
-import axios from 'axios';
-import apiClient from './lib/apiClient';
 
 function RootRoute() {
   const { user, isLoading } = useAuth();
@@ -53,26 +50,6 @@ function withPublicOnlyRoute(element: ReactElement) {
 }
 
 export default function App() {
-  const [msg, setMsg] = useState("");
-  const fetchHello = () => {
-    axios.get("http://localhost:3000/api/hello")
-      .then((response) => setMsg(response.data.message))
-      .catch((err) => console.error(err));
-  };
-
-  const chzInit = () => {
-    axios.post("http://localhost:3000/api/execute", { message: 'init' })
-      .then((response) => setMsg(response.data.result))
-      .catch((err) => console.error(err));
-  };
-
-  const dbTest = () => {
-    setMsg("fetching from databse...");
-    axios.get("http://localhost:3000/api/password/Chizel")
-      .then((response) => setMsg(JSON.stringify(response.data)))
-      .catch((err) => console.log(err));
-  }
-
   return (
     <ThemeProvider>
       <AppStateProvider>

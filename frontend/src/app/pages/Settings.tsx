@@ -11,7 +11,7 @@ import { SettingsSecurity } from '../components/chz-comp/SettingsSecurity';
 import { SettingsNotifications } from '../components/chz-comp/SettingsNotifications';
 import { SettingsAppearance } from '../components/chz-comp/SettingsAppearance';
 // DATA
-import { type SettingsTab, notificationPreferences, connectedAccounts, accountData } from '../data/settingsData';
+import { type SettingsTab, notificationPreferences, accountData } from '../data/settingsData';
 import { fetchMyProfile, updateMyProfile } from '../lib/profileApi';
 
 import './Settings.css';
@@ -49,7 +49,6 @@ export function Settings() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
-  const [profileEmail, setProfileEmail] = useState('');
   const [profileUsername, setProfileUsername] = useState('');
   const [profiledisplayname, setProfiledisplayname] = useState('');
   const [profileBio, setProfileBio] = useState('');
@@ -105,7 +104,6 @@ export function Settings() {
           return;
         }
 
-        setProfileEmail(response.profile.email);
         setProfileUsername(response.profile.username);
         setProfiledisplayname(response.profile.displayname ?? '');
         setProfileBio(response.profile.bio ?? '');
@@ -186,7 +184,6 @@ export function Settings() {
         avatarDataUrl: pendingAvatarDataUrl,
       });
 
-      setProfileEmail(response.profile.email);
       setProfileUsername(response.profile.username);
       setProfiledisplayname(response.profile.displayname ?? '');
       setProfileBio(response.profile.bio ?? '');
@@ -257,13 +254,6 @@ export function Settings() {
                     onSubmit={handleProfileSubmit}
                   />
                 )
-              )}
-
-              {activeTab === 'account' && (
-                <SettingsAccount
-                  accountData={{ email: profileEmail }}
-                  connectedAccounts={connectedAccounts}
-                />
               )}
 
               {activeTab === 'security' && (

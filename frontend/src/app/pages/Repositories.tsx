@@ -1,21 +1,52 @@
 import { Star, GitFork, Search, Plus, X } from 'lucide-react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 // COMPONENTS
 import { ChzHeader } from '../components/chz-comp/ChzHeader';
 import { RepoSideBar } from '../components/chz-comp/RepoSideBar';
 // DATA
-import { formatStarCount, getLanguageColor, getRepositoriesByIds, userRepositoryIds, type RepositorySummary } from '../data/repositories';
+import { formatStarCount, getLanguageColor, type RepositorySummary } from '../data/repositories';
 import { TopRepos } from '../data/topRepos.ts';
+import { fetchMyProfile } from '../lib/profileApi';
+import { createRepository } from '../lib/repoApi';
+import { formatRelativeTime } from '../lib/time';
 
 import './Repositories.css';
 
+function getErrorMessage(error: unknown, fallback: string) {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'response' in error &&
+    typeof error.response === 'object' &&
+    error.response !== null &&
+    'data' in error.response &&
+    typeof error.response.data === 'object' &&
+    error.response.data !== null &&
+    'error' in error.response.data &&
+    typeof error.response.data.error === 'string'
+  ) {
+    return error.response.data.error;
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return fallback;
+}
+
 export function Repositories() {
+  const navigate = useNavigate();
   const [visibilityFilter, setVisibilityFilter] = useState<'all' | 'public' | 'private'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [languageFilter, setLanguageFilter] = useState('all');
-  const repositories = getRepositoriesByIds(userRepositoryIds);
+  const [repositories, setRepositories] = useState<RepositorySummary[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [pageError, setPageError] = useState<string | null>(null);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
   const languageOptions = useMemo(
     () => ['all', ...new Set(repositories.map((repository) => repository.language))],
     [repositories],
@@ -32,19 +63,80 @@ export function Repositories() {
   
   const [showNewForm, setshowNewForm] = useState(false);
   const defRepoData : RepositorySummary = {
-    id: '',// not sure how youll get this one
-    owner: '',// gonna have to figure out a way to let the pages access user info for this
-    name: '',// input
-    description: '',// input
-    language: '',// input ? maybe blank
-    stars: 0,// as is
-    forks: 0,// as is
-    updated: '0',// as is ? not sure what this value is for
-    visibility: 'Private',// default is private ig
-  }
-  const {register, handleSubmit} = useForm<RepositorySummary>({ defaultValues : defRepoData});
-  const onSubmit = (data : RepositorySummary) =>{ 
-    console.log(data)
+    id: '',
+    owner: '',
+    name: '',
+    description: '',
+    language: 'CHZ',
+    stars: 0,
+    forks: 0,
+    updated: 'recently',
+    visibility: 'Private',
+  };
+  const {register, handleSubmit, reset} = useForm<RepositorySummary>({ defaultValues : defRepoData});
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadRepositories() {
+      try {
+        setIsLoading(true);
+        setPageError(null);
+        const response = await fetchMyProfile();
+
+        if (cancelled) {
+          return;
+        }
+
+        setRepositories(
+          response.repositories.map((repository) => ({
+            id: repository.id,
+            owner: repository.owner,
+            name: repository.name,
+            description: repository.description ?? 'No repository description provided.',
+            language: repository.language,
+            stars: repository.stars,
+            forks: repository.forks,
+            updated: formatRelativeTime(repository.updatedAt),
+            visibility: repository.visibility,
+          })),
+        );
+      } catch (error) {
+        if (!cancelled) {
+          setPageError(getErrorMessage(error, 'Unable to load repositories.'));
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadRepositories();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const onSubmit = async (data : RepositorySummary) => {
+    try {
+      setIsCreating(true);
+      setCreateError(null);
+      const created = await createRepository({
+        name: data.name,
+        description: data.description,
+        visibility: data.visibility,
+      });
+
+      setshowNewForm(false);
+      reset(defRepoData);
+      void navigate(created.route);
+    } catch (error) {
+      setCreateError(getErrorMessage(error, 'Unable to create repository.'));
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   return (
@@ -60,7 +152,7 @@ export function Repositories() {
               <button
                 type="button"
                 className="repos-new-btn"
-                title="New repository flow is not wired up yet."
+                title="Create a new repository"
                 onClick={() => setshowNewForm(true)}
               >
                 <Plus className="repos-new-btn-icon" />
@@ -77,7 +169,10 @@ export function Repositories() {
                 <form onSubmit={handleSubmit(onSubmit)}>
                   <input {...register('name')} placeholder="Repository Name" />
                   <input {...register('description')} placeholder="Description" />
-                  <button className='repos-new-create-btn' >Create Repository</button>
+                  {createError ? <p className="repos-new-error">{createError}</p> : null}
+                  <button className='repos-new-create-btn' disabled={isCreating}>
+                    {isCreating ? 'Creating...' : 'Create Repository'}
+                  </button>
                 </form>
               </div>
             </>
@@ -141,7 +236,11 @@ export function Repositories() {
 
             {/* Repository List */}
             <div className="repos-list">
-              {filteredRepositories.map((repo) => (
+              {isLoading ? (
+                <div className="repos-empty">Loading repositories...</div>
+              ) : pageError ? (
+                <div className="repos-empty">{pageError}</div>
+              ) : filteredRepositories.map((repo) => (
                 <div key={repo.id} className="repos-item">
                   <div className="repos-item-header">
                     <div className="repos-item-title-section">
@@ -176,7 +275,7 @@ export function Repositories() {
                   </div>
                 </div>
               ))}
-              {filteredRepositories.length === 0 && (
+              {!isLoading && !pageError && filteredRepositories.length === 0 && (
                 <div className="repos-empty">
                   No repositories match the current filters.
                 </div>

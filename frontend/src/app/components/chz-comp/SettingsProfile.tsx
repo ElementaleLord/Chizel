@@ -102,9 +102,6 @@ export function SettingsProfile({
         <button type="submit" className="settings-save-btn" disabled={isSaving}>
           {isSaving ? 'Saving...' : 'Save changes'}
           </button>
-        <button className="settings-save-btn">
-          Save Changes
-        </button>
       </div>
     </form>
   );

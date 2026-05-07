@@ -12,7 +12,7 @@ import { feedItems } from '../data/feedItems.ts';
 import './Home.css';
 
 export function Home() {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
 
   return (
     <div className="home-container">

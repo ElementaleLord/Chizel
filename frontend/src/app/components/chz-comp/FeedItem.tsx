@@ -14,7 +14,7 @@ interface FeedItemProps{
     preview : string,
 }
 
-export function FeedItem( { item, index } : { item : FeedItemProps; index: number } ){
+export function FeedItem( { item } : { item : FeedItemProps; index: number } ){
     return (
         <div className="feed-item">
             <div className="feed-item-inner">

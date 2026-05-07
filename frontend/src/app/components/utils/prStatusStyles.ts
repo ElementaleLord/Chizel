@@ -1,5 +1,5 @@
 import { Check, GitPullRequest, X } from 'lucide-react';
-import type { PullRequestStatus } from '../data/userActivity';
+import type { PullRequestStatus } from '../../data/userActivity';
 
 export interface PullRequestStatusStyle {
   icon: typeof GitPullRequest;

@@ -48,6 +48,16 @@ export interface UserProfileRepoSummary {
     forks: number;
     updatedAt: string | null;
     owner: string;
+    visibility: "Public" | "Private";
+}
+
+export interface RepoUpsertPayload {
+    url: string;
+    name: string;
+    ownerId: number;
+    description?: string | null;
+    visibility?: boolean;
+    archiveData?: Buffer | null;
 }
 
 export type PullRequestStatus = "Accepted" | "Rejected" | "Merged" | "Null";
@@ -79,6 +89,7 @@ export interface RepoIssueRecord {
 }
 
 let collaborationSchemaReady: Promise<void> | null = null;
+let repositoryColumnsPromise: Promise<Set<string>> | null = null;
 
 function toFiniteNumber(value: unknown) {
     const numericValue = typeof value === "string" ? Number(value) : value;
@@ -116,6 +127,21 @@ function bufferToAvatarDataUrl(value: unknown): string | null {
 function avatarFallback(displayname: string | null, username: string) {
     const seed = displayname?.trim() || username.trim();
     return seed.charAt(0).toUpperCase() || "U";
+}
+
+async function getRepositoryColumns() {
+    if (!repositoryColumnsPromise) {
+        repositoryColumnsPromise = pool
+            .query<{ column_name: string }>(`
+                SELECT column_name
+                FROM information_schema.columns
+                WHERE table_schema = 'public'
+                AND table_name = 'repositories';
+            `)
+            .then((res) => new Set(res.rows.map((row) => row.column_name)));
+    }
+
+    return repositoryColumnsPromise;
 }
 
 function normalizeProfileRow(row: Record<string, unknown>): UserProfileSummary {
@@ -400,9 +426,7 @@ export async function getUserProfileRepositories(userId: number): Promise<UserPr
     try {
         const cmd = `
             SELECT
-                r.r_id,
-                r.r_name,
-                r.r_url,
+                r.*,
                 owner.a_username AS owner_username,
                 COALESCE(rm.r_stars, 0) AS stars,
                 COALESCE(rm.r_forks, 0) AS forks
@@ -419,12 +443,16 @@ export async function getUserProfileRepositories(userId: number): Promise<UserPr
         return res.rows.map((row) => ({
             id: String(row.r_id),
             name: typeof row.r_name === "string" ? row.r_name : "repository",
-            description: typeof row.r_url === "string" ? `Repository URL: ${row.r_url}` : null,
+            description:
+                typeof row.r_description === "string" ? row.r_description
+                : typeof row.r_desc === "string" ? row.r_desc
+                : typeof row.r_url === "string" ? `Repository URL: ${row.r_url}` : null,
             language: "CHZ",
             stars: toFiniteNumber(row.stars),
             forks: toFiniteNumber(row.forks),
             updatedAt: null,
             owner: typeof row.owner_username === "string" ? row.owner_username : "",
+            visibility: row.r_visibility === true ? "Public" : "Private",
         }));
     } catch (err) {
         console.error(err);
@@ -492,6 +520,69 @@ export async function getRepoByOwnerAndName(owner: string, repo: string) {
         `;
         const res = await pool.query(cmd, [basePath]);
         return res.rows[0] ?? null;
+    } catch (err) {
+        console.error(err);
+        return null;
+    }
+}
+
+export async function upsertRepositoryRecord(payload: RepoUpsertPayload): Promise<number | null> {
+    try {
+        const columns = await getRepositoryColumns();
+        const insertColumns = ["r_url", "r_name"];
+        const insertValues: unknown[] = [payload.url, payload.name];
+        const updateAssignments = [
+            `r_name = EXCLUDED.r_name`,
+        ];
+
+        const pushColumn = (columnName: string, value: unknown, update = true) => {
+            if (!columns.has(columnName)) {
+                return;
+            }
+
+            insertColumns.push(columnName);
+            insertValues.push(value);
+
+            if (update) {
+                updateAssignments.push(`${columnName} = EXCLUDED.${columnName}`);
+            }
+        };
+
+        pushColumn("r_owner", payload.ownerId);
+        pushColumn("r_visibility", payload.visibility ?? false);
+        pushColumn("r_description", payload.description?.trim() || null);
+        pushColumn("r_desc", payload.description?.trim() || null);
+        pushColumn("r_chz", payload.archiveData ?? null);
+
+        const creationColumn = ["r_creation_date", "r_creationdate", "r_created_at", "r_createdat"]
+            .find((columnName) => columns.has(columnName));
+
+        if (creationColumn) {
+            insertColumns.push(creationColumn);
+            insertValues.push(new Date());
+        }
+
+        const placeholders = insertValues.map((_, index) => `$${index + 1}`);
+        const cmd = `
+            INSERT INTO repositories (${insertColumns.join(", ")})
+            VALUES (${placeholders.join(", ")})
+            ON CONFLICT (r_url) DO UPDATE
+            SET ${updateAssignments.join(", ")}
+            RETURNING r_id;
+        `;
+
+        const res = await pool.query(cmd, insertValues);
+        const repoId = res.rows[0]?.r_id;
+        if (typeof repoId === "number") {
+            return repoId;
+        }
+
+        if (typeof repoId === "string") {
+            const parsed = Number(repoId);
+            return Number.isFinite(parsed) ? parsed : null;
+        }
+
+        return null;
     } catch (err) {
         console.error(err);
         return null;

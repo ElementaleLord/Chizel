@@ -31,6 +31,7 @@ export interface UserProfileRepository {
   forks: number;
   updatedAt: string | null;
   owner: string;
+  visibility: 'Public' | 'Private';
 }
 
 export async function fetchMyProfile(): Promise<{ profile: UserProfile; repositories: UserProfileRepository[] }> {

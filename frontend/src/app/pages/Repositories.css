@@ -110,6 +110,16 @@
   background-color: #116600;
 }
 
+.repos-new-create-btn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.repos-new-error {
+  color: #ff7b72;
+  margin-top: 0.75rem;
+}
+
 .repos-new-backdrop {
   background-color: #00000099;
   width: 100%;

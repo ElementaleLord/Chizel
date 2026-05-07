@@ -55,6 +55,43 @@ function RepositorySidebarSection({ title, children, trailing }: RepositorySideb
   );
 }
 
+const LANGUAGE_COLORS: Record<string, string> = {
+  TypeScript: '#3178c6',
+  JavaScript: '#f1e05a',
+  CSS: '#563d7c',
+  SCSS: '#c6538c',
+  Sass: '#cf649a',
+  HTML: '#e34c26',
+  JSON: '#8b949e',
+  TOML: '#9c4221',
+  XML: '#0060ac',
+  SQL: '#e38c05',
+  Python: '#3572a5',
+  Java: '#b07219',
+  Kotlin: '#a97bff',
+  Go: '#00add8',
+  Rust: '#dea584',
+  C: '#555555',
+  'C Header': '#5c6bc0',
+  'C++': '#f34b7d',
+  'C++ Header': '#d46a92',
+  'C#': '#178600',
+  PHP: '#4f5d95',
+  Ruby: '#701516',
+  Swift: '#f05138',
+  Shell: '#89e051',
+  PowerShell: '#012456',
+  Dockerfile: '#384d54',
+  Makefile: '#427819',
+  Skript: '#ffdd33',
+  GPScript: '#35d3ff',
+  Perl: '#ca1d1d'
+};
+
+function getLanguageColor(name: string) {
+  return LANGUAGE_COLORS[name] ?? '#8b949e';
+}
+
 export function Repository() {
   const { owner = 'sarahdev', repo = 'web-app' } = useParams();
   const navigate = useNavigate();
@@ -120,15 +157,6 @@ export function Repository() {
 
   const repositoryDescription = repoMeta?.description?.trim()
     || (repoMeta?.url ? `Source synchronized from ${repoMeta.url}.` : 'No repository description provided.');
-  const repoFacts = [
-    { label: 'Branches', value: String(repoMeta?.branchCount ?? 0) },
-    { label: 'Tags', value: String(repoMeta?.tagCount ?? 0) },
-    { label: 'Stars', value: String(repoMeta?.stats?.stars ?? 0) },
-    { label: 'Watchers', value: String(repoMeta?.stats?.watchers ?? 0) },
-    { label: 'Forks', value: String(repoMeta?.stats?.forks ?? 0) },
-    { label: 'Issues', value: String(repoMeta?.stats?.issues ?? 0) },
-    { label: 'Pull Requests', value: String(repoMeta?.stats?.pullRequests ?? 0) },
-  ];
 
 
   return (
@@ -251,41 +279,63 @@ export function Repository() {
                         </button>
                       </div>
                     </RepositorySidebarSection>
-
                     <RepositorySidebarSection
-                      title="Repository Facts"
-                      trailing={<span className="repo-sidebar-count-pill">{repoFacts.length}</span>}
+                      title="Contributors"
+                      trailing={<span className="repo-sidebar-count-pill">{repoMeta?.contributors.length ?? 0}</span>}
                     >
-                      <ul className="repo-facts-list">
-                        {repoFacts.map((fact) => (
-                          <li key={fact.label} className="repo-fact-item">
-                            <span className="repo-fact-label">{fact.label}</span>
-                            <span className="repo-fact-value">{fact.value}</span>
+                      {repoMeta?.contributors.length ? (
+                        <ul className="repo-contributors-list">
+                          {repoMeta.contributors.map((contributor) => (
+                          <li key={contributor.name} className="repo-contributor-item">
+                            <div className="repo-contributor-avatar" aria-hidden="true">{contributor.initials}</div>
+                            <div className="repo-contributor-copy">
+                              <span className="repo-contributor-name">{contributor.name}</span>
+                              <span className="repo-contributor-role">
+                                {contributor.commits} {contributor.commits === 1 ? 'commit' : 'commits'}
+                              </span>
+                            </div>
                           </li>
-                        ))}
-                      </ul>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="repo-sidebar-muted">No contributors detected yet.</p>
+                      )}
                     </RepositorySidebarSection>
 
-                    <RepositorySidebarSection title="References">
-                      <ul className="repo-facts-list">
-                        {repoMeta?.branches.slice(0, 4).map((branch) => (
-                          <li key={branch.id} className="repo-fact-item">
-                            <span className="repo-fact-label">{branch.isCurrent ? `${branch.name} (current)` : branch.name}</span>
-                            <span className="repo-fact-value">{formatRelativeTime(branch.lastModified)}</span>
-                          </li>
-                        ))}
-                        {repoMeta?.tags.slice(0, 2).map((tagRef) => (
-                          <li key={tagRef.id} className="repo-fact-item">
-                            <span className="repo-fact-label">tag: {tagRef.name}</span>
-                            <span className="repo-fact-value">{formatRelativeTime(tagRef.lastModified)}</span>
-                          </li>
-                        ))}
-                        {!repoMeta?.branches.length && !repoMeta?.tags.length && (
-                          <li className="repo-fact-item">
-                            <span className="repo-fact-label">No refs detected</span>
-                          </li>
-                        )}
-                      </ul>
+                    <RepositorySidebarSection title="Languages">
+                      {repoMeta?.languages.length ? (
+                        <>
+                          <div className="repo-language-bar" aria-hidden="true">
+                            {repoMeta.languages.map((language) => (
+                              <span
+                                key={language.name}
+                                className="repo-language-bar-segment"
+                                style={{
+                                  width: `${language.percentage}%`,
+                                  backgroundColor: getLanguageColor(language.name),
+                                }}
+                              />
+                            ))}
+                          </div>
+                          <ul className="repo-language-list">
+                            {repoMeta.languages.map((language) => (
+                              <li key={language.name} className="repo-language-item">
+                                <div className="repo-language-label-group">
+                                  <span
+                                    className="repo-language-dot"
+                                    style={{ backgroundColor: getLanguageColor(language.name) }}
+                                    aria-hidden="true"
+                                  />
+                                  <span className="repo-language-name">{language.name}</span>
+                                </div>
+                                <span className="repo-language-percent">{language.percentage}%</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </>
+                      ) : (
+                        <p className="repo-sidebar-muted">No language usage data available yet.</p>
+                      )}
                     </RepositorySidebarSection>
                   </div>
                 </aside>

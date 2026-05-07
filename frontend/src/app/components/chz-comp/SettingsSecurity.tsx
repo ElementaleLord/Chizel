@@ -22,10 +22,6 @@ interface AccountData {
   email: string;
 }
 
-interface SettingsAccountProps {
-  accountData: AccountData;
-}
-
 export function SettingsSecurity({
   accountData,
   showPasswordForm,
