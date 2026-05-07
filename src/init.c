@@ -99,7 +99,7 @@ void init(int argc, char *argv[])
     //@ chx init
     case ARG_BASE + 2:
         //% chz init
-        if (checkChz())
+        if (!checkChz())
             preCreateChz();
         break;
     //@ chz init <arg>

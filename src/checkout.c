@@ -332,7 +332,7 @@ void preCheckout(char *branchName, int needsIgnore)
 //~ helper used to display help menu
 void checkoutHelp()
 {
-    printf(CHECKOUT_REPORT_MSG_START "Usage: chz checkout <branch-name> | chz checkout -h | chz checkout -b <branch-name> | chz checkout -i <branch-name>." MSG_END);
+    printf(CHECKOUT_REPORT_MSG_START "Usage: chz checkout <branch-name> | chz checkout -h | chz checkout -b <branch-name> | chz checkout -i <branch-name> | chz checkout -t <tag-name>" MSG_END);
 }
 
 void checkout(int argc, char *argv[])
