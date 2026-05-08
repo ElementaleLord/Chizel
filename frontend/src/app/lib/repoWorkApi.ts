@@ -37,13 +37,17 @@ async function patchRepoCounts(
   updateCachedRepoStats(repoId, updater(meta.stats));
 }
 
+function getRepoWorkRoute(repoId: string) {
+  return `/rep/repos/${repoId}`;
+}
+
 export async function fetchRepoPullRequests(repoId: string): Promise<RepoPullRequestItem[]> {
-  const { data } = await apiClient.get(`/rep/repos${repoId}/pulls`);
+  const { data } = await apiClient.get(`${getRepoWorkRoute(repoId)}/pulls`);
   return Array.isArray(data.items) ? data.items : [];
 }
 
 export async function createRepoPullRequest(repoId: string, payload: { title: string; message?: string }) {
-  const { data } = await apiClient.post(`/rep/repos${repoId}/pulls`, payload);
+  const { data } = await apiClient.post(`${getRepoWorkRoute(repoId)}/pulls`, payload);
   await patchRepoCounts(repoId, (stats) => ({
     ...stats,
     pullRequests: stats.pullRequests + 1,
@@ -56,12 +60,12 @@ export async function updateRepoPullRequest(
   pullRequestId: string,
   payload: { title?: string; message?: string; isOpen?: boolean; status?: PullRequestStatus },
 ) {
-  const { data } = await apiClient.patch(`/rep/repos${repoId}/pulls/${pullRequestId}`, payload);
+  const { data } = await apiClient.patch(`${getRepoWorkRoute(repoId)}/pulls/${pullRequestId}`, payload);
   return data.item as RepoPullRequestItem;
 }
 
 export async function deleteRepoPullRequest(repoId: string, pullRequestId: string) {
-  await apiClient.delete(`/rep/repos${repoId}/pulls/${pullRequestId}`);
+  await apiClient.delete(`${getRepoWorkRoute(repoId)}/pulls/${pullRequestId}`);
   await patchRepoCounts(repoId, (stats) => ({
     ...stats,
     pullRequests: Math.max(0, stats.pullRequests - 1),
@@ -69,12 +73,12 @@ export async function deleteRepoPullRequest(repoId: string, pullRequestId: strin
 }
 
 export async function fetchRepoIssues(repoId: string): Promise<RepoIssueItem[]> {
-  const { data } = await apiClient.get(`/rep/repos${repoId}/issues`);
+  const { data } = await apiClient.get(`${getRepoWorkRoute(repoId)}/issues`);
   return Array.isArray(data.items) ? data.items : [];
 }
 
 export async function createRepoIssue(repoId: string, payload: { title: string; message?: string }) {
-  const { data } = await apiClient.post(`/rep/repos${repoId}/issues`, payload);
+  const { data } = await apiClient.post(`${getRepoWorkRoute(repoId)}/issues`, payload);
   await patchRepoCounts(repoId, (stats) => ({
     ...stats,
     issues: stats.issues + 1,
@@ -87,12 +91,12 @@ export async function updateRepoIssue(
   issueId: string,
   payload: { title?: string; message?: string; isOpen?: boolean },
 ) {
-  const { data } = await apiClient.patch(`/rep/repos${repoId}/issues/${issueId}`, payload);
+  const { data } = await apiClient.patch(`${getRepoWorkRoute(repoId)}/issues/${issueId}`, payload);
   return data.item as RepoIssueItem;
 }
 
 export async function deleteRepoIssue(repoId: string, issueId: string) {
-  await apiClient.delete(`/rep/repos${repoId}/issues/${issueId}`);
+  await apiClient.delete(`${getRepoWorkRoute(repoId)}/issues/${issueId}`);
   await patchRepoCounts(repoId, (stats) => ({
     ...stats,
     issues: Math.max(0, stats.issues - 1),

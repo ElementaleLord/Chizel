@@ -181,6 +181,7 @@ export function Profile() {
                                   stars: repo.stars,
                                   forks: repo.forks,
                                   updatedAt: repo.updatedAt ?? 'recently',
+                                  visibility: repo.visibility,
                                 }}
                               />
                             )

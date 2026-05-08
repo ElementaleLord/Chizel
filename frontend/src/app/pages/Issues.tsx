@@ -323,6 +323,12 @@ export function Issues() {
           </div>
 
           <section className="issuespage-panel">
+            <IssueFilterBar
+              activeFilter={activeFilter}
+              onFilterChange={setActiveFilter}
+              searchValue={searchValue}
+              onSearchChange={setSearchValue}
+            />
             <IssueList
               items={filteredIssues}
               expandedId={expandedId}

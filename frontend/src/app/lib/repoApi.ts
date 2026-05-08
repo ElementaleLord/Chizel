@@ -267,6 +267,10 @@ function getNodeCacheKey(repoId: string, repoPath: string) {
   return `${repoId}:${repoPath}`;
 }
 
+function getRepoRoute(repoId: string) {
+  return `/rep/repos/${repoId}`;
+}
+
 export function updateCachedRepoStats(repoId: string, stats: RepoStats) {
   const cachedMeta = metaCache.get(repoId);
   if (!cachedMeta) {
@@ -336,7 +340,7 @@ export async function resolveRepoId(owner: string, repo: string): Promise<string
   }
 
   const lookupPromise = apiClient
-    .get(`/api/reposresolve/${owner}/${repo}`)
+    .get(`/rep/repos/resolve/${owner}/${repo}`)
     .then(({ data }) => {
       const repoId = String(data.repoId);
       resolvedRepoIdCache.set(cacheKey, repoId);
@@ -361,7 +365,7 @@ export async function syncRepo(repoId: string) {
   }
 
   const syncPromise = apiClient
-    .post(`/rep/repos${repoId}/sync`)
+    .post(`${getRepoRoute(repoId)}/sync`)
     .then(({ data }) => {
       syncedRepoIds.add(repoId);
       return data;
@@ -386,7 +390,7 @@ export async function fetchRepoMeta(repoId: string): Promise<RepoMeta> {
   }
 
   const metaPromise = apiClient
-    .get(`/rep/repos${repoId}/meta`)
+    .get(`${getRepoRoute(repoId)}/meta`)
     .then(({ data }) => {
       const normalized = normalizeRepoMeta(data, repoId);
       metaCache.set(repoId, normalized);
@@ -414,7 +418,7 @@ export async function fetchRepoTree(repoId: string, repoPath = '.'): Promise<Rep
   }
 
   const treePromise = apiClient
-    .get(`/rep/repos${repoId}/tree`, {
+    .get(`${getRepoRoute(repoId)}/tree`, {
       params: { path: repoPath },
     })
     .then(({ data }) => {
@@ -443,7 +447,7 @@ export async function fetchRepoFile(repoId: string, repoPath: string): Promise<R
   }
 
   const filePromise = apiClient
-    .get(`/rep/repos${repoId}/file`, {
+    .get(`${getRepoRoute(repoId)}/file`, {
       params: { path: repoPath },
     })
     .then(({ data }) => {
@@ -473,7 +477,7 @@ export async function fetchRepoCommits(repoId: string, branch?: string): Promise
   }
 
   const commitsPromise = apiClient
-    .get(`/rep/repos${repoId}/commits`, {
+    .get(`${getRepoRoute(repoId)}/commits`, {
       params: branch ? { branch } : undefined,
     })
     .then(({ data }) => {
@@ -494,19 +498,19 @@ export async function fetchRepoCommits(repoId: string, branch?: string): Promise
 }
 
 export async function checkoutRepoRef(repoId: string, refName: string) {
-  await apiClient.post(`/rep/repos${repoId}/checkout`, { refName });
+  await apiClient.post(`${getRepoRoute(repoId)}/checkout`, { refName });
   clearRepoCaches(repoId);
 }
 
 export async function toggleRepoStar(repoId: string): Promise<RepoStats> {
-  const { data } = await apiClient.post(`/rep/repos${repoId}/star`);
+  const { data } = await apiClient.post(`${getRepoRoute(repoId)}/star`);
   const stats = normalizeRepoStats(data.stats);
   updateCachedRepoStats(repoId, stats);
   return stats;
 }
 
 export async function toggleRepoWatch(repoId: string): Promise<RepoStats> {
-  const { data } = await apiClient.post(`/rep/repos${repoId}/watch`);
+  const { data } = await apiClient.post(`${getRepoRoute(repoId)}/watch`);
   const stats = normalizeRepoStats(data.stats);
   updateCachedRepoStats(repoId, stats);
   return stats;
@@ -521,7 +525,7 @@ export async function createRepository(payload: {
   description?: string;
   visibility?: 'Public' | 'Private';
 }): Promise<CreatedRepository> {
-  const { data } = await apiClient.post('/api/repos', payload);
+  const { data } = await apiClient.post('/rep/repos', payload);
   const owner = typeof data.owner === 'string' ? data.owner : '';
   const name = typeof data.name === 'string' ? data.name : payload.name;
   const repoId = String(data.repoId ?? '');
