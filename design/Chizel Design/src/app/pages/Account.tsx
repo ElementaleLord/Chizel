@@ -63,7 +63,7 @@ export default function Account() {
               />
               <h1 className="text-2xl mb-1">{mockUser.name}</h1>
               <p className="text-gray-600 mb-4">@{mockUser.username}</p>
-              
+
               {isOwnProfile && (
                 <Button variant="outline" className="w-full mb-4">
                   Edit profile
@@ -92,7 +92,7 @@ export default function Account() {
                   <Calendar className="w-4 h-4" />
                   <span>
                     Joined{" "}
-                    {new Date(mockUser.joinDate).toLocaleDateString("en-US", {
+                    {new Date(mockUser.joindate).toLocaleDateString("en-US", {
                       month: "long",
                       year: "numeric",
                     })}
@@ -197,11 +197,10 @@ export default function Account() {
                               {repo.name}
                             </h3>
                             <span
-                              className={`px-2 py-0.5 text-xs rounded-full border ${
-                                repo.visibility === "public"
+                              className={`px-2 py-0.5 text-xs rounded-full border ${repo.visibility === "public"
                                   ? "border-gray-300 text-gray-600"
                                   : "border-orange-300 text-orange-600 bg-orange-50"
-                              }`}
+                                }`}
                             >
                               {repo.visibility === "public" ? (
                                 <span className="flex items-center gap-1">
@@ -255,11 +254,10 @@ export default function Account() {
                               {repo.name}
                             </h3>
                             <span
-                              className={`px-2 py-0.5 text-xs rounded-full border ${
-                                repo.visibility === "public"
+                              className={`px-2 py-0.5 text-xs rounded-full border ${repo.visibility === "public"
                                   ? "border-gray-300 text-gray-600"
                                   : "border-orange-300 text-orange-600 bg-orange-50"
-                              }`}
+                                }`}
                             >
                               {repo.visibility === "public" ? (
                                 <span className="flex items-center gap-1">

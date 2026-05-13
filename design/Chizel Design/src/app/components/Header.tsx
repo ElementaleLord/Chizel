@@ -42,7 +42,7 @@ export default function Header() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 type="text"
-                placeholder="Search or jump to..."
+                placeholder="Placeholder"
                 className="w-64 pl-10"
               />
             </div>

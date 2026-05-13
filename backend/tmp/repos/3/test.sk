@@ -1,0 +1,146 @@
+# Olympus's Skript by Voltro :>
+
+import:
+	org.bukkit.Bukkit
+	org.bukkit.scoreboard.Team
+	
+command /getgod [<text>]:
+	permission: op
+	trigger:
+		give 1 of {God::%arg-1%} to player
+		
+command /getsgod [<text>]:
+	permission: op
+	trigger:
+		give 1 of {SuperGod::%arg-1%} to player
+		
+on tab complete for "/getgod":
+	set tab completions for position 1 to "Zeus" and "Hades" and "Hermes" and "Ares" and "Athena" and "Poseidon" and "Artemis"
+	
+on tab complete for "/getsgod":
+	set tab completions for position 1 to "Zeus" and "Hades" and "Hermes" and "Ares" and "Athena" and "Poseidon" and "Artemis"
+	
+command /unbind:
+	trigger:
+		if {Trait::%player's uuid%} is set:
+			if {Trait::%player's uuid%} contains "2":
+				set {_t} to {Trait::%player's uuid%}
+				replace "2" in {_t} with ""
+				give 1 of {SuperGod::%{_t}%} to player
+			else:
+				give 1 of {God::%{Trait::%player's uuid%}%} to player
+				
+			delete {Trait::%player's uuid%}
+			
+command /drain:
+	trigger:
+		if {Trait::%player's uuid%} is set:
+			if {Trait::%player's uuid%} contains "2":
+				set {_t} to {Trait::%player's uuid%}
+				replace "2" in {_t} with ""
+				give 1 of {SuperGod::%{_t}%} to player
+			else:
+				give 1 of {God::%{Trait::%player's uuid%}%} to player
+				
+			delete {Trait::%player's uuid%}
+			
+command /withdraw:
+	trigger:
+		if {Trait::%player's uuid%} is set:
+			if {Trait::%player's uuid%} contains "2":
+				set {_t} to {Trait::%player's uuid%}
+				replace "2" in {_t} with ""
+				give 1 of {SuperGod::%{_t}%} to player
+			else:
+				give 1 of {God::%{Trait::%player's uuid%}%} to player
+				
+			delete {Trait::%player's uuid%}
+			
+command /checkgod:
+	trigger:
+		if {Trait::%player's uuid%} is set:
+			if {Trait::%player's uuid%} contains "2":
+				set {_t} to {Trait::%player's uuid%}
+				replace "2" in {_t} with ""
+				send "&9You possess the full power of &l%{_t}%" to player
+			else:
+				send "&9You possess hald power of &l%{_t}%" to player
+				
+		else:
+			send "&4You lack a god's power, pitiful!" to player
+			
+command /trust [<text>] [<player>]:
+	trigger:
+		if arg-2 is set:
+			set {_p1} to uuid of player
+			set {_p2} to uuid of arg-2
+			if arg-1 is "add":
+				if {Teamed::%{_p1}%::%{_p2}%} is true:
+					send "&a%arg-2% is already trusted" to player
+				else:
+					set {Teamed::%{_p1}%::%{_p2}%} to true
+					send "&l&a%arg-2% has been trusted" to player
+			if arg-1 is "remove":
+				if {Teamed::%{_p1}%::%{_p2}%} is true:
+					delete {Teamed::%{_p1}%::%{_p2}%}
+					send "&l&c%arg-2% has been untrusted" to player
+				else:
+					send "&l&c%arg-2% is not trusted" to player
+		if arg-1 is "clear":
+			delete {Teamed::%player's uuid%::*}
+			send "&9Cleared all your trusts" to player
+			
+on tab complete for "/trust":
+	set tab completions for position 1 to "add" and "remove" and "clear"
+	
+command /restore [<text>]:
+	permission: op
+	trigger:
+		set {SGodCrafted::%arg-1%} to false
+		send "%arg-1% will cause a ritual now" to player
+
+command /tester [<player>]:
+	permission: op
+	trigger:
+		if arg-1 is not set:
+			send "&6Skills Refreshed" to player
+			set {CD1::%player's uuid%} to 1
+			set {CD2::%player's uuid%} to 1
+		else:
+			send "&6%arg-1%'s Skills Refreshed" to player
+			set {CD1::%arg-1's uuid%} to 1
+			set {CD2::%player's uuid%} to 1
+			
+			
+command /ability1:
+	trigger:
+		Ability1(player)
+		
+command /ability2:
+	trigger:
+		Ability2(player)
+		
+command /stopritual:
+	permission: op
+	trigger:
+		set {Ritual::On} to false
+		send "Ritual: %{Ritual::On}%" to player
+		
+command /togglecrouch:
+	trigger:
+		if {CrouchControls::%player's uuid%} is true:
+			set {CrouchControls::%player's uuid%} to false
+			send "&cDisabled Crouch-Controls" to player
+		else:
+			set {CrouchControls::%player's uuid%} to true
+			send "&aEnabled Crouch-Controls" to player
+			
+on left click:
+	if player is sneaking:
+		if {CrouchControls::%player's uuid%} is true:
+			Ability1(player)
+			
+on right click:
+	if player is sneaking:
+		if {CrouchControls::%player's uuid%} is true:
+			Ability2(player)

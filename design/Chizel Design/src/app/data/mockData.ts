@@ -53,7 +53,7 @@ export const mockUser = {
   website: "https://johndoe.dev",
   followers: 342,
   following: 128,
-  joinDate: "2022-03-15",
+  joindate: "2022-03-15",
 };
 
 export const mockRepositories: Repository[] = [
