@@ -13,7 +13,7 @@ function App()
 
     const chzInit = () => {
         setMsg("running binary...");
-        axios.post("http://localhost:3000/api/c_engine", { message : 'init' })
+        axios.post("http://localhost:3000/api/execute", { message : 'init' })
         .then(response => setMsg(response.data.result))
         .catch(err => console.error(err));
     };

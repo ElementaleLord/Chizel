@@ -1,0 +1,292 @@
+/* Repository Settings Page Container */
+.settings-wrapper {
+  padding: 2rem 1rem;
+}
+
+.settings-container {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 56rem;
+}
+
+/* Header */
+.settings-header {
+  margin-bottom: 1.5rem;
+}
+
+.settings-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #8b949e;
+  margin-bottom: 1rem;
+}
+
+.settings-breadcrumb-link {
+  color: #58a6ff;
+  text-decoration: none;
+  transition: text-decoration 0.2s;
+}
+
+.settings-breadcrumb-link:hover {
+  text-decoration: underline;
+}
+
+.settings-breadcrumb-text {
+  color: #f0f6fc;
+}
+
+.settings-breadcrumb-icon {
+  height: 1rem;
+  width: 1rem;
+}
+
+.settings-title {
+  color: #f0f6fc;
+}
+
+/* Settings Sections */
+.settings-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.settings-section {
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+}
+
+.settings-section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #f0f6fc;
+  margin-bottom: 1rem;
+}
+
+/* Form Groups */
+.settings-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.settings-label {
+  font-size: 0.875rem;
+  color: #f0f6fc;
+}
+
+.settings-input,
+.settings-textarea,
+.settings-select {
+  padding: 0.5rem 0.75rem;
+  background-color: #0d1117;
+  color: #f0f6fc;
+  border: 1px solid #30363d;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.settings-input::placeholder,
+.settings-textarea::placeholder {
+  color: #8b949e;
+}
+
+.settings-input:focus,
+.settings-textarea:focus,
+.settings-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #58a6ff;
+}
+
+.settings-textarea {
+  resize: vertical;
+  font-family: inherit;
+}
+
+/* Features Section */
+.settings-features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.settings-feature-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+}
+
+.settings-feature-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.settings-feature-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #f0f6fc;
+}
+
+.settings-feature-desc {
+  font-size: 0.75rem;
+  color: #8b949e;
+}
+
+/* Toggle Switch */
+.settings-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.settings-toggle-input {
+  display: none;
+}
+
+.settings-toggle-slider {
+  width: 2.75rem;
+  height: 1.5rem;
+  background-color: #21262d;
+  border-radius: 9999px;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.settings-toggle-slider::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  background-color: white;
+  height: 1.25rem;
+  width: 1.25rem;
+  border-radius: 9999px;
+  transition: all 0.2s;
+}
+
+.settings-toggle-input:checked + .settings-toggle-slider {
+  background-color: #238636;
+}
+
+.settings-toggle-input:checked + .settings-toggle-slider::after {
+  transform: translateX(1.25rem);
+}
+
+.settings-toggle-input:focus + .settings-toggle-slider {
+  box-shadow: 0 0 0 2px #58a6ff;
+}
+
+/* Access Section */
+.settings-access-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.settings-access-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.settings-access-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #f0f6fc;
+}
+
+.settings-access-desc {
+  font-size: 0.75rem;
+  color: #8b949e;
+}
+
+/* Save Button */
+.settings-save-btn {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  background-color: #238636;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.settings-save-btn:hover {
+  background-color: #2ea043;
+}
+
+/* Danger Zone */
+.settings-danger-zone {
+  border-color: rgba(241, 81, 81, 0.5);
+}
+
+.settings-danger-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.settings-danger-icon {
+  height: 1.25rem;
+  width: 1.25rem;
+  color: #f15151;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.settings-danger-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.settings-danger-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #f15151;
+}
+
+.settings-danger-desc {
+  font-size: 0.875rem;
+  color: #8b949e;
+}
+
+.settings-delete-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: rgba(241, 81, 81, 0.1);
+  color: #f15151;
+  border: 1px solid rgba(241, 81, 81, 0.5);
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.settings-delete-btn:hover {
+  background-color: rgba(241, 81, 81, 0.2);
+}
+
+.settings-delete-icon {
+  height: 1rem;
+  width: 1rem;
+}
