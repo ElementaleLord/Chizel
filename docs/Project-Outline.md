@@ -6,39 +6,35 @@
   5. ReactJs
   6. NodeJS
   7. Git
+  8. Visual Paradigm
+  9. Figma
 
 >> Order of Priorities:
-  1. Software Diagrams (All members)
-  2. Git Commands Allocation And Shell Exec (All members)
-  3. Database (Omar)
-  4. NodeJS Backend (All)
-  5. Frontend (Patrick & Bilal)
-  6. Extras + Cherry Picking (All)
+  1. Software Diagrams (All)
+  2. Chz Commands Allocation And Shell Execution (All)
+  3. Database (Voltro)
+  4. C Communication API (Faust)
+  5. NodeJS Backend (Voltro & Faust)
+  6. Frontend (Elementale & Cloak)
+  7. Issues & Pull Requests (All)
 
->> Git Commands:
-  1. Commands To Be Worked On By The Whole Group:
-     - Merge
+>> Chz Commands in Priority/Person:
+  1. Commands To Be Worked On By Everyone:
      - Branch
-  2. Commands To Be Worked On By Patrick:
-     - Status
+     - Merge
+  2. Commands To Be Worked On By Elementale:
      - Checkout
-     - Describe
-  3. Commands To Be Worked On By Charbel:
+     - Status
+     - Tag
+  3. Commands To Be Worked On By Faust:
      - Init
      - Commit
-     - Grep
-  4. Commands To Be Worked On By Omar:
+  4. Commands To Be Worked On By Voltro:
+     - Init
      - Push
      - Pull
      - Log
-  5. Commands To Be Worked On By Bilal:
-     - Clone
-     - Add
+  5. Commands To Be Worked On By Cloak:
      - Fetch
-
->> Work Hours
-   Monday   : min 6 Hours
-   Thursday : min 2 Hours
-   Friday   : min 2 Hours
-
->> UML is in B1_UML_Diagrams.vpp file
+     - Add
+     - Clone
