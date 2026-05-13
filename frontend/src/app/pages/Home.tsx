@@ -35,17 +35,17 @@ export function Home() {
               </div>
               <input
                 type="text"
-                placeholder="Ask anything or type @ to add context"
+                placeholder="Placeholder for future purposes"
                 className="composer-input"
               />
             </div>
             <div className="composer-actions">
               <Link to='/repositories' className="composer-btn composer-btn-secondary">
-                <BookMarked />All Repositories
+                <BookMarked />Repositories
               </Link>
               <Link to='/issues' className="composer-btn composer-btn-secondary">
                 <CircleDot />
-                Create Issue
+                Issues
               </Link>
               <Link to='/pull-requests' className="composer-btn composer-btn-secondary">
                 <GitPullRequest />

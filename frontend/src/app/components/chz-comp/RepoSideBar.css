@@ -56,7 +56,6 @@
 
 .repo-sidebar-search:focus {
   outline: none;
-  ring: 1px solid #fda410;
   box-shadow: 0 0 0 1px #fda410;
 }
 

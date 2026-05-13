@@ -257,13 +257,6 @@ export function RepositoryPullRequests() {
                 <button type="button" className="repo-work-primary-btn" onClick={startCreate}>
                   <Plus className="repo-work-btn-icon" />
                 </button>
-                <div className="pullreq-title-section">
-                  <h1 className="pullreq-title">Pull Requests</h1>
-                  <button className="pullreq-new-btn" onClick={() => setshowNewForm(true)}>
-                    <Plus className="pullreq-new-btn-icon" />
-                    New Pull Request
-                  </button>
-                </div>
               </div>
             </div>
 
@@ -295,16 +288,6 @@ export function RepositoryPullRequests() {
               </div>
             </>
             }
-            <div className="pullreq-search-section">
-              <div className="pullreq-search-wrapper">
-                <Search className="pullreq-search-icon" />
-                <input
-                  type="text"
-                  placeholder="Search Pull Requests..."
-                  className="pullreq-search-input"
-                />
-              </div>
-            </div>
 
             {isComposerOpen && (
               <form className="repo-work-composer" onSubmit={handleSubmitASYNC}>

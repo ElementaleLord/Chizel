@@ -251,13 +251,6 @@ export function RepositoryIssues() {
                   <Plus className="repo-work-btn-icon" />
                 </button>
               </div>
-              <div className="issues-title-section">
-                <h1 className="issues-title">Issues</h1>
-                <button className="issues-new-btn" onClick={() => setshowNewForm(true)}>
-                  <Plus className="issues-new-btn-icon" />
-                  New Issue
-                </button>
-              </div>
             </div>
 
             <div className="repo-work-metrics">
@@ -287,16 +280,6 @@ export function RepositoryIssues() {
                 </div>
               </>
               }
-            </div>
-            <div className="issues-search-section">
-              <div className="issues-search-wrapper">
-                <Search className="issues-search-icon" />
-                <input
-                  type="text"
-                  placeholder="Search issues..."
-                  className="issues-search-input"
-                />
-              </div>
             </div>
 
             {isComposerOpen && (

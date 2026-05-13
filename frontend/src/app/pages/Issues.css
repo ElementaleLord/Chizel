@@ -114,12 +114,13 @@
 
 .issues-inbox-filter-btn:hover {
   background-color: #30363d;
+  color: #fda410;
 }
 
 .issues-inbox-filter-btn-active {
-  border-color: rgba(88, 166, 255, 0.4);
-  background-color: rgba(56, 139, 253, 0.14);
-  color: #fda410;
+  border-color: #fda410;
+  background-color: #e38c05;
+  color: white;
 }
 
 .issues-inbox-search {
