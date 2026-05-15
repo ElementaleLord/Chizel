@@ -36,6 +36,7 @@
 .repos-new-btn {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
@@ -43,6 +44,7 @@
   color: white;
   border: none;
   font-weight: 500;
+  cursor: pointer;
   transition: all 0.2s;
 }
 
@@ -56,35 +58,54 @@
 }
 
 /*  NEW REPO WINDOW */
+.repos-new-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  border: none;
+  background-color: rgba(1, 4, 9, 0.72);
+  backdrop-filter: blur(4px);
+  cursor: default;
+}
+
 .repos-new-container {
-  padding: 1.25rem;
+  position: fixed;
+  inset: 50% auto auto 50%;
+  z-index: 21;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: min(100%, 34rem);
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  transform: translate(-50%, -50%);
+  padding: 1.5rem;
   background-color: #161b22;
   border: 1px solid #30363d;
   border-radius: 0.5rem;
-  width: 60%;
-  height: 70%;
-  position: fixed;
-  left: 20%;
-  top: 15%;
-  z-index: 2;
+  box-shadow: 0 24px 48px rgba(1, 4, 9, 0.45);
 }
 
 .repos-new-close-btn {
-  height: 30px;
-  width: 30px;
-  justify-content: center;
-  align-items: center;
-  display: flex;
-  background-color: #aa0000;
-  border: 1px solid #dd0000;
-  border-radius: 1rem;
   position: absolute;
-  top: 2%;
-  right: 1%;
+  top: 1rem;
+  right: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 9999px;
+  border: 1px solid #30363d;
+  background-color: #21262d;
+  color: #f0f6fc;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .repos-new-close-btn:hover {
-  background-color: #770000;
+  background-color: #30363d;
+  color: #fda410;
 }
 
 .repos-new-close-icon {
@@ -92,42 +113,141 @@
   width: 1rem;
 }
 
-.repos-new-create-btn {
-  justify-content: center;
-  align-items: center;
+.repos-new-header {
   display: flex;
-  padding: 0.2rem;
-  background-color: #118800;
-  color: #11ff00;
-  border: 1px solid #30363d;
-  border-radius: 1rem;
-  position: absolute;
-  bottom: 3%;
-  right: 2%;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-right: 2.5rem;
 }
 
-.repos-new-create-btn:hover {
-  background-color: #116600;
+.repos-new-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8b949e;
+}
+
+.repos-new-title {
+  font-size: 1.5rem;
+  color: #f0f6fc;
+}
+
+.repos-new-subtitle {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: #c9d1d9;
+}
+
+.repos-new-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.repos-new-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.repos-new-label {
+  font-size: 0.875rem;
+  color: #f0f6fc;
+}
+
+.repos-new-input,
+.repos-new-textarea,
+.repos-new-select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background-color: #0d1117;
+  color: #f0f6fc;
+  border: 1px solid #30363d;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.repos-new-input::placeholder,
+.repos-new-textarea::placeholder {
+  color: #7d8590;
+}
+
+.repos-new-input:focus,
+.repos-new-textarea:focus,
+.repos-new-select:focus,
+.repos-new-close-btn:focus-visible,
+.repos-new-cancel-btn:focus-visible,
+.repos-new-create-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #fda410;
+}
+
+.repos-new-textarea {
+  min-height: 7rem;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.repos-new-select {
+  cursor: pointer;
+}
+
+.repos-new-error {
+  border-radius: 0.375rem;
+  border: 1px solid rgba(241, 81, 81, 0.4);
+  background-color: rgba(241, 81, 81, 0.1);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: #f15151;
+}
+
+.repos-new-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+}
+
+.repos-new-cancel-btn,
+.repos-new-create-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 9rem;
+  padding: 0.625rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.repos-new-cancel-btn {
+  border: 1px solid #30363d;
+  background-color: #21262d;
+  color: #f0f6fc;
+  cursor: pointer;
+}
+
+.repos-new-cancel-btn:hover {
+  background-color: #30363d;
+  color: #fda410;
+}
+
+.repos-new-create-btn {
+  border: none;
+  background-color: #fda410;
+  color: white;
+  cursor: pointer;
+}
+
+.repos-new-create-btn:hover:not(:disabled) {
+  background-color: #e38c05;
 }
 
 .repos-new-create-btn:disabled {
   opacity: 0.7;
-  cursor: wait;
-}
-
-.repos-new-error {
-  color: #ff7b72;
-  margin-top: 0.75rem;
-}
-
-.repos-new-backdrop {
-  background-color: #00000099;
-  width: 100%;
-  height: 100%;
-  position: fixed;
-  left: 0px;
-  top: 0px;
-  z-index: 1;
+  cursor: not-allowed;
 }
 
 /* Search and Filters */
@@ -331,5 +451,40 @@
 @media (max-width: 1023px) {
   .repos-layout {
     flex-direction: column;
+  }
+}
+
+@media (max-width: 767px) {
+  .repos-wrapper {
+    padding: 1.5rem 1rem;
+  }
+
+  .repos-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .repos-new-btn {
+    width: 100%;
+  }
+
+  .repos-new-container {
+    width: calc(100% - 1.5rem);
+    max-height: calc(100vh - 1.5rem);
+    padding: 1.25rem;
+  }
+
+  .repos-new-actions {
+    flex-direction: column-reverse;
+  }
+
+  .repos-new-cancel-btn,
+  .repos-new-create-btn {
+    width: 100%;
+  }
+
+  .repos-updated {
+    margin-left: 0;
   }
 }

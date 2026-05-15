@@ -61,8 +61,8 @@ export function Repositories() {
     return matchesVisibility && matchesSearch && matchesLanguage;
   });
   
-  const [showNewForm, setshowNewForm] = useState(false);
-  const defRepoData : RepositorySummary = {
+  const [showNewForm, setShowNewForm] = useState(false);
+  const defRepoData: RepositorySummary = {
     id: '',
     owner: '',
     name: '',
@@ -73,7 +73,12 @@ export function Repositories() {
     updated: 'recently',
     visibility: 'Private',
   };
-  const {register, handleSubmit, reset} = useForm<RepositorySummary>({ defaultValues : defRepoData});
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<RepositorySummary>({ defaultValues: defRepoData });
 
   useEffect(() => {
     let cancelled = false;
@@ -119,7 +124,13 @@ export function Repositories() {
     };
   }, []);
 
-  const onSubmit = async (data : RepositorySummary) => {
+  const closeNewRepositoryForm = () => {
+    setShowNewForm(false);
+    setCreateError(null);
+    reset(defRepoData);
+  };
+
+  const onSubmit = async (data: RepositorySummary) => {
     try {
       setIsCreating(true);
       setCreateError(null);
@@ -129,7 +140,7 @@ export function Repositories() {
         visibility: data.visibility,
       });
 
-      setshowNewForm(false);
+      setShowNewForm(false);
       reset(defRepoData);
       void navigate(created.route);
     } catch (error) {
@@ -153,7 +164,7 @@ export function Repositories() {
                 type="button"
                 className="repos-new-btn"
                 title="Create a new repository"
-                onClick={() => setshowNewForm(true)}
+                onClick={() => setShowNewForm(true)}
               >
                 <Plus className="repos-new-btn-icon" />
                 New repository
@@ -161,18 +172,88 @@ export function Repositories() {
             </div>
             {showNewForm &&
             <>
-              <div className='repos-new-backdrop' onClick={() => setshowNewForm(false)} />
-              <div className='repos-new-container'>
-                <button  className='repos-new-close-btn'  onClick={() => setshowNewForm(false)}>
-                  <X  className='repos-new-close-icon'/>
+              <button
+                type="button"
+                aria-label="Close new repository form"
+                className="repos-new-backdrop"
+                onClick={closeNewRepositoryForm}
+              />
+              <div
+                className="repos-new-container"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="repos-new-title"
+              >
+                <button
+                  type="button"
+                  className="repos-new-close-btn"
+                  onClick={closeNewRepositoryForm}
+                >
+                  <X className="repos-new-close-icon" />
                 </button>
-                <form onSubmit={handleSubmit(onSubmit)}>
-                  <input {...register('name')} placeholder="Repository Name" />
-                  <input {...register('description')} placeholder="Description" />
+                <div className="repos-new-header">
+                  <p className="repos-new-eyebrow">Create repository</p>
+                  <h2 id="repos-new-title" className="repos-new-title">Add New Repository</h2>
+                  <p className="repos-new-subtitle">
+                    Start a new project with the same repository settings and styling used across the app.
+                  </p>
+                </div>
+                <form className="repos-new-form" onSubmit={handleSubmit(onSubmit)}>
+                  <div className="repos-new-form-group">
+                    <label htmlFor="repos-new-name" className="repos-new-label">Repository name</label>
+                    <input
+                      id="repos-new-name"
+                      className="repos-new-input"
+                      placeholder="my-awesome-project"
+                      autoComplete="off"
+                      {...register('name', {
+                        required: 'Repository name is required.',
+                        validate: (value) =>
+                          value.trim().length > 0 || 'Repository name is required.',
+                      })}
+                    />
+                    {errors.name ? <p className="repos-new-error">{errors.name.message}</p> : null}
+                  </div>
+                  <div className="repos-new-form-group">
+                    <label htmlFor="repos-new-description" className="repos-new-label">
+                      Description
+                    </label>
+                    <textarea
+                      id="repos-new-description"
+                      rows={4}
+                      className="repos-new-textarea"
+                      placeholder="Tell people what this repository is for"
+                      {...register('description')}
+                    />
+                  </div>
+                  <div className="repos-new-form-group">
+                    <label htmlFor="repos-new-visibility" className="repos-new-label">Visibility</label>
+                    <select
+                      id="repos-new-visibility"
+                      className="repos-new-select"
+                      {...register('visibility')}
+                    >
+                      <option value="Private">Private</option>
+                      <option value="Public">Public</option>
+                    </select>
+                  </div>
                   {createError ? <p className="repos-new-error">{createError}</p> : null}
-                  <button className='repos-new-create-btn' disabled={isCreating}>
-                    {isCreating ? 'Creating...' : 'Create Repository'}
-                  </button>
+                  <div className="repos-new-actions">
+                    <button
+                      type="button"
+                      className="repos-new-cancel-btn"
+                      onClick={closeNewRepositoryForm}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="repos-new-create-btn"
+                      disabled={isCreating}
+                    >
+                      {isCreating ? 'Creating...' : 'Create Repository'}
+                    </button>
+                  </div>
                 </form>
               </div>
             </>
