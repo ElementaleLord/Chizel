@@ -3,7 +3,7 @@ import cors from "cors";
 import cEngine from "./routes/c_engine";
 import repoWork from "./routes/repo";
 import authRoutes from "./routes/auth";
-import { getRepoData, getRepoId, getRepoPullRequests, getUserPasswordEmail, getUserPasswordName, getUserRepos} from "./routes/database";
+import { getRepoData, getRepoId, getRepoPullRequests, getUserPasswordName, getUserRepos} from "./routes/database";
 
 
 const app = express();
@@ -76,4 +76,4 @@ app.get("/rep/user/repos/:username", async (req, res) =>{
 });
 
 console.log("Database connection acknowledgable");
-app.listen(3000, () => console.log("server running on port 3000"));
+app.listen(PORT, () => console.log("server running on port 3000"));
